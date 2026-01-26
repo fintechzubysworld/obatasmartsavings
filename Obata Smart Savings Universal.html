@@ -1,0 +1,4366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OBATA SMART SAVINGS v2.3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- XLSX library for Excel file support -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  
+  <style>
+    /* ========================================================= */
+    /* CORE STYLES                                               */
+    /* ========================================================= */
+    :root { 
+      --primary: #1e88e5; 
+      --dark: #1565c0; 
+      --bg: #f5f7fa; 
+      --danger: #c62828; 
+      --success: #2e7d32; 
+      --warning: #f9a825;
+      --text: #333;
+      --purple: #9c27b0;
+      --orange: #ff9800;
+      --teal: #009688;
+      --brown: #795548;
+      --pink: #e91e63;
+    }
+
+    body { 
+      font-family: 'Segoe UI', Arial, sans-serif; 
+      background: var(--bg); 
+      margin: 0; 
+      color: var(--text); 
+      padding-bottom: 50px;
+    }
+
+    .container { 
+      max-width: 1200px; 
+      margin: auto; 
+      padding: 20px; 
+    }
+
+    .card { 
+      background: #fff; 
+      border-radius: 12px; 
+      padding: 25px; 
+      margin-bottom: 20px; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+      transition: transform 0.2s;
+    }
+
+    .grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+      gap: 20px; 
+    }
+
+    .hidden { 
+      display: none !important; 
+    }
+
+    h1, h2, h3 { 
+      margin-top: 0; 
+      color: #2c3e50; 
+    }
+
+    h2 { 
+      font-size: 1.25rem; 
+      border-bottom: 2px solid #eee; 
+      padding-bottom: 10px; 
+      margin-bottom: 15px; 
+    }
+
+    /* INPUTS & BUTTONS */
+    input, select, button, textarea { 
+      padding: 12px; 
+      width: 100%; 
+      margin-top: 10px; 
+      border: 1px solid #ddd; 
+      border-radius: 6px; 
+      box-sizing: border-box; 
+      font-size: 1rem; 
+    }
+
+    input:focus, select:focus { 
+      border-color: var(--primary); 
+      outline: none; 
+      box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+    }
+
+    button { 
+      background: var(--primary); 
+      color: #fff; 
+      border: none; 
+      cursor: pointer; 
+      font-weight: 600; 
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: background 0.2s; 
+    }
+
+    button:hover { background: var(--dark); }
+    button.danger { background: var(--danger); }
+    button.danger:hover { background: #b71c1c; }
+    button.success { background: var(--success); }
+    button.success:hover { background: #1b5e20; }
+    button.secondary { background: #78909c; }
+    button.secondary:hover { background: #546e7a; }
+    button.warning { background: var(--warning); color: #000; }
+    button.purple { background: var(--purple); }
+    button.purple:hover { background: #7b1fa2; }
+    button.orange { background: var(--orange); }
+    button.orange:hover { background: #f57c00; }
+    button.teal { background: var(--teal); }
+    button.teal:hover { background: #00796b; }
+    button.brown { background: var(--brown); }
+    button.brown:hover { background: #5d4037; }
+    button.pink { background: var(--pink); }
+    button.pink:hover { background: #c2185b; }
+
+    /* TABLES & DATA */
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: 15px; 
+      font-size: 0.95rem;
+    }
+
+    th, td { 
+      padding: 12px; 
+      border-bottom: 1px solid #eee; 
+      text-align: left; 
+    }
+
+    th { 
+      background: #f8f9fa; 
+      color: #555; 
+      font-weight: 600;
+    }
+
+    tr:hover { background-color: #f1f1f1; }
+
+    .money { 
+      font-family: 'Courier New', monospace; 
+      font-weight: bold; 
+      font-size: 1.2rem;
+    }
+
+    .customer-count {
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      font-size: 1.5rem;
+      color: var(--purple);
+    }
+
+    .negative { color: var(--danger); }
+    .positive { color: var(--success); }
+
+    /* MODAL STYLES */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    /* PROFILE STYLES */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #eee;
+    }
+    .profile-avatar {
+      width: 60px;
+      height: 60px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    /* DUPLICATE WARNING STYLES */
+    .duplicate-warning {
+      color: var(--danger);
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-top: 5px;
+      padding: 8px;
+      background-color: rgba(198, 40, 40, 0.1);
+      border-radius: 4px;
+      border-left: 3px solid var(--danger);
+      display: none;
+    }
+
+    /* SEARCH RESULTS */
+    .search-results {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 10px;
+      border: 1px solid #eee;
+      border-radius: 6px;
+      padding: 10px;
+      background: #f9f9f9;
+    }
+
+    .search-result-item {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .search-result-item:hover {
+      background: #e3f2fd;
+    }
+
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+
+    .inactive-member {
+      opacity: 0.6;
+      background-color: #f5f5f5;
+    }
+
+    .inactive-badge {
+      background-color: #757575;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+
+    /* REPORT STYLES */
+    .report-section {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .report-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .report-stat-card {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .report-stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    /* IMPORT/EXPORT STYLES */
+    .import-export-section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .file-format-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .file-format-buttons button {
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .drive-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+
+    .drive-connected {
+      background-color: rgba(46, 125, 50, 0.1);
+      color: var(--success);
+      border-left: 4px solid var(--success);
+    }
+
+    .drive-disconnected {
+      background-color: rgba(198, 40, 40, 0.1);
+      color: var(--danger);
+      border-left: 4px solid var(--danger);
+    }
+
+    .preview-table {
+      max-height: 300px;
+      overflow-y: auto;
+      margin: 15px 0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    .backup-history {
+      margin-top: 20px;
+    }
+
+    .backup-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .backup-item:last-child {
+      border-bottom: none;
+    }
+
+    .progress-bar {
+      height: 20px;
+      background-color: #e0e0e0;
+      border-radius: 10px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: var(--primary);
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    /* CONFIRMATION STYLES */
+    .confirmation-details {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      border-left: 4px solid var(--primary);
+    }
+
+    .confirmation-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .confirmation-item:last-child {
+      border-bottom: none;
+    }
+
+    .confirmation-label {
+      font-weight: 600;
+      color: #555;
+    }
+
+    .confirmation-value {
+      font-weight: bold;
+    }
+
+    /* WIPE DATA STYLES */
+    .wipe-warning {
+      background-color: rgba(198, 40, 40, 0.1);
+      border-left: 4px solid var(--danger);
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+
+    .wipe-warning h3 {
+      color: var(--danger);
+      margin-top: 0;
+    }
+
+    /* USER MANAGEMENT STYLES */
+    .user-management-section {
+      margin-top: 30px;
+    }
+
+    .user-list {
+      margin-top: 15px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .user-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      background: #fff;
+    }
+
+    .user-item:last-child {
+      border-bottom: none;
+    }
+
+    .user-info {
+      flex: 1;
+    }
+
+    .user-name {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .user-role {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .user-permissions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 5px;
+    }
+
+    .permission-badge {
+      background-color: #e3f2fd;
+      color: var(--primary);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+    }
+
+    .permission-badge.inactive {
+      background-color: #f5f5f5;
+      color: #999;
+    }
+
+    .user-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .user-actions button {
+      width: auto;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+
+    .privilege-checkboxes {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin: 15px 0;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checkbox-group label {
+      margin: 0;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+
+    .user-form-section {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    /* THRIFT COLLECTOR & SUPERVISOR VIEW */
+    .thrift-view .dashboard-controls,
+    .supervisor-view .dashboard-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .thrift-view .card,
+    .supervisor-view .card {
+      border-left-width: 5px;
+    }
+
+    .role-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .role-admin { background-color: var(--danger); color: white; }
+    .role-supervisor { background-color: var(--pink); color: white; }
+    .role-thrift { background-color: var(--teal); color: white; }
+
+    /* ========================================================= */
+    /* PRINT SUPPORT                                             */
+    /* ========================================================= */
+    @media print {
+      body { background: #fff; padding: 0; }
+      .no-print, .container > .grid, #loginCard, .dashboard-controls { display: none !important; }
+      .modal-overlay { position: static; background: none; display: block; }
+      .modal-content { 
+        box-shadow: none; 
+        max-width: 100%; 
+        width: 100%; 
+        max-height: none; 
+        padding: 0;
+        margin: 0;
+      }
+      button { display: none !important; }
+      h2 { border-bottom: 2px solid #000; }
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="loginCard" class="card" style="max-width: 400px; margin: 100px auto;">
+  <h1 style="text-align: center; color: var(--primary);">OBATA SMART SAVINGS</h1>
+  <p style="text-align: center; color: #666; margin-bottom: 20px;">Secure Management System v2.3</p>
+  <input id="usernameInput" placeholder="Username" />
+  <input id="passwordInput" type="password" placeholder="Password" />
+  <button onclick="app.login()">Login to System</button>
+  <p id="loginError" style="color: var(--danger); text-align: center; margin-top: 10px; display: none;">Invalid credentials</p>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="adminDashboard" class="container hidden">
+  <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+    <div>
+      <h1 style="margin:0;">Dashboard (Admin) <span class="role-badge role-admin">ADMIN</span></h1>
+      <p id="adminWelcomeMsg" style="color:#666; margin:0;"></p>
+    </div>
+    <div class="dashboard-controls" style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="secondary" style="width:auto;" onclick="ui.openPasswordModal()">🔐 Password</button>
+      <button class="teal" style="width:auto;" onclick="ui.openImportModal()">📤 Import Data</button>
+      <button class="purple" style="width:auto;" onclick="ui.openReportModal()">📊 Generate Report</button>
+      <button class="success" style="width:auto;" onclick="data.exportCSV()">💾 Backup</button>
+      <button class="orange" style="width:auto;" onclick="ui.openDriveModal()">💿 Drive (F:)</button>
+      <button class="brown" style="width:auto;" onclick="ui.openUserManagementModal()">👥 Manage Users</button>
+      <button class="danger" style="width:auto;" onclick="ui.openWipeModal()">🗑️ Wipe Data</button>
+      <button class="danger" style="width:auto;" onclick="app.logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card" style="border-left: 5px solid var(--success);">
+      <h3>Total Savings Pool</h3>
+      <p class="money positive" id="adminDisplayTotalSavings">₦0.00</p>
+    </div>
+    <div class="card" style="border-left: 5px solid var(--danger);">
+      <h3>Outstanding Loans</h3>
+      <p class="money negative" id="adminDisplayTotalLoans">₦0.00</p>
+    </div>
+    <div class="card" style="border-left: 5px solid var(--primary);">
+      <h3>Cash In Vault (Net)</h3>
+      <p class="money" id="adminDisplayVault">₦0.00</p>
+    </div>
+    <div class="card" style="border-left: 5px solid var(--purple);">
+      <h3>Total Customers</h3>
+      <p class="customer-count" id="adminDisplayTotalCustomers">0</p>
+      <small style="color:#666;" id="adminDisplayActiveCustomers">Active: 0</small>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>👤 Register Member</h2>
+      <input id="adminNewMemName" placeholder="Full Name" />
+      <input id="adminNewMemPhone" placeholder="Phone Number" oninput="ops.checkDuplicateWhileTyping()" />
+      <div id="adminDuplicateWarning" class="duplicate-warning"></div>
+      <button class="secondary" onclick="ui.showMemberConfirmation()">Create Account</button>
+    </div>
+
+    <div class="card">
+      <h2>💰 Record Transaction</h2>
+      <input id="adminTransCustId" placeholder="Customer ID (e.g., 101)" onchange="ops.checkName(this.value, 'adminTransNameDisplay')" />
+      <small id="adminTransNameDisplay" style="color:var(--primary); font-weight:bold;"></small>
+      <select id="adminTransType">
+        <option value="DAILY">Daily Savings</option>
+        <option value="WEEKLY">Weekly Savings</option>
+        <option value="MONTHLY">Monthly Savings</option>
+      </select>
+      <input id="adminTransAmount" type="number" placeholder="Amount (₦)" />
+      <label for="adminTransValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
+      <input id="adminTransValueDate" type="date" value="" />
+      <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
+      <button onclick="ui.showTransactionConfirmation()">Submit Transaction</button>
+    </div>
+
+    <div class="card" style="border-left: 5px solid var(--pink);">
+      <h2>💸 Process Withdrawal</h2>
+      <input id="adminWithdrawCustId" placeholder="Customer ID" onchange="ops.checkName(this.value, 'adminWithdrawNameDisplay')" />
+      <small id="adminWithdrawNameDisplay" style="color:var(--pink); font-weight:bold;"></small>
+      <input id="adminWithdrawAmount" type="number" placeholder="Amount (₦)" />
+      <label for="adminWithdrawValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
+      <input id="adminWithdrawValueDate" type="date" value="" />
+      <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
+      <button class="pink" onclick="ui.showWithdrawalConfirmation()">Process Withdrawal</button>
+    </div>
+
+    <div class="card">
+      <h2>💸 Loan Management</h2>
+      <input id="adminLoanCustId" placeholder="Customer ID" onchange="ops.checkName(this.value, 'adminLoanNameDisplay')" />
+      <small id="adminLoanNameDisplay" style="color:var(--primary); font-weight:bold;"></small>
+      <select id="adminLoanType">
+        <option value="LOAN">Disburse Loan (Give Out)</option>
+        <option value="LOAN_REPAY">Loan Repayment (Collect)</option>
+      </select>
+      <input id="adminLoanAmount" type="number" placeholder="Amount (₦)" />
+      <label for="adminLoanValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
+      <input id="adminLoanValueDate" type="date" value="" />
+      <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
+      <button class="warning" onclick="ui.showLoanConfirmation()">Process Loan</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>🔍 Customer Search</h2>
+      <p style="font-size:0.9rem; color:#666;">Search customers by name or phone number</p>
+      <input id="adminSearchQuery" placeholder="Enter name or phone number..." oninput="ops.searchCustomers()" />
+      <div id="adminSearchResults" class="search-results hidden">
+        <!-- Search results will be inserted here -->
+      </div>
+      <small style="display:block; margin-top:10px; color:#666;">Click on a customer to auto-fill their ID in forms</small>
+    </div>
+
+    <div class="card">
+      <h2>📄 Member Statement</h2>
+      <p style="font-size:0.9rem; color:#666;">View history, reverse transactions, and print.</p>
+      <input id="adminStmtCustId" placeholder="Customer ID" />
+      <button class="secondary" onclick="ui.openStatement()">Generate Statement</button>
+    </div>
+
+    <div class="card">
+      <h2>📇 Member Profile</h2>
+      <p style="font-size:0.9rem; color:#666;">View comprehensive member summary.</p>
+      <input id="adminProfileCustId" placeholder="Customer ID" />
+      <button class="secondary" onclick="ui.openProfile()">View Profile</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card" style="border-left: 5px solid var(--danger);">
+      <h2>🚫 Account Closure</h2>
+      <p style="font-size:0.9rem; color:#666;">Close a customer's account (marks as inactive)</p>
+      <input id="adminCloseCustId" placeholder="Customer ID to close" onchange="ops.checkName(this.value, 'adminCloseNameDisplay')" />
+      <small id="adminCloseNameDisplay" style="color:var(--danger); font-weight:bold;"></small>
+      <input id="adminClosureReason" placeholder="Reason for closure (optional)" />
+      <button class="danger" onclick="ops.closeAccount()">Close Account</button>
+      <small style="display:block; margin-top:10px; color:#666;">Note: Closed accounts remain in system for records but cannot transact</small>
+    </div>
+
+    <div class="card" style="border-left: 5px solid var(--success);">
+      <h2>✅ Reactivate Account</h2>
+      <p style="font-size:0.9rem; color:#666;">Reactivate a previously closed account</p>
+      <input id="adminReactivateCustId" placeholder="Customer ID to reactivate" onchange="ops.checkName(this.value, 'adminReactivateNameDisplay')" />
+      <small id="adminReactivateNameDisplay" style="color:var(--success); font-weight:bold;"></small>
+      <button class="success" onclick="ops.reactivateAccount()">Reactivate Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUPERVISOR DASHBOARD -->
+<div id="supervisorDashboard" class="container hidden supervisor-view">
+  <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+    <div>
+      <h1 style="margin:0;">Dashboard (Supervisor) <span class="role-badge role-supervisor">SUPERVISOR</span></h1>
+      <p id="supervisorWelcomeMsg" style="color:#666; margin:0;"></p>
+      <small id="supervisorPermissionsInfo" style="color:var(--pink);"></small>
+    </div>
+    <div class="dashboard-controls" style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="secondary" style="width:auto;" onclick="ui.openChangePasswordModal('supervisor')">🔐 Change Password</button>
+      <button class="purple" style="width:auto;" onclick="ui.openReportModal()">📊 Generate Report</button>
+      <button class="danger" style="width:auto;" onclick="app.logout()">Logout</button>
+    </div>
+  </div>
+
+  <div id="supervisorMemberRegistration" class="card hidden">
+    <h2>👤 Register Member</h2>
+    <input id="supervisorNewMemName" placeholder="Full Name" />
+    <input id="supervisorNewMemPhone" placeholder="Phone Number" oninput="ops.checkDuplicateWhileTyping()" />
+    <div id="supervisorDuplicateWarning" class="duplicate-warning"></div>
+    <button class="secondary" onclick="ui.showMemberConfirmation()">Create Account</button>
+  </div>
+
+  <div id="supervisorTransactionPosting" class="card hidden">
+    <h2>💰 Record Transaction</h2>
+    <input id="supervisorTransCustId" placeholder="Customer ID (e.g., 101)" onchange="ops.checkName(this.value, 'supervisorTransNameDisplay')" />
+    <small id="supervisorTransNameDisplay" style="color:var(--primary); font-weight:bold;"></small>
+    <select id="supervisorTransType">
+      <option value="DAILY">Daily Savings</option>
+      <option value="WEEKLY">Weekly Savings</option>
+      <option value="MONTHLY">Monthly Savings</option>
+    </select>
+    <input id="supervisorTransAmount" type="number" placeholder="Amount (₦)" />
+    <label for="supervisorTransValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
+    <input id="supervisorTransValueDate" type="date" value="" />
+    <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
+    <button onclick="ui.showTransactionConfirmation()">Submit Transaction</button>
+  </div>
+
+  <div id="supervisorWithdrawalProcessing" class="card hidden" style="border-left: 5px solid var(--pink);">
+    <h2>💸 Process Withdrawal</h2>
+    <input id="supervisorWithdrawCustId" placeholder="Customer ID" onchange="ops.checkName(this.value, 'supervisorWithdrawNameDisplay')" />
+    <small id="supervisorWithdrawNameDisplay" style="color:var(--pink); font-weight:bold;"></small>
+    <input id="supervisorWithdrawAmount" type="number" placeholder="Amount (₦)" />
+    <label for="supervisorWithdrawValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
+    <input id="supervisorWithdrawValueDate" type="date" value="" />
+    <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
+    <button class="pink" onclick="ui.showWithdrawalConfirmation()">Process Withdrawal</button>
+  </div>
+
+  <div id="supervisorLoanManagement" class="card hidden">
+    <h2>💸 Loan Management</h2>
+    <input id="supervisorLoanCustId" placeholder="Customer ID" onchange="ops.checkName(this.value, 'supervisorLoanNameDisplay')" />
+    <small id="supervisorLoanNameDisplay" style="color:var(--primary); font-weight:bold;"></small>
+    <select id="supervisorLoanType">
+      <option value="LOAN">Disburse Loan (Give Out)</option>
+      <option value="LOAN_REPAY">Loan Repayment (Collect)</option>
+    </select>
+    <input id="supervisorLoanAmount" type="number" placeholder="Amount (₦)" />
+    <label for="supervisorLoanValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
+    <input id="supervisorLoanValueDate" type="date" value="" />
+    <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
+    <button class="warning" onclick="ui.showLoanConfirmation()">Process Loan</button>
+  </div>
+
+  <div id="supervisorAccountClosure" class="card hidden" style="border-left: 5px solid var(--danger);">
+    <h2>🚫 Account Closure</h2>
+    <p style="font-size:0.9rem; color:#666;">Close a customer's account (marks as inactive)</p>
+    <input id="supervisorCloseCustId" placeholder="Customer ID to close" onchange="ops.checkName(this.value, 'supervisorCloseNameDisplay')" />
+    <small id="supervisorCloseNameDisplay" style="color:var(--danger); font-weight:bold;"></small>
+    <input id="supervisorClosureReason" placeholder="Reason for closure (optional)" />
+    <button class="danger" onclick="ops.closeAccount()">Close Account</button>
+  </div>
+
+  <div id="supervisorAccountReactivation" class="card hidden" style="border-left: 5px solid var(--success);">
+    <h2>✅ Reactivate Account</h2>
+    <p style="font-size:0.9rem; color:#666;">Reactivate a previously closed account</p>
+    <input id="supervisorReactivateCustId" placeholder="Customer ID to reactivate" onchange="ops.checkName(this.value, 'supervisorReactivateNameDisplay')" />
+    <small id="supervisorReactivateNameDisplay" style="color:var(--success); font-weight:bold;"></small>
+    <button class="success" onclick="ops.reactivateAccount()">Reactivate Account</button>
+  </div>
+
+  <div class="card">
+    <h2>🔍 Customer Search</h2>
+    <p style="font-size:0.9rem; color:#666;">Search customers by name or phone number</p>
+    <input id="supervisorSearchQuery" placeholder="Enter name or phone number..." oninput="ops.searchCustomers()" />
+    <div id="supervisorSearchResults" class="search-results hidden">
+      <!-- Search results will be inserted here -->
+    </div>
+    <small style="display:block; margin-top:10px; color:#666;">Click on a customer to auto-fill their ID in forms</small>
+  </div>
+
+  <div class="card">
+    <h2>📄 Member Statement</h2>
+    <p style="font-size:0.9rem; color:#666;">View transaction history</p>
+    <input id="supervisorStmtCustId" placeholder="Customer ID" />
+    <button class="secondary" onclick="ui.openStatement()">Generate Statement</button>
+  </div>
+
+  <div class="card">
+    <h2>📇 Member Profile</h2>
+    <p style="font-size:0.9rem; color:#666;">View member summary</p>
+    <input id="supervisorProfileCustId" placeholder="Customer ID" />
+    <button class="secondary" onclick="ui.openProfile()">View Profile</button>
+  </div>
+
+  <div class="grid" style="grid-template-columns: 1fr;">
+    <div class="card" style="background: #f8f9fa;">
+      <h3>📊 Supervisor Activity Summary</h3>
+      <div id="supervisorActivityStats">
+        <p style="color:#666;">Activity statistics will appear here after transactions</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- THRIFT COLLECTOR DASHBOARD -->
+<div id="thriftDashboard" class="container hidden thrift-view">
+  <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+    <div>
+      <h1 style="margin:0;">Dashboard (Thrift Collector) <span class="role-badge role-thrift">THRIFT COLLECTOR</span></h1>
+      <p id="thriftWelcomeMsg" style="color:#666; margin:0;"></p>
+      <small id="thriftPermissionsInfo" style="color:var(--primary);"></small>
+    </div>
+    <div class="dashboard-controls" style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="secondary" style="width:auto;" onclick="ui.openChangePasswordModal('thrift')">🔐 Change Password</button>
+      <button class="danger" style="width:auto;" onclick="app.logout()">Logout</button>
+    </div>
+  </div>
+
+  <div id="thriftMemberRegistration" class="card hidden">
+    <h2>👤 Register Member</h2>
+    <input id="thriftNewMemName" placeholder="Full Name" />
+    <input id="thriftNewMemPhone" placeholder="Phone Number" oninput="ops.checkDuplicateWhileTyping()" />
+    <div id="thriftDuplicateWarning" class="duplicate-warning"></div>
+    <button class="secondary" onclick="ui.showMemberConfirmation()">Create Account</button>
+  </div>
+
+  <div id="thriftTransactionPosting" class="card hidden">
+    <h2>💰 Record Transaction</h2>
+    <input id="thriftTransCustId" placeholder="Customer ID (e.g., 101)" onchange="ops.checkName(this.value, 'thriftTransNameDisplay')" />
+    <small id="thriftTransNameDisplay" style="color:var(--primary); font-weight:bold;"></small>
+    <select id="thriftTransType">
+      <option value="DAILY">Daily Savings</option>
+      <option value="WEEKLY">Weekly Savings</option>
+      <option value="MONTHLY">Monthly Savings</option>
+    </select>
+    <input id="thriftTransAmount" type="number" placeholder="Amount (₦)" />
+    <label for="thriftTransValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
+    <input id="thriftTransValueDate" type="date" value="" />
+    <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
+    <button onclick="ui.showTransactionConfirmation()">Submit Transaction</button>
+  </div>
+
+  <div id="thriftWithdrawalProcessing" class="card hidden" style="border-left: 5px solid var(--pink);">
+    <h2>💸 Process Withdrawal</h2>
+    <input id="thriftWithdrawCustId" placeholder="Customer ID" onchange="ops.checkName(this.value, 'thriftWithdrawNameDisplay')" />
+    <small id="thriftWithdrawNameDisplay" style="color:var(--pink); font-weight:bold;"></small>
+    <input id="thriftWithdrawAmount" type="number" placeholder="Amount (₦)" />
+    <label for="thriftWithdrawValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
+    <input id="thriftWithdrawValueDate" type="date" value="" />
+    <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
+    <button class="pink" onclick="ui.showWithdrawalConfirmation()">Process Withdrawal</button>
+  </div>
+
+  <div id="thriftLoanManagement" class="card hidden">
+    <h2>💸 Loan Management</h2>
+    <input id="thriftLoanCustId" placeholder="Customer ID" onchange="ops.checkName(this.value, 'thriftLoanNameDisplay')" />
+    <small id="thriftLoanNameDisplay" style="color:var(--primary); font-weight:bold;"></small>
+    <select id="thriftLoanType">
+      <option value="LOAN">Disburse Loan (Give Out)</option>
+      <option value="LOAN_REPAY">Loan Repayment (Collect)</option>
+    </select>
+    <input id="thriftLoanAmount" type="number" placeholder="Amount (₦)" />
+    <label for="thriftLoanValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
+    <input id="thriftLoanValueDate" type="date" value="" />
+    <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
+    <button class="warning" onclick="ui.showLoanConfirmation()">Process Loan</button>
+  </div>
+
+  <div class="card">
+    <h2>🔍 Customer Search</h2>
+    <p style="font-size:0.9rem; color:#666;">Search customers by name or phone number</p>
+    <input id="thriftSearchQuery" placeholder="Enter name or phone number..." oninput="ops.searchCustomers()" />
+    <div id="thriftSearchResults" class="search-results hidden">
+      <!-- Search results will be inserted here -->
+    </div>
+    <small style="display:block; margin-top:10px; color:#666;">Click on a customer to auto-fill their ID in forms</small>
+  </div>
+
+  <div class="card">
+    <h2>📄 Member Statement</h2>
+    <p style="font-size:0.9rem; color:#666;">View transaction history</p>
+    <input id="thriftStmtCustId" placeholder="Customer ID" />
+    <button class="secondary" onclick="ui.openStatement()">Generate Statement</button>
+  </div>
+
+  <div class="card">
+    <h2>📇 Member Profile</h2>
+    <p style="font-size:0.9rem; color:#666;">View member summary</p>
+    <input id="thriftProfileCustId" placeholder="Customer ID" />
+    <button class="secondary" onclick="ui.openProfile()">View Profile</button>
+  </div>
+
+  <div class="grid" style="grid-template-columns: 1fr;">
+    <div class="card" style="background: #f8f9fa;">
+      <h3>📊 My Activity Summary</h3>
+      <div id="thriftActivityStats">
+        <p style="color:#666;">Activity statistics will appear here after transactions</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Existing Modals (Password, Statement, Profile, Report, Import, Drive) -->
+<div id="passwordModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 400px;">
+    <h2>Change Admin Password</h2>
+    <input id="oldPass" type="password" placeholder="Old Password" />
+    <input id="newPass" type="password" placeholder="New Password" />
+    <button onclick="ops.changePassword()">Update Password</button>
+    <button class="danger" onclick="ui.closeModal('passwordModal')">Cancel</button>
+  </div>
+</div>
+
+<div id="changePasswordModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 400px;">
+    <h2>Change Password</h2>
+    <input id="currentPassword" type="password" placeholder="Current Password" />
+    <input id="newPassword" type="password" placeholder="New Password" />
+    <input id="confirmPassword" type="password" placeholder="Confirm New Password" />
+    <button onclick="ops.changeUserPassword()">Update Password</button>
+    <button class="danger" onclick="ui.closeModal('changePasswordModal')">Cancel</button>
+  </div>
+</div>
+
+<div id="userManagementModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 800px;">
+    <h2>👥 User Management</h2>
+    <p style="color:#666; margin-bottom:20px;">Create and manage thrift collector and supervisor accounts with specific permissions.</p>
+    
+    <div class="user-form-section">
+      <h3>Create New User</h3>
+      <select id="newUserRole" onchange="userManager.showRolePermissions()">
+        <option value="thrift_collector">Thrift Collector</option>
+        <option value="supervisor">Supervisor</option>
+      </select>
+      <input id="newUserName" placeholder="Full Name" />
+      <input id="newUserUsername" placeholder="Username" />
+      <input id="newUserPassword" type="password" placeholder="Temporary Password" />
+      <input id="newUserConfirmPassword" type="password" placeholder="Confirm Password" />
+      
+      <div style="margin: 15px 0;">
+        <h4>Permissions for <span id="roleDisplay">Thrift Collector</span></h4>
+        <div id="thriftPermissions" class="privilege-checkboxes">
+          <div class="checkbox-group">
+            <input type="checkbox" id="permMemberCreation" checked />
+            <label for="permMemberCreation">Member Creation</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="permTransactionPosting" checked />
+            <label for="permTransactionPosting">Transaction Posting</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="permWithdrawal" checked />
+            <label for="permWithdrawal">Withdrawal Processing</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="permLoanManagement" checked />
+            <label for="permLoanManagement">Loan Management</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="permViewStatements" checked />
+            <label for="permViewStatements">View Statements</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="permSearchCustomers" checked />
+            <label for="permSearchCustomers">Search Customers</label>
+          </div>
+        </div>
+        <div id="supervisorPermissions" class="privilege-checkboxes hidden">
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermMemberCreation" checked />
+            <label for="supervisorPermMemberCreation">Member Creation</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermTransactionPosting" checked />
+            <label for="supervisorPermTransactionPosting">Transaction Posting</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermWithdrawal" checked />
+            <label for="supervisorPermWithdrawal">Withdrawal Processing</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermLoanManagement" checked />
+            <label for="supervisorPermLoanManagement">Loan Management</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermAccountClosure" checked />
+            <label for="supervisorPermAccountClosure">Account Closure</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermAccountReactivation" checked />
+            <label for="supervisorPermAccountReactivation">Account Reactivation</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermViewStatements" checked />
+            <label for="supervisorPermViewStatements">View Statements</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermSearchCustomers" checked />
+            <label for="supervisorPermSearchCustomers">Search Customers</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermGenerateReports" checked />
+            <label for="supervisorPermGenerateReports">Generate Reports</label>
+          </div>
+        </div>
+      </div>
+      
+      <button class="success" onclick="userManager.createUser()">Create User</button>
+    </div>
+    
+    <div class="user-management-section">
+      <h3>Existing Users</h3>
+      <div id="userList" class="user-list">
+        <!-- User list will be inserted here -->
+      </div>
+    </div>
+    
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="danger" onclick="ui.closeModal('userManagementModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="statementModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div id="printableStatement">
+      </div>
+    <div class="no-print" style="margin-top:20px; display:flex; gap:10px;">
+      <button onclick="window.print()">🖨️ Print Statement</button>
+      <button class="danger" onclick="ui.closeModal('statementModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="profileModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div id="printableProfile">
+      </div>
+    <div class="no-print" style="margin-top:20px; display:flex; gap:10px;">
+      <button onclick="window.print()">🖨️ Print Profile</button>
+      <button class="danger" onclick="ui.closeModal('profileModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="reportModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div id="printableReport">
+      </div>
+    <div class="no-print" style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+      <button onclick="window.print()">🖨️ Print Report</button>
+      <button class="success" onclick="data.exportReportCSV()">📥 Export as CSV</button>
+      <button class="danger" onclick="ui.closeModal('reportModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="importModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 800px;">
+    <h2>📤 Import & Restore Data</h2>
+    <p style="color:#666; margin-bottom:20px;">Import data from CSV, Excel (XLS/XLSX), or JSON files. You can also restore from a previous backup.</p>
+    
+    <div class="import-export-section">
+      <div>
+        <h3>Select File Type</h3>
+        <div class="file-format-buttons">
+          <button class="secondary" onclick="importData.selectFileType('csv')">CSV File</button>
+          <button class="secondary" onclick="importData.selectFileType('excel')">Excel File</button>
+          <button class="secondary" onclick="importData.selectFileType('json')">JSON Backup</button>
+        </div>
+      </div>
+      
+      <div id="csvOptions" class="hidden">
+        <h3>CSV Import Options</h3>
+        <p>Format: Date, Customer ID, Name, Type, Amount, Status</p>
+        <input type="file" id="csvFileInput" accept=".csv" onchange="importData.handleCSVFile(event)" />
+        <small style="display:block; margin-top:5px; color:#666;">Select a CSV file with transaction data</small>
+      </div>
+      
+      <div id="excelOptions" class="hidden">
+        <h3>Excel Import Options</h3>
+        <p>Supports .xls, .xlsx, .xlsm formats</p>
+        <input type="file" id="excelFileInput" accept=".xls,.xlsx,.xlsm" onchange="importData.handleExcelFile(event)" />
+        <small style="display:block; margin-top:5px; color:#666;">Excel file should have columns: Date, ID, Name, Type, Amount, Status</small>
+      </div>
+      
+      <div id="jsonOptions" class="hidden">
+        <h3>JSON Backup Restore</h3>
+        <p>Restore complete system backup (members, transactions, settings)</p>
+        <input type="file" id="jsonFileInput" accept=".json" onchange="importData.handleJSONFile(event)" />
+        <small style="display:block; margin-top:5px; color:#666;">This will replace ALL current data. Make a backup first!</small>
+      </div>
+      
+      <div id="importPreview" class="hidden">
+        <h3>Import Preview</h3>
+        <div class="preview-table">
+          <table id="previewTable">
+            <!-- Preview data will be inserted here -->
+          </table>
+        </div>
+        <p id="previewStats" style="color:#666;"></p>
+        <div class="progress-bar">
+          <div id="importProgress" class="progress-fill"></div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button class="success" id="confirmImportBtn" onclick="importData.confirmImport()">Confirm Import</button>
+          <button class="danger" onclick="importData.cancelImport()">Cancel</button>
+        </div>
+      </div>
+      
+      <div id="importComplete" class="hidden">
+        <h3 style="color:var(--success);">✅ Import Complete!</h3>
+        <p id="importResults"></p>
+        <button onclick="importData.resetImport()">Import Another File</button>
+        <button class="danger" onclick="ui.closeModal('importModal')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="driveModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 800px;">
+    <h2>💿 Physical Drive Management (F:)</h2>
+    <p style="color:#666; margin-bottom:20px;">Connect to external drives for persistent storage and automated backups.</p>
+    
+    <div id="driveStatus" class="drive-status drive-disconnected">
+      <div style="font-size:24px;">💿</div>
+      <div>
+        <h3 style="margin:0;">Drive Status: <span id="driveStatusText">Not Connected</span></h3>
+        <p style="margin:5px 0 0 0; color:inherit;" id="driveInfo">No external drive connected</p>
+      </div>
+    </div>
+    
+    <div class="import-export-section">
+      <h3>Drive Operations</h3>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
+        <div>
+          <button class="teal" onclick="driveManager.connectDrive()">🔗 Connect to Drive</button>
+          <small style="display:block; margin-top:5px; color:#666;">Connect to external drive (F: or other)</small>
+        </div>
+        
+        <div>
+          <button class="success" onclick="driveManager.backupToDrive()">💾 Backup to Drive</button>
+          <small style="display:block; margin-top:5px; color:#666;">Create backup on connected drive</small>
+        </div>
+        
+        <div>
+          <button class="warning" onclick="driveManager.restoreFromDrive()">🔄 Restore from Drive</button>
+          <small style="display:block; margin-top:5px; color:#666;">Restore data from drive backup</small>
+        </div>
+        
+        <div>
+          <button class="secondary" onclick="driveManager.scheduleAutoBackup()">⏰ Auto-Backup</button>
+          <small style="display:block; margin-top:5px; color:#666;">Schedule automatic backups</small>
+        </div>
+      </div>
+      
+      <div class="backup-history" id="backupHistorySection">
+        <h3>Backup History</h3>
+        <div id="backupHistoryList">
+          <!-- Backup history will be inserted here -->
+        </div>
+      </div>
+      
+      <div style="margin-top:20px; padding:15px; background:#f5f5f5; border-radius:8px;">
+        <h4>📋 Drive Requirements</h4>
+        <ul style="margin:10px 0; padding-left:20px;">
+          <li>Drive must be formatted as FAT32, NTFS, or exFAT</li>
+          <li>Minimum free space: 10MB</li>
+          <li>Backups are stored in: <code>Obata_Backups/</code> folder</li>
+          <li>Auto-backup runs daily at 2:00 AM</li>
+        </ul>
+      </div>
+      
+      <div style="margin-top:20px; display:flex; gap:10px;">
+        <button class="danger" onclick="driveManager.disconnectDrive()">Disconnect Drive</button>
+        <button class="secondary" onclick="ui.closeModal('driveModal')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New Confirmation and Wipe Modals -->
+<div id="memberConfirmationModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 500px;">
+    <h2>👤 Confirm Member Registration</h2>
+    <p style="color:#666;">Please review the member details before creating the account:</p>
+    
+    <div class="confirmation-details">
+      <div class="confirmation-item">
+        <span class="confirmation-label">Full Name:</span>
+        <span class="confirmation-value" id="confirmMemName"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Phone Number:</span>
+        <span class="confirmation-value" id="confirmMemPhone"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Registration Date:</span>
+        <span class="confirmation-value" id="confirmMemDate"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Generated ID:</span>
+        <span class="confirmation-value" id="confirmMemId"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Registered By:</span>
+        <span class="confirmation-value" id="confirmMemBy"></span>
+      </div>
+    </div>
+    
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="success" onclick="ops.registerMember()">✅ Confirm & Create Account</button>
+      <button class="danger" onclick="ui.closeModal('memberConfirmationModal')">✗ Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="transactionConfirmationModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 500px;">
+    <h2>💰 Confirm Transaction</h2>
+    <p style="color:#666;">Please review the transaction details before submitting:</p>
+    
+    <div class="confirmation-details">
+      <div class="confirmation-item">
+        <span class="confirmation-label">Customer:</span>
+        <span class="confirmation-value" id="confirmTransCustomer"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Transaction Type:</span>
+        <span class="confirmation-value" id="confirmTransType"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Amount:</span>
+        <span class="confirmation-value" id="confirmTransAmount"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Value Date:</span>
+        <span class="confirmation-value" id="confirmTransValueDate"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Transaction Date:</span>
+        <span class="confirmation-value" id="confirmTransDate"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Processed By:</span>
+        <span class="confirmation-value" id="confirmTransBy"></span>
+      </div>
+    </div>
+    
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="success" onclick="ops.postTransaction()">✅ Confirm & Submit Transaction</button>
+      <button class="danger" onclick="ui.closeModal('transactionConfirmationModal')">✗ Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="withdrawalConfirmationModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 500px;">
+    <h2>💸 Confirm Withdrawal</h2>
+    <p style="color:#666;">Please review the withdrawal details before processing:</p>
+    
+    <div class="confirmation-details">
+      <div class="confirmation-item">
+        <span class="confirmation-label">Customer:</span>
+        <span class="confirmation-value" id="confirmWithdrawCustomer"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Transaction Type:</span>
+        <span class="confirmation-value" id="confirmWithdrawType">WITHDRAWAL</span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Amount:</span>
+        <span class="confirmation-value" id="confirmWithdrawAmount"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Value Date:</span>
+        <span class="confirmation-value" id="confirmWithdrawValueDate"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Transaction Date:</span>
+        <span class="confirmation-value" id="confirmWithdrawDate"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Processed By:</span>
+        <span class="confirmation-value" id="confirmWithdrawBy"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Available Balance:</span>
+        <span class="confirmation-value" id="confirmWithdrawBalance"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">New Balance:</span>
+        <span class="confirmation-value" id="confirmWithdrawNewBalance"></span>
+      </div>
+    </div>
+    
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="pink" onclick="ops.postWithdrawal()">✅ Confirm & Process Withdrawal</button>
+      <button class="danger" onclick="ui.closeModal('withdrawalConfirmationModal')">✗ Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="loanConfirmationModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 500px;">
+    <h2>💸 Confirm Loan Transaction</h2>
+    <p style="color:#666;">Please review the loan details before processing:</p>
+    
+    <div class="confirmation-details">
+      <div class="confirmation-item">
+        <span class="confirmation-label">Customer:</span>
+        <span class="confirmation-value" id="confirmLoanCustomer"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Transaction Type:</span>
+        <span class="confirmation-value" id="confirmLoanType"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Amount:</span>
+        <span class="confirmation-value" id="confirmLoanAmount"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Value Date:</span>
+        <span class="confirmation-value" id="confirmLoanValueDate"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Transaction Date:</span>
+        <span class="confirmation-value" id="confirmLoanDate"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Processed By:</span>
+        <span class="confirmation-value" id="confirmLoanBy"></span>
+      </div>
+    </div>
+    
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="success" onclick="ops.postLoan()">✅ Confirm & Process Loan</button>
+      <button class="danger" onclick="ui.closeModal('loanConfirmationModal')">✗ Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="wipeModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 600px;">
+    <h2 style="color: var(--danger);">⚠️ Wipe All System Data</h2>
+    
+    <div class="wipe-warning">
+      <h3>🚨 EXTREME CAUTION REQUIRED</h3>
+      <p>This action will <strong>permanently delete ALL data</strong> from the system including:</p>
+      <ul style="margin: 10px 0 10px 20px;">
+        <li>All customer records</li>
+        <li>All transaction history</li>
+        <li>All loan records</li>
+        <li>System settings and backups</li>
+        <li>All user accounts</li>
+      </ul>
+      <p><strong>This action cannot be undone!</strong> Make sure you have a backup before proceeding.</p>
+    </div>
+    
+    <div style="margin: 20px 0;">
+      <p><strong>To confirm data wipe, please re-enter your login credentials:</strong></p>
+      <input id="wipeUsername" placeholder="Username" />
+      <input id="wipePassword" type="password" placeholder="Password" />
+      
+      <div style="margin-top: 15px;">
+        <input type="checkbox" id="wipeConfirmCheckbox" />
+        <label for="wipeConfirmCheckbox" style="margin-left: 5px;">
+          I understand this will delete ALL data permanently and I have made a backup
+        </label>
+      </div>
+      
+      <div style="margin-top: 15px;">
+        <input type="text" id="wipeConfirmText" placeholder="Type 'DELETE ALL DATA' to confirm" />
+      </div>
+    </div>
+    
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="danger" onclick="ops.wipeAllData()">🗑️ Wipe All Data</button>
+      <button class="secondary" onclick="ui.closeModal('wipeModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/**
+ * APP LOGIC
+ * Handles Data, Auth, and Operations
+ */
+
+// Safe JSON parse function to handle corrupted localStorage data
+function safeParse(jsonString, defaultValue) {
+  if (jsonString === null || jsonString === undefined) {
+    return defaultValue;
+  }
+  try {
+    return JSON.parse(jsonString);
+  } catch (e) {
+    console.error('Error parsing JSON:', e);
+    return defaultValue;
+  }
+}
+
+// 1. Data Store Initialization
+const db = {
+  auth: safeParse(localStorage.getItem('obata_auth'), { 
+    user: 'Admin', 
+    pass: 'admin123',
+    role: 'admin',
+    name: 'Administrator'
+  }),
+  members: safeParse(localStorage.getItem('obata_members'), {}),
+  ledger: safeParse(localStorage.getItem('obata_ledger'), []),
+  lastId: parseInt(localStorage.getItem('obata_last_id')) || 100,
+  users: safeParse(localStorage.getItem('obata_users'), []),
+  settings: safeParse(localStorage.getItem('obata_settings'), {
+    autoBackup: false,
+    backupTime: "02:00",
+    driveConnected: false,
+    drivePath: null,
+    lastBackup: null,
+    backupHistory: []
+  })
+};
+
+// Initialize active status for existing members
+Object.keys(db.members).forEach(id => {
+  if (db.members[id].active === undefined) {
+    db.members[id].active = true;
+  }
+});
+
+// Initialize users if empty (add default admin)
+if (db.users.length === 0) {
+  db.users.push({
+    id: 1,
+    username: 'Admin',
+    password: 'admin123',
+    name: 'Administrator',
+    role: 'admin',
+    permissions: {
+      memberCreation: true,
+      transactionPosting: true,
+      withdrawal: true,
+      loanManagement: true,
+      accountClosure: true,
+      accountReactivation: true,
+      viewStatements: true,
+      searchCustomers: true,
+      generateReports: true,
+      manageUsers: true,
+      importExport: true,
+      systemSettings: true,
+      driveManagement: true
+    },
+    created: new Date().toISOString(),
+    lastLogin: null
+  });
+}
+
+// 2. Data Persistence Helper
+const data = {
+  save: () => {
+    localStorage.setItem('obata_auth', JSON.stringify(db.auth));
+    localStorage.setItem('obata_members', JSON.stringify(db.members));
+    localStorage.setItem('obata_ledger', JSON.stringify(db.ledger));
+    localStorage.setItem('obata_last_id', db.lastId);
+    localStorage.setItem('obata_users', JSON.stringify(db.users));
+    localStorage.setItem('obata_settings', JSON.stringify(db.settings));
+    app.updateDashboard();
+  },
+  
+  exportCSV: () => {
+    let csv = "Date,Value Date,ID,Name,Type,Amount,Status,Processed By\n";
+    db.ledger.forEach(l => {
+      const name = db.members[l.cust] ? db.members[l.cust].name : 'Unknown';
+      csv += `${l.date},${l.valueDate || l.date},${l.cust},"${name}",${l.type},${l.amount},${l.reversed ? 'REVERSED' : 'OK'},${l.processedBy || 'System'}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Obata_Backup_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  },
+
+  exportFullBackup: async () => {
+    const backup = {
+      version: "2.3",
+      exportDate: new Date().toISOString(),
+      data: {
+        auth: db.auth,
+        members: db.members,
+        ledger: db.ledger,
+        lastId: db.lastId,
+        users: db.users,
+        settings: db.settings
+      }
+    };
+    
+    const backupStr = JSON.stringify(backup, null, 2);
+    const fileName = `Obata_Full_Backup_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    
+    if (driveManager.driveHandle) {
+      try {
+        // Save to actual drive using File System Access API
+        const fileHandle = await driveManager.driveHandle.getFileHandle(fileName, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(backupStr);
+        await writable.close();
+        
+        // Also create a CSV backup
+        data.exportCSV(); // This will trigger download as fallback
+      } catch (error) {
+        console.error('Error saving to drive:', error);
+        // Fallback to download
+        const blob = new Blob([backupStr], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+      }
+    } else {
+      // Fallback: Download as file
+      const blob = new Blob([backupStr], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+    }
+    
+    // Update backup history
+    db.settings.lastBackup = new Date().toISOString();
+    db.settings.backupHistory.unshift({
+      date: new Date().toISOString(),
+      type: 'manual',
+      fileName: fileName,
+      members: Object.keys(db.members).length,
+      transactions: db.ledger.length,
+      users: db.users.length
+    });
+    
+    // Keep only last 20 backups
+    if (db.settings.backupHistory.length > 20) {
+      db.settings.backupHistory = db.settings.backupHistory.slice(0, 20);
+    }
+    
+    data.save();
+    if (driveManager.loadBackupHistory) {
+      driveManager.loadBackupHistory();
+    }
+    alert(`✅ Backup created successfully!\nFile: ${fileName}`);
+  },
+
+  exportReportCSV: () => {
+    let csv = "OBATA SMART SAVINGS - SYSTEM REPORT\n";
+    csv += `Generated: ${new Date().toLocaleString()}\n\n`;
+    
+    // Customer Summary
+    csv += "CUSTOMER SUMMARY\n";
+    csv += "ID,Name,Phone,Status,Join Date,Closure Date,Closure Reason\n";
+    Object.keys(db.members).forEach(id => {
+      const mem = db.members[id];
+      csv += `${id},"${mem.name}",${mem.phone},${mem.active ? 'Active' : 'Inactive'},${mem.date},${mem.closureDate || 'N/A'},"${mem.closureReason || 'N/A'}"\n`;
+    });
+    
+    csv += "\n\nFINANCIAL SUMMARY\n";
+    csv += "Total Savings,Total Loans,Vault Cash,Active Customers,Inactive Customers\n";
+    
+    let totalSav = 0;
+    let totalLoanOut = 0;
+    let activeCustomers = 0;
+    let inactiveCustomers = 0;
+    
+    Object.keys(db.members).forEach(id => {
+      const bal = ops.calcBalance(id);
+      totalSav += bal.savings;
+      totalLoanOut += bal.loan;
+      if (db.members[id].active) activeCustomers++;
+      else inactiveCustomers++;
+    });
+    
+    const vault = totalSav - totalLoanOut;
+    
+    csv += `${ops.fmt(totalSav).replace('₦', '')},${ops.fmt(totalLoanOut).replace('₦', '')},${ops.fmt(vault).replace('₦', '')},${activeCustomers},${inactiveCustomers}\n`;
+    
+    csv += "\n\nUSER SUMMARY\n";
+    csv += "ID,Username,Name,Role,Permissions,Last Login\n";
+    db.users.forEach(user => {
+      csv += `${user.id},${user.username},"${user.name}",${user.role},"${Object.keys(user.permissions || {}).filter(p => user.permissions[p]).join(', ')}",${user.lastLogin || 'Never'}\n`;
+    });
+    
+    csv += "\n\nTRANSACTION SUMMARY (Last 100)\n";
+    csv += "Date,Value Date,ID,Name,Type,Amount,Status,Processed By\n";
+    
+    // Get last 100 transactions
+    const recentTxs = [...db.ledger].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 100);
+    recentTxs.forEach(l => {
+      const name = db.members[l.cust] ? db.members[l.cust].name : 'Unknown';
+      csv += `${l.date},${l.valueDate || l.date},${l.cust},"${name}",${l.type},${l.amount},${l.reversed ? 'REVERSED' : 'OK'},${l.processedBy || 'System'}\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Obata_Report_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  },
+
+  wipeAllData: () => {
+    // Clear all localStorage items
+    localStorage.removeItem('obata_auth');
+    localStorage.removeItem('obata_members');
+    localStorage.removeItem('obata_ledger');
+    localStorage.removeItem('obata_last_id');
+    localStorage.removeItem('obata_users');
+    localStorage.removeItem('obata_settings');
+    
+    // Reset in-memory data
+    db.auth = { 
+      user: 'Admin', 
+      pass: 'admin123',
+      role: 'admin',
+      name: 'Administrator'
+    };
+    db.members = {};
+    db.ledger = [];
+    db.lastId = 100;
+    db.users = [{
+      id: 1,
+      username: 'Admin',
+      password: 'admin123',
+      name: 'Administrator',
+      role: 'admin',
+      permissions: {
+        memberCreation: true,
+        transactionPosting: true,
+        withdrawal: true,
+        loanManagement: true,
+        accountClosure: true,
+        accountReactivation: true,
+        viewStatements: true,
+        searchCustomers: true,
+        generateReports: true,
+        manageUsers: true,
+        importExport: true,
+        systemSettings: true,
+        driveManagement: true
+      },
+      created: new Date().toISOString(),
+      lastLogin: null
+    }];
+    db.settings = {
+      autoBackup: false,
+      backupTime: "02:00",
+      driveConnected: false,
+      drivePath: null,
+      lastBackup: null,
+      backupHistory: []
+    };
+    
+    alert("✅ All data has been wiped clean!\n\nSystem has been reset to factory defaults.\n\nDefault login: Admin/admin123");
+    location.reload();
+  }
+};
+
+// 3. User Management System
+const userManager = {
+  getNextUserId: () => {
+    if (db.users.length === 0) return 1;
+    return Math.max(...db.users.map(u => u.id)) + 1;
+  },
+
+  showRolePermissions: () => {
+    const role = document.getElementById('newUserRole').value;
+    document.getElementById('roleDisplay').textContent = role === 'supervisor' ? 'Supervisor' : 'Thrift Collector';
+    
+    if (role === 'supervisor') {
+      document.getElementById('thriftPermissions').classList.add('hidden');
+      document.getElementById('supervisorPermissions').classList.remove('hidden');
+    } else {
+      document.getElementById('thriftPermissions').classList.remove('hidden');
+      document.getElementById('supervisorPermissions').classList.add('hidden');
+    }
+  },
+
+  createUser: () => {
+    const role = document.getElementById('newUserRole').value;
+    const name = document.getElementById('newUserName').value.trim();
+    const username = document.getElementById('newUserUsername').value.trim();
+    const password = document.getElementById('newUserPassword').value;
+    const confirmPassword = document.getElementById('newUserConfirmPassword').value;
+    
+    // Validation
+    if (!name || !username || !password) {
+      alert("Please fill in all required fields");
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+    
+    if (password.length < 4) {
+      alert("Password must be at least 4 characters");
+      return;
+    }
+    
+    // Check if username already exists
+    if (db.users.some(u => u.username === username)) {
+      alert("Username already exists");
+      return;
+    }
+    
+    // Get permissions based on role
+    let permissions = {};
+    
+    if (role === 'thrift_collector') {
+      permissions = {
+        memberCreation: document.getElementById('permMemberCreation').checked,
+        transactionPosting: document.getElementById('permTransactionPosting').checked,
+        withdrawal: document.getElementById('permWithdrawal').checked,
+        loanManagement: document.getElementById('permLoanManagement').checked,
+        viewStatements: document.getElementById('permViewStatements').checked,
+        searchCustomers: document.getElementById('permSearchCustomers').checked,
+        accountClosure: false,
+        accountReactivation: false,
+        generateReports: false,
+        manageUsers: false,
+        importExport: false,
+        systemSettings: false,
+        driveManagement: false
+      };
+    } else if (role === 'supervisor') {
+      permissions = {
+        memberCreation: document.getElementById('supervisorPermMemberCreation').checked,
+        transactionPosting: document.getElementById('supervisorPermTransactionPosting').checked,
+        withdrawal: document.getElementById('supervisorPermWithdrawal').checked,
+        loanManagement: document.getElementById('supervisorPermLoanManagement').checked,
+        accountClosure: document.getElementById('supervisorPermAccountClosure').checked,
+        accountReactivation: document.getElementById('supervisorPermAccountReactivation').checked,
+        viewStatements: document.getElementById('supervisorPermViewStatements').checked,
+        searchCustomers: document.getElementById('supervisorPermSearchCustomers').checked,
+        generateReports: document.getElementById('supervisorPermGenerateReports').checked,
+        manageUsers: false,
+        importExport: false,
+        systemSettings: false,
+        driveManagement: false
+      };
+    }
+    
+    // Create user
+    const newUser = {
+      id: userManager.getNextUserId(),
+      username: username,
+      password: password,
+      name: name,
+      role: role,
+      permissions: permissions,
+      created: new Date().toISOString(),
+      createdBy: db.auth.user,
+      lastLogin: null,
+      active: true
+    };
+    
+    db.users.push(newUser);
+    data.save();
+    
+    // Clear form
+    document.getElementById('newUserName').value = '';
+    document.getElementById('newUserUsername').value = '';
+    document.getElementById('newUserPassword').value = '';
+    document.getElementById('newUserConfirmPassword').value = '';
+    
+    // Reset checkboxes
+    document.getElementById('permMemberCreation').checked = true;
+    document.getElementById('permTransactionPosting').checked = true;
+    document.getElementById('permWithdrawal').checked = true;
+    document.getElementById('permLoanManagement').checked = true;
+    document.getElementById('permViewStatements').checked = true;
+    document.getElementById('permSearchCustomers').checked = true;
+    
+    document.getElementById('supervisorPermMemberCreation').checked = true;
+    document.getElementById('supervisorPermTransactionPosting').checked = true;
+    document.getElementById('supervisorPermWithdrawal').checked = true;
+    document.getElementById('supervisorPermLoanManagement').checked = true;
+    document.getElementById('supervisorPermAccountClosure').checked = true;
+    document.getElementById('supervisorPermAccountReactivation').checked = true;
+    document.getElementById('supervisorPermViewStatements').checked = true;
+    document.getElementById('supervisorPermSearchCustomers').checked = true;
+    document.getElementById('supervisorPermGenerateReports').checked = true;
+    
+    // Update user list
+    userManager.loadUserList();
+    
+    alert(`✅ ${role === 'supervisor' ? 'Supervisor' : 'Thrift collector'} "${name}" created successfully!\nUsername: ${username}\nTemporary Password: ${password}`);
+  },
+
+  updateUserPermissions: (userId, permissions) => {
+    const user = db.users.find(u => u.id === userId);
+    if (user && user.role !== 'admin') {
+      user.permissions = { ...user.permissions, ...permissions };
+      data.save();
+      userManager.loadUserList();
+      return true;
+    }
+    return false;
+  },
+
+  deleteUser: (userId) => {
+    if (userId === 1) {
+      alert("Cannot delete the main administrator account");
+      return;
+    }
+    
+    const user = db.users.find(u => u.id === userId);
+    if (!user) return;
+    
+    if (!confirm(`Are you sure you want to delete user "${user.name}" (${user.username})?`)) {
+      return;
+    }
+    
+    db.users = db.users.filter(u => u.id !== userId);
+    data.save();
+    userManager.loadUserList();
+    alert(`User "${user.name}" deleted successfully`);
+  },
+
+  resetUserPassword: (userId) => {
+    const user = db.users.find(u => u.id === userId);
+    if (!user) return;
+    
+    const newPassword = prompt(`Enter new password for ${user.name}:`, user.role === 'supervisor' ? `supervisor${userId}` : `thrift${userId}`);
+    if (!newPassword || newPassword.length < 4) {
+      alert("Password must be at least 4 characters");
+      return;
+    }
+    
+    user.password = newPassword;
+    data.save();
+    alert(`Password for "${user.name}" has been reset to: ${newPassword}`);
+  },
+
+  toggleUserStatus: (userId) => {
+    const user = db.users.find(u => u.id === userId);
+    if (!user || user.role === 'admin') return;
+    
+    user.active = !user.active;
+    data.save();
+    userManager.loadUserList();
+    alert(`User "${user.name}" is now ${user.active ? 'active' : 'inactive'}`);
+  },
+
+  loadUserList: () => {
+    const userList = document.getElementById('userList');
+    if (!userList) return;
+    
+    let html = '';
+    
+    db.users.forEach(user => {
+      const isAdmin = user.role === 'admin';
+      const isSupervisor = user.role === 'supervisor';
+      const isThrift = user.role === 'thrift_collector';
+      
+      const roleColors = {
+        'admin': 'role-admin',
+        'supervisor': 'role-supervisor',
+        'thrift_collector': 'role-thrift'
+      };
+      
+      const roleNames = {
+        'admin': 'ADMIN',
+        'supervisor': 'SUPERVISOR',
+        'thrift_collector': 'THRIFT COLLECTOR'
+      };
+      
+      const permissions = Object.keys(user.permissions || {})
+        .filter(p => user.permissions[p])
+        .map(p => {
+          const displayNames = {
+            memberCreation: 'Create Members',
+            transactionPosting: 'Post Transactions',
+            withdrawal: 'Process Withdrawals',
+            loanManagement: 'Manage Loans',
+            accountClosure: 'Close Accounts',
+            accountReactivation: 'Reactivate Accounts',
+            viewStatements: 'View Statements',
+            searchCustomers: 'Search Customers',
+            generateReports: 'Generate Reports',
+            manageUsers: 'Manage Users',
+            importExport: 'Import/Export',
+            systemSettings: 'System Settings',
+            driveManagement: 'Drive Management'
+          };
+          return `<span class="permission-badge ${user.active ? '' : 'inactive'}">${displayNames[p] || p}</span>`;
+        }).join('');
+      
+      html += `
+        <div class="user-item ${!user.active ? 'inactive-member' : ''}">
+          <div class="user-info">
+            <div class="user-name">
+              ${user.name} 
+              <span style="font-size:0.8rem; color:#666;">(${user.username})</span>
+              ${!user.active ? '<span class="inactive-badge">INACTIVE</span>' : ''}
+              <span class="role-badge ${roleColors[user.role] || 'role-admin'}" style="margin-left:8px;">
+                ${roleNames[user.role] || user.role.toUpperCase()}
+              </span>
+            </div>
+            <div class="user-role">
+              Created: ${new Date(user.created).toLocaleDateString()} 
+              ${user.createdBy ? `by ${user.createdBy}` : ''}
+              ${user.lastLogin ? ` | Last login: ${new Date(user.lastLogin).toLocaleString()}` : ' | Never logged in'}
+            </div>
+            <div class="user-permissions">
+              ${permissions}
+            </div>
+          </div>
+          <div class="user-actions">
+            ${!isAdmin ? `
+              <button class="secondary" onclick="userManager.editUserPermissions(${user.id})" style="width:auto;">Edit Permissions</button>
+              <button class="warning" onclick="userManager.resetUserPassword(${user.id})" style="width:auto;">Reset Password</button>
+              <button class="${user.active ? 'danger' : 'success'}" onclick="userManager.toggleUserStatus(${user.id})" style="width:auto;">
+                ${user.active ? 'Deactivate' : 'Activate'}
+              </button>
+              <button class="danger" onclick="userManager.deleteUser(${user.id})" style="width:auto;">Delete</button>
+            ` : '<span style="color:#666; padding:8px;">Admin Account</span>'}
+          </div>
+        </div>
+      `;
+    });
+    
+    userList.innerHTML = html || '<p style="padding:20px; text-align:center; color:#666;">No users found</p>';
+  },
+
+  editUserPermissions: (userId) => {
+    const user = db.users.find(u => u.id === userId);
+    if (!user || user.role === 'admin') return;
+    
+    const isSupervisor = user.role === 'supervisor';
+    const permissionNames = isSupervisor ? {
+      memberCreation: 'Create Members',
+      transactionPosting: 'Post Transactions',
+      withdrawal: 'Process Withdrawals',
+      loanManagement: 'Manage Loans',
+      accountClosure: 'Close Accounts',
+      accountReactivation: 'Reactivate Accounts',
+      viewStatements: 'View Statements',
+      searchCustomers: 'Search Customers',
+      generateReports: 'Generate Reports'
+    } : {
+      memberCreation: 'Create Members',
+      transactionPosting: 'Post Transactions',
+      withdrawal: 'Process Withdrawals',
+      loanManagement: 'Manage Loans',
+      viewStatements: 'View Statements',
+      searchCustomers: 'Search Customers'
+    };
+    
+    let html = `<h3>Edit Permissions for ${user.name} (${user.role})</h3>`;
+    html += `<div class="privilege-checkboxes">`;
+    
+    Object.keys(permissionNames).forEach(perm => {
+      html += `
+        <div class="checkbox-group">
+          <input type="checkbox" id="edit_${perm}" ${user.permissions[perm] ? 'checked' : ''} />
+          <label for="edit_${perm}">${permissionNames[perm]}</label>
+        </div>
+      `;
+    });
+    
+    html += `</div>`;
+    html += `<button class="success" onclick="userManager.saveUserPermissions(${userId})">Save Changes</button>`;
+    html += `<button class="danger" onclick="userManager.loadUserList()">Cancel</button>`;
+    
+    document.getElementById('userList').innerHTML = `<div style="padding:20px;">${html}</div>`;
+  },
+
+  saveUserPermissions: (userId) => {
+    const user = db.users.find(u => u.id === userId);
+    if (!user) return;
+    
+    const isSupervisor = user.role === 'supervisor';
+    let permissions = {};
+    
+    if (isSupervisor) {
+      permissions = {
+        memberCreation: document.getElementById('edit_memberCreation').checked,
+        transactionPosting: document.getElementById('edit_transactionPosting').checked,
+        withdrawal: document.getElementById('edit_withdrawal').checked,
+        loanManagement: document.getElementById('edit_loanManagement').checked,
+        accountClosure: document.getElementById('edit_accountClosure').checked,
+        accountReactivation: document.getElementById('edit_accountReactivation').checked,
+        viewStatements: document.getElementById('edit_viewStatements').checked,
+        searchCustomers: document.getElementById('edit_searchCustomers').checked,
+        generateReports: document.getElementById('edit_generateReports').checked,
+        manageUsers: false,
+        importExport: false,
+        systemSettings: false,
+        driveManagement: false
+      };
+    } else {
+      permissions = {
+        memberCreation: document.getElementById('edit_memberCreation').checked,
+        transactionPosting: document.getElementById('edit_transactionPosting').checked,
+        withdrawal: document.getElementById('edit_withdrawal').checked,
+        loanManagement: document.getElementById('edit_loanManagement').checked,
+        viewStatements: document.getElementById('edit_viewStatements').checked,
+        searchCustomers: document.getElementById('edit_searchCustomers').checked,
+        accountClosure: false,
+        accountReactivation: false,
+        generateReports: false,
+        manageUsers: false,
+        importExport: false,
+        systemSettings: false,
+        driveManagement: false
+      };
+    }
+    
+    user.permissions = permissions;
+    data.save();
+    userManager.loadUserList();
+    alert(`Permissions updated for ${user.name}`);
+  },
+
+  authenticateUser: (username, password) => {
+    const user = db.users.find(u => 
+      u.username.toLowerCase() === username.toLowerCase() && 
+      u.password === password &&
+      u.active !== false
+    );
+    
+    if (user) {
+      // Update last login
+      user.lastLogin = new Date().toISOString();
+      data.save();
+      
+      // Set current auth
+      db.auth = {
+        user: user.username,
+        pass: user.password,
+        role: user.role,
+        name: user.name,
+        permissions: user.permissions,
+        userId: user.id
+      };
+      
+      return user;
+    }
+    
+    return null;
+  },
+
+  updateUserPassword: (userId, currentPassword, newPassword) => {
+    const user = db.users.find(u => u.id === userId);
+    if (!user) return { success: false, message: "User not found" };
+    
+    if (user.password !== currentPassword) {
+      return { success: false, message: "Current password is incorrect" };
+    }
+    
+    if (newPassword.length < 4) {
+      return { success: false, message: "New password must be at least 4 characters" };
+    }
+    
+    user.password = newPassword;
+    
+    // Update current auth if it's the logged-in user
+    if (db.auth.userId === userId) {
+      db.auth.pass = newPassword;
+    }
+    
+    data.save();
+    return { success: true, message: "Password updated successfully" };
+  },
+
+  getCurrentUserActivity: (userId) => {
+    const user = db.users.find(u => u.id === userId);
+    if (!user) return { transactions: 0, members: 0, loans: 0, withdrawals: 0 };
+    
+    // Count transactions processed by this user in the last 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const userTransactions = db.ledger.filter(tx => 
+      tx.processedBy === user.username && 
+      new Date(tx.date) >= thirtyDaysAgo
+    );
+    
+    const userMembers = Object.values(db.members).filter(mem => 
+      mem.createdBy === user.username
+    );
+    
+    return {
+      transactions: userTransactions.length,
+      members: userMembers.length,
+      loans: userTransactions.filter(tx => tx.type === 'LOAN' || tx.type === 'LOAN_REPAY').length,
+      withdrawals: userTransactions.filter(tx => tx.type === 'WITHDRAWAL').length,
+      savings: userTransactions.filter(tx => ['DAILY', 'WEEKLY', 'MONTHLY'].includes(tx.type)).length
+    };
+  }
+};
+
+// 4. Import/Export Manager
+const importData = {
+  currentFileType: null,
+  fileData: null,
+  importType: null,
+  
+  selectFileType: (type) => {
+    importData.currentFileType = type;
+    importData.resetImportUI();
+    
+    // Show appropriate options
+    document.getElementById('csvOptions').classList.add('hidden');
+    document.getElementById('excelOptions').classList.add('hidden');
+    document.getElementById('jsonOptions').classList.add('hidden');
+    
+    if (type === 'csv') {
+      document.getElementById('csvOptions').classList.remove('hidden');
+    } else if (type === 'excel') {
+      document.getElementById('excelOptions').classList.remove('hidden');
+    } else if (type === 'json') {
+      document.getElementById('jsonOptions').classList.remove('hidden');
+    }
+  },
+  
+  resetImportUI: () => {
+    document.getElementById('importPreview').classList.add('hidden');
+    document.getElementById('importComplete').classList.add('hidden');
+    document.getElementById('csvFileInput').value = '';
+    document.getElementById('excelFileInput').value = '';
+    document.getElementById('jsonFileInput').value = '';
+  },
+  
+  handleCSVFile: (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target.result;
+      importData.parseCSV(content);
+    };
+    reader.readAsText(file);
+  },
+  
+  handleExcelFile: (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      
+      // Get first sheet
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      
+      // Convert to CSV
+      const csv = XLSX.utils.sheet_to_csv(worksheet);
+      importData.parseCSV(csv);
+    };
+    reader.readAsArrayBuffer(file);
+  },
+  
+  handleJSONFile: (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const backup = safeParse(e.target.result, null);
+        if (backup) {
+          importData.previewJSONBackup(backup);
+        } else {
+          alert("Invalid JSON file format");
+        }
+      } catch (error) {
+        alert("Invalid JSON file: " + error.message);
+      }
+    };
+    reader.readAsText(file);
+  },
+  
+  parseCSV: (csvContent) => {
+    const lines = csvContent.split('\n');
+    const transactions = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      
+      // Simple CSV parsing (handle quoted fields)
+      const parts = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
+      if (parts && parts.length >= 5) {
+        const tx = {
+          date: parts[0].replace(/"/g, ''),
+          valueDate: parts[1] ? parts[1].replace(/"/g, '') : parts[0].replace(/"/g, ''),
+          cust: parts[2].replace(/"/g, ''),
+          name: parts[3].replace(/"/g, ''),
+          type: parts[4].replace(/"/g, ''),
+          amount: parseFloat(parts[5].replace(/"/g, '')) || 0,
+          status: parts[6] ? parts[6].replace(/"/g, '') : 'OK',
+          processedBy: parts[7] ? parts[7].replace(/"/g, '') : 'Imported'
+        };
+        if (tx.cust && tx.type && tx.amount) {
+          transactions.push(tx);
+        }
+      }
+    }
+    
+    importData.fileData = transactions;
+    importData.importType = 'transactions';
+    importData.showPreview(transactions);
+  },
+  
+  previewJSONBackup: (backup) => {
+    importData.fileData = backup;
+    importData.importType = 'full_backup';
+    
+    let html = `
+      <div style="padding:20px; text-align:center;">
+        <h3>Full System Backup Detected</h3>
+        <p><strong>Version:</strong> ${backup.version || 'Unknown'}</p>
+        <p><strong>Export Date:</strong> ${backup.exportDate ? new Date(backup.exportDate).toLocaleString() : 'Unknown'}</p>
+        <p><strong>Members:</strong> ${backup.data ? Object.keys(backup.data.members || {}).length : 0}</p>
+        <p><strong>Transactions:</strong> ${backup.data ? (backup.data.ledger || []).length : 0}</p>
+        <p><strong>Users:</strong> ${backup.data ? (backup.data.users || []).length : 0}</p>
+        <p style="color:var(--warning); font-weight:bold;">⚠️ This will replace ALL current data!</p>
+      </div>
+    `;
+    
+    document.getElementById('previewTable').innerHTML = html;
+    document.getElementById('previewStats').innerHTML = `Full backup with ${backup.data ? Object.keys(backup.data.members || {}).length : 0} members, ${backup.data ? (backup.data.ledger || []).length : 0} transactions, and ${backup.data ? (backup.data.users || []).length : 0} users`;
+    document.getElementById('importPreview').classList.remove('hidden');
+  },
+  
+  showPreview: (transactions) => {
+    let html = `
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Value Date</th>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Processed By</th>
+        </tr>
+      </thead>
+      <tbody>
+    `;
+    
+    // Show first 10 rows for preview
+    const previewRows = transactions.slice(0, 10);
+    previewRows.forEach(tx => {
+      html += `
+        <tr>
+          <td>${tx.date}</td>
+          <td>${tx.valueDate}</td>
+          <td>${tx.cust}</td>
+          <td>${tx.name}</td>
+          <td>${tx.type}</td>
+          <td>${ops.fmt(tx.amount)}</td>
+          <td>${tx.status}</td>
+          <td>${tx.processedBy}</td>
+        </tr>
+      `;
+    });
+    
+    if (transactions.length > 10) {
+      html += `
+        <tr>
+          <td colspan="8" style="text-align:center; color:#666;">
+            ... and ${transactions.length - 10} more rows
+          </td>
+        </tr>
+      `;
+    }
+    
+    html += '</tbody>';
+    document.getElementById('previewTable').innerHTML = html;
+    document.getElementById('previewStats').innerHTML = `Found ${transactions.length} transactions to import`;
+    document.getElementById('importPreview').classList.remove('hidden');
+  },
+  
+  confirmImport: () => {
+    if (!importData.fileData) return;
+    
+    if (importData.importType === 'full_backup') {
+      if (!confirm("WARNING: This will replace ALL current data. Are you sure?")) {
+        return;
+      }
+      
+      // Restore full backup
+      const backup = importData.fileData;
+      if (backup.data) {
+        db.auth = backup.data.auth || db.auth;
+        db.members = backup.data.members || {};
+        db.ledger = backup.data.ledger || [];
+        db.lastId = backup.data.lastId || db.lastId;
+        db.users = backup.data.users || db.users;
+        db.settings = backup.data.settings || db.settings;
+        
+        data.save();
+        app.updateDashboard();
+        
+        document.getElementById('importResults').innerHTML = `
+          ✅ Full backup restored successfully!<br>
+          • Members: ${Object.keys(db.members).length}<br>
+          • Transactions: ${db.ledger.length}<br>
+          • Users: ${db.users.length}<br>
+          • Last ID: ${db.lastId}
+        `;
+      }
+    } else if (importData.importType === 'transactions') {
+      const transactions = importData.fileData;
+      let imported = 0;
+      let skipped = 0;
+      
+      // Show progress
+      const progressBar = document.getElementById('importProgress');
+      progressBar.style.width = '0%';
+      
+      transactions.forEach((tx, index) => {
+        setTimeout(() => {
+          // Check if member exists
+          if (!db.members[tx.cust]) {
+            // Create member if doesn't exist
+            db.members[tx.cust] = {
+              name: tx.name,
+              phone: 'Imported',
+              date: new Date().toLocaleDateString(),
+              active: true,
+              imported: true
+            };
+          }
+          
+          // Add transaction to ledger
+          db.ledger.push({
+            txId: Date.now() + index,
+            cust: tx.cust,
+            type: tx.type,
+            amount: tx.amount,
+            date: tx.date || new Date().toLocaleString(),
+            valueDate: tx.valueDate || tx.date || new Date().toLocaleString(),
+            reversed: tx.status === 'REVERSED',
+            imported: true,
+            processedBy: tx.processedBy || 'Imported'
+          });
+          
+          imported++;
+          
+          // Update progress
+          const progress = Math.round((index + 1) / transactions.length * 100);
+          progressBar.style.width = progress + '%';
+          
+          // If last transaction, save and show results
+          if (index === transactions.length - 1) {
+            data.save();
+            app.updateDashboard();
+            
+            document.getElementById('importResults').innerHTML = `
+              ✅ Import completed successfully!<br>
+              • Transactions imported: ${imported}<br>
+              • Transactions skipped: ${skipped}<br>
+              • Total transactions in system: ${db.ledger.length}
+            `;
+          }
+        }, 10); // Small delay for visual effect
+      });
+    }
+    
+    document.getElementById('importPreview').classList.add('hidden');
+    document.getElementById('importComplete').classList.remove('hidden');
+  },
+  
+  cancelImport: () => {
+    importData.resetImportUI();
+    importData.fileData = null;
+    importData.importType = null;
+  },
+  
+  resetImport: () => {
+    importData.resetImportUI();
+    importData.fileData = null;
+    importData.importType = null;
+    importData.currentFileType = null;
+  }
+};
+
+// 5. Drive Manager for Physical Storage
+const driveManager = {
+  isConnected: false,
+  driveHandle: null,
+  
+  connectDrive: async () => {
+    try {
+      if ('showDirectoryPicker' in window) {
+        // Request permission to access a directory
+        const handle = await window.showDirectoryPicker();
+        driveManager.driveHandle = handle;
+        db.settings.driveConnected = true;
+        db.settings.drivePath = 'External Drive (User Selected)';
+        db.settings.lastDriveConnection = new Date().toISOString();
+        data.save();
+        
+        driveManager.updateDriveStatus();
+        if (driveManager.loadBackupHistory) {
+          driveManager.loadBackupHistory();
+        }
+        alert('✅ Drive connected successfully!');
+      } else {
+        // Fallback for browsers without File System Access API
+        const useSimulated = confirm(
+          'Your browser does not support direct drive access.\n\n' +
+          'Would you like to use simulated drive access?\n' +
+          '(Backups will be saved as downloadable files)'
+        );
+        
+        if (useSimulated) {
+          db.settings.driveConnected = true;
+          db.settings.drivePath = 'Simulated Drive (Downloads)';
+          data.save();
+          driveManager.updateDriveStatus();
+          alert('✅ Simulated drive access enabled. Backups will be downloaded as files.');
+        }
+      }
+    } catch (error) {
+      console.error('Drive connection error:', error);
+      alert('Failed to connect to drive: ' + error.message);
+    }
+  },
+  
+  disconnectDrive: () => {
+    db.settings.driveConnected = false;
+    db.settings.drivePath = null;
+    driveManager.driveHandle = null;
+    data.save();
+    driveManager.updateDriveStatus();
+    alert('Drive disconnected.');
+  },
+  
+  updateDriveStatus: () => {
+    const statusEl = document.getElementById('driveStatus');
+    const statusText = document.getElementById('driveStatusText');
+    const driveInfo = document.getElementById('driveInfo');
+    
+    if (db.settings.driveConnected) {
+      statusEl.className = 'drive-status drive-connected';
+      statusText.textContent = 'Connected';
+      driveInfo.textContent = db.settings.drivePath || 'External Drive';
+      
+      if (db.settings.lastBackup) {
+        driveInfo.innerHTML += `<br>Last backup: ${new Date(db.settings.lastBackup).toLocaleString()}`;
+      }
+    } else {
+      statusEl.className = 'drive-status drive-disconnected';
+      statusText.textContent = 'Not Connected';
+      driveInfo.textContent = 'No external drive connected';
+    }
+  },
+  
+  backupToDrive: async () => {
+    if (!db.settings.driveConnected) {
+      alert('Please connect a drive first.');
+      return;
+    }
+    
+    try {
+      await data.exportFullBackup();
+    } catch (error) {
+      console.error('Backup error:', error);
+      alert('Backup failed: ' + error.message);
+    }
+  },
+  
+  restoreFromDrive: async () => {
+    if (!db.settings.driveConnected) {
+      alert('Please connect a drive first.');
+      return;
+    }
+    
+    try {
+      let backupContent;
+      
+      if (driveManager.driveHandle) {
+        // Get file from drive
+        const fileHandle = await driveManager.showFilePicker();
+        const file = await fileHandle.getFile();
+        backupContent = await file.text();
+      } else {
+        // Fallback: Use file input
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = async (e) => {
+          const file = e.target.files[0];
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            backupContent = e.target.result;
+            driveManager.processRestore(backupContent);
+          };
+          reader.readAsText(file);
+        };
+        input.click();
+        return;
+      }
+      
+      await driveManager.processRestore(backupContent);
+      
+    } catch (error) {
+      console.error('Restore error:', error);
+      alert('Restore failed: ' + error.message);
+    }
+  },
+  
+  processRestore: async (backupContent) => {
+    try {
+      const backup = safeParse(backupContent, null);
+      
+      if (!backup) {
+        alert('Invalid backup file format.');
+        return;
+      }
+      
+      if (!confirm(`WARNING: This will replace ALL current data with backup from ${new Date(backup.exportDate).toLocaleString()}.\n\nAre you sure?`)) {
+        return;
+      }
+      
+      if (backup.data) {
+        db.auth = backup.data.auth || db.auth;
+        db.members = backup.data.members || {};
+        db.ledger = backup.data.ledger || [];
+        db.lastId = backup.data.lastId || db.lastId;
+        db.users = backup.data.users || db.users;
+        
+        // Preserve drive settings
+        const currentDriveSettings = {
+          driveConnected: db.settings.driveConnected,
+          drivePath: db.settings.drivePath,
+          backupHistory: db.settings.backupHistory
+        };
+        
+        db.settings = backup.data.settings || {};
+        db.settings.driveConnected = currentDriveSettings.driveConnected;
+        db.settings.drivePath = currentDriveSettings.drivePath;
+        db.settings.backupHistory = currentDriveSettings.backupHistory;
+        
+        data.save();
+        app.updateDashboard();
+        driveManager.updateDriveStatus();
+        
+        alert(`✅ Restore completed successfully!\n\n• Members restored: ${Object.keys(db.members).length}\n• Transactions restored: ${db.ledger.length}\n• Users restored: ${db.users.length}`);
+      } else {
+        alert('Invalid backup file format.');
+      }
+    } catch (error) {
+      alert('Failed to restore backup: ' + error.message);
+    }
+  },
+  
+  showFilePicker: async () => {
+    if ('showOpenFilePicker' in window) {
+      const [fileHandle] = await window.showOpenFilePicker({
+        types: [{
+          description: 'JSON Backup Files',
+          accept: { 'application/json': ['.json'] }
+        }]
+      });
+      return fileHandle;
+    }
+    throw new Error('File picker not supported');
+  },
+  
+  scheduleAutoBackup: () => {
+    const time = prompt('Enter backup time (24-hour format, e.g., 02:00):', db.settings.backupTime || '02:00');
+    if (!time) return;
+    
+    if (!time.match(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)) {
+      alert('Invalid time format. Use HH:MM (24-hour format).');
+      return;
+    }
+    
+    db.settings.autoBackup = true;
+    db.settings.backupTime = time;
+    data.save();
+    
+    // Schedule the backup
+    driveManager.setupAutoBackup();
+    
+    alert(`Auto-backup scheduled for ${time} daily.`);
+  },
+  
+  setupAutoBackup: () => {
+    if (!db.settings.autoBackup) return;
+    
+    const now = new Date();
+    const [hours, minutes] = db.settings.backupTime.split(':').map(Number);
+    const backupTime = new Date(now);
+    backupTime.setHours(hours, minutes, 0, 0);
+    
+    if (backupTime <= now) {
+      backupTime.setDate(backupTime.getDate() + 1);
+    }
+    
+    const timeUntilBackup = backupTime.getTime() - now.getTime();
+    
+    setTimeout(() => {
+      if (db.settings.driveConnected && db.settings.autoBackup) {
+        driveManager.backupToDrive();
+      }
+      // Schedule next backup (24 hours later)
+      driveManager.setupAutoBackup();
+    }, timeUntilBackup);
+    
+    console.log(`Next auto-backup scheduled for: ${backupTime.toLocaleString()}`);
+  },
+  
+  loadBackupHistory: () => {
+    const historyList = document.getElementById('backupHistoryList');
+    if (!historyList) return;
+    
+    if (!db.settings.backupHistory || db.settings.backupHistory.length === 0) {
+      historyList.innerHTML = '<p style="color:#666; text-align:center;">No backups found</p>';
+      return;
+    }
+    
+    let html = '';
+    db.settings.backupHistory.forEach((backup, index) => {
+      html += `
+        <div class="backup-item">
+          <div>
+            <strong>${new Date(backup.date).toLocaleString()}</strong><br>
+            <small>${backup.fileName || 'backup.json'}</small>
+          </div>
+          <div style="text-align:right;">
+            <small>${backup.members || 0} members</small><br>
+            <small>${backup.transactions || 0} transactions</small><br>
+            <small>${backup.users || 0} users</small>
+          </div>
+        </div>
+      `;
+    });
+    
+    historyList.innerHTML = html;
+  }
+};
+
+// 6. User Interface Functions
+const ui = {
+  show: (id) => document.getElementById(id).classList.remove('hidden'),
+  hide: (id) => document.getElementById(id).classList.add('hidden'),
+  
+  openPasswordModal: () => ui.show('passwordModal'),
+  
+  openChangePasswordModal: (userType) => {
+    ui.show('changePasswordModal');
+  },
+  
+  openUserManagementModal: () => {
+    userManager.showRolePermissions();
+    userManager.loadUserList();
+    ui.show('userManagementModal');
+  },
+  
+  openImportModal: () => {
+    importData.resetImport();
+    ui.show('importModal');
+  },
+  
+  openDriveModal: () => {
+    driveManager.updateDriveStatus();
+    if (driveManager.loadBackupHistory) {
+      driveManager.loadBackupHistory();
+    }
+    ui.show('driveModal');
+  },
+  
+  openWipeModal: () => {
+    // Reset wipe form
+    document.getElementById('wipeUsername').value = '';
+    document.getElementById('wipePassword').value = '';
+    document.getElementById('wipeConfirmCheckbox').checked = false;
+    document.getElementById('wipeConfirmText').value = '';
+    ui.show('wipeModal');
+  },
+  
+  showMemberConfirmation: () => {
+    const userRole = db.auth.role;
+    let name, phone;
+    
+    if (userRole === 'admin') {
+      name = document.getElementById('adminNewMemName').value.trim();
+      phone = document.getElementById('adminNewMemPhone').value.trim();
+    } else if (userRole === 'supervisor') {
+      name = document.getElementById('supervisorNewMemName').value.trim();
+      phone = document.getElementById('supervisorNewMemPhone').value.trim();
+    } else {
+      name = document.getElementById('thriftNewMemName').value.trim();
+      phone = document.getElementById('thriftNewMemPhone').value.trim();
+    }
+    
+    if(!name) {
+      alert("Name is required");
+      return;
+    }
+    
+    if(!phone) {
+      alert("Phone number is required");
+      return;
+    }
+    
+    // Check for duplicates
+    const duplicateCheck = ops.checkDuplicateCustomer(name, phone);
+    
+    if(duplicateCheck.phoneMatch) {
+      alert(`❌ Phone number already exists!\n\nExisting Customer:\nName: ${duplicateCheck.phoneMatch.name}\nPhone: ${duplicateCheck.phoneMatch.phone}\nID: ${Object.keys(db.members).find(id => db.members[id].phone === phone)}\n\nPlease use a different phone number.`);
+      return;
+    }
+    
+    // Generate preview ID (actual ID will be generated when confirmed)
+    const previewId = db.lastId + 1;
+    
+    // Fill confirmation modal
+    document.getElementById('confirmMemName').textContent = name;
+    document.getElementById('confirmMemPhone').textContent = phone;
+    document.getElementById('confirmMemDate').textContent = new Date().toLocaleDateString();
+    document.getElementById('confirmMemId').textContent = previewId;
+    document.getElementById('confirmMemBy').textContent = db.auth.name;
+    
+    ui.show('memberConfirmationModal');
+  },
+  
+  showTransactionConfirmation: () => {
+    const userRole = db.auth.role;
+    let id, type, amt, valueDate;
+    
+    if (userRole === 'admin') {
+      id = document.getElementById('adminTransCustId').value;
+      type = document.getElementById('adminTransType').value;
+      amt = parseFloat(document.getElementById('adminTransAmount').value);
+      valueDate = document.getElementById('adminTransValueDate').value;
+    } else if (userRole === 'supervisor') {
+      id = document.getElementById('supervisorTransCustId').value;
+      type = document.getElementById('supervisorTransType').value;
+      amt = parseFloat(document.getElementById('supervisorTransAmount').value);
+      valueDate = document.getElementById('supervisorTransValueDate').value;
+    } else {
+      id = document.getElementById('thriftTransCustId').value;
+      type = document.getElementById('thriftTransType').value;
+      amt = parseFloat(document.getElementById('thriftTransAmount').value);
+      valueDate = document.getElementById('thriftTransValueDate').value;
+    }
+    
+    if(!ops.isValidMember(id)) {
+      alert("Invalid Customer ID");
+      return;
+    }
+    
+    if(!ops.isActiveMember(id)) {
+      alert("Account is inactive. Cannot process transaction.");
+      return;
+    }
+    
+    if(!amt || amt <= 0) {
+      alert("Invalid Amount");
+      return;
+    }
+    
+    // Get customer name
+    const customerName = db.members[id] ? db.members[id].name : "Unknown";
+    
+    // Format dates
+    const transactionDate = new Date().toLocaleString();
+    const displayValueDate = valueDate ? new Date(valueDate).toLocaleDateString() : new Date().toLocaleDateString();
+    
+    // Fill confirmation modal
+    document.getElementById('confirmTransCustomer').textContent = `${customerName} (ID: ${id})`;
+    document.getElementById('confirmTransType').textContent = type;
+    document.getElementById('confirmTransAmount').textContent = ops.fmt(amt);
+    document.getElementById('confirmTransValueDate').textContent = displayValueDate;
+    document.getElementById('confirmTransDate').textContent = transactionDate;
+    document.getElementById('confirmTransBy').textContent = db.auth.name;
+    
+    ui.show('transactionConfirmationModal');
+  },
+  
+  showWithdrawalConfirmation: () => {
+    const userRole = db.auth.role;
+    let id, amt, valueDate;
+    
+    if (userRole === 'admin') {
+      id = document.getElementById('adminWithdrawCustId').value;
+      amt = parseFloat(document.getElementById('adminWithdrawAmount').value);
+      valueDate = document.getElementById('adminWithdrawValueDate').value;
+    } else if (userRole === 'supervisor') {
+      id = document.getElementById('supervisorWithdrawCustId').value;
+      amt = parseFloat(document.getElementById('supervisorWithdrawAmount').value);
+      valueDate = document.getElementById('supervisorWithdrawValueDate').value;
+    } else {
+      id = document.getElementById('thriftWithdrawCustId').value;
+      amt = parseFloat(document.getElementById('thriftWithdrawAmount').value);
+      valueDate = document.getElementById('thriftWithdrawValueDate').value;
+    }
+    
+    if(!ops.isValidMember(id)) {
+      alert("Invalid Customer ID");
+      return;
+    }
+    
+    if(!ops.isActiveMember(id)) {
+      alert("Account is inactive. Cannot process withdrawal.");
+      return;
+    }
+    
+    if(!amt || amt <= 0) {
+      alert("Invalid Amount");
+      return;
+    }
+    
+    // Check withdrawal balance
+    const bal = ops.calcBalance(id);
+    if(bal.savings < amt) {
+      alert("Insufficient Funds: " + ops.fmt(bal.savings));
+      return;
+    }
+    
+    // Get customer name
+    const customerName = db.members[id] ? db.members[id].name : "Unknown";
+    
+    // Format dates
+    const transactionDate = new Date().toLocaleString();
+    const displayValueDate = valueDate ? new Date(valueDate).toLocaleDateString() : new Date().toLocaleDateString();
+    
+    // Fill confirmation modal
+    document.getElementById('confirmWithdrawCustomer').textContent = `${customerName} (ID: ${id})`;
+    document.getElementById('confirmWithdrawAmount').textContent = ops.fmt(amt);
+    document.getElementById('confirmWithdrawValueDate').textContent = displayValueDate;
+    document.getElementById('confirmWithdrawDate').textContent = transactionDate;
+    document.getElementById('confirmWithdrawBy').textContent = db.auth.name;
+    document.getElementById('confirmWithdrawBalance').textContent = ops.fmt(bal.savings);
+    document.getElementById('confirmWithdrawNewBalance').textContent = ops.fmt(bal.savings - amt);
+    
+    ui.show('withdrawalConfirmationModal');
+  },
+  
+  showLoanConfirmation: () => {
+    const userRole = db.auth.role;
+    let id, type, amt, valueDate;
+    
+    if (userRole === 'admin') {
+      id = document.getElementById('adminLoanCustId').value;
+      type = document.getElementById('adminLoanType').value;
+      amt = parseFloat(document.getElementById('adminLoanAmount').value);
+      valueDate = document.getElementById('adminLoanValueDate').value;
+    } else if (userRole === 'supervisor') {
+      id = document.getElementById('supervisorLoanCustId').value;
+      type = document.getElementById('supervisorLoanType').value;
+      amt = parseFloat(document.getElementById('supervisorLoanAmount').value);
+      valueDate = document.getElementById('supervisorLoanValueDate').value;
+    } else {
+      id = document.getElementById('thriftLoanCustId').value;
+      type = document.getElementById('thriftLoanType').value;
+      amt = parseFloat(document.getElementById('thriftLoanAmount').value);
+      valueDate = document.getElementById('thriftLoanValueDate').value;
+    }
+    
+    if(!ops.isValidMember(id)) {
+      alert("Invalid Customer ID");
+      return;
+    }
+    
+    if(!ops.isActiveMember(id)) {
+      alert("Account is inactive. Cannot process loan.");
+      return;
+    }
+    
+    if(!amt || amt <= 0) {
+      alert("Invalid Amount");
+      return;
+    }
+    
+    // Get customer name
+    const customerName = db.members[id] ? db.members[id].name : "Unknown";
+    
+    // Format dates
+    const transactionDate = new Date().toLocaleString();
+    const displayValueDate = valueDate ? new Date(valueDate).toLocaleDateString() : new Date().toLocaleDateString();
+    
+    // Get display type
+    const displayType = type === 'LOAN' ? 'Disburse Loan (Give Out)' : 'Loan Repayment (Collect)';
+    
+    // Fill confirmation modal
+    document.getElementById('confirmLoanCustomer').textContent = `${customerName} (ID: ${id})`;
+    document.getElementById('confirmLoanType').textContent = displayType;
+    document.getElementById('confirmLoanAmount').textContent = ops.fmt(amt);
+    document.getElementById('confirmLoanValueDate').textContent = displayValueDate;
+    document.getElementById('confirmLoanDate').textContent = transactionDate;
+    document.getElementById('confirmLoanBy').textContent = db.auth.name;
+    
+    ui.show('loanConfirmationModal');
+  },
+  
+  openReportModal: () => {
+    // Check if user has permission
+    if (db.auth.role !== 'admin' && !db.auth.permissions.generateReports) {
+      alert("You don't have permission to generate reports");
+      return;
+    }
+    
+    // Calculate statistics
+    let totalSav = 0;
+    let totalLoanOut = 0;
+    let activeCustomers = 0;
+    let inactiveCustomers = 0;
+    const memberIds = Object.keys(db.members);
+    
+    memberIds.forEach(id => {
+      const bal = ops.calcBalance(id);
+      totalSav += bal.savings;
+      totalLoanOut += bal.loan;
+      if (db.members[id].active) activeCustomers++;
+      else inactiveCustomers++;
+    });
+    
+    const vault = totalSav - totalLoanOut;
+    const totalCustomers = memberIds.length;
+    
+    // Get recent transactions
+    const recentTxs = [...db.ledger].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 50);
+    
+    // Get transaction type counts
+    const txCounts = {
+      DAILY: 0,
+      WEEKLY: 0,
+      MONTHLY: 0,
+      WITHDRAWAL: 0,
+      LOAN: 0,
+      LOAN_REPAY: 0,
+      REVERSAL: 0
+    };
+    
+    db.ledger.forEach(tx => {
+      if (txCounts[tx.type] !== undefined) {
+        txCounts[tx.type]++;
+      }
+    });
+    
+    // Generate report HTML
+    let html = `
+      <div style="text-align:center; border-bottom:2px solid #333; margin-bottom:20px; padding-bottom:20px;">
+        <h1 style="margin:0;">OBATA SMART SAVINGS</h1>
+        <h2 style="margin:0; color:#666;">System Report</h2>
+        <p><strong>Generated:</strong> ${new Date().toLocaleString()} by ${db.auth.name}</p>
+      </div>
+      
+      <div class="report-section">
+        <h3>📊 Financial Overview</h3>
+        <div class="report-stats-grid">
+          <div class="report-stat-card">
+            <div>Total Savings Pool</div>
+            <div class="report-stat-value positive">${ops.fmt(totalSav)}</div>
+          </div>
+          <div class="report-stat-card">
+            <div>Outstanding Loans</div>
+            <div class="report-stat-value negative">${ops.fmt(totalLoanOut)}</div>
+          </div>
+          <div class="report-stat-card">
+            <div>Vault Cash</div>
+            <div class="report-stat-value">${ops.fmt(vault)}</div>
+          </div>
+          <div class="report-stat-card">
+            <div>Net Position</div>
+            <div class="report-stat-value">${ops.fmt(vault)}</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="report-section">
+        <h3>👥 Customer Statistics</h3>
+        <div class="report-stats-grid">
+          <div class="report-stat-card">
+            <div>Total Customers</div>
+            <div class="report-stat-value">${totalCustomers}</div>
+          </div>
+          <div class="report-stat-card">
+            <div>Active Customers</div>
+            <div class="report-stat-value positive">${activeCustomers}</div>
+          </div>
+          <div class="report-stat-card">
+            <div>Inactive Customers</div>
+            <div class="report-stat-value">${inactiveCustomers}</div>
+          </div>
+          <div class="report-stat-card">
+            <div>Customer Growth</div>
+            <div class="report-stat-value">${Math.round((totalCustomers / 30) * 100) / 100}/day*</div>
+            <small style="font-size:0.8rem; color:#666;">*Estimated</small>
+          </div>
+        </div>
+      </div>
+      
+      <div class="report-section">
+        <h3>👤 User Statistics</h3>
+        <div class="report-stats-grid">
+          <div class="report-stat-card">
+            <div>Total Users</div>
+            <div class="report-stat-value">${db.users.length}</div>
+          </div>
+          <div class="report-stat-card">
+            <div>Admin Users</div>
+            <div class="report-stat-value">${db.users.filter(u => u.role === 'admin').length}</div>
+          </div>
+          <div class="report-stat-card">
+            <div>Supervisors</div>
+            <div class="report-stat-value">${db.users.filter(u => u.role === 'supervisor').length}</div>
+          </div>
+          <div class="report-stat-card">
+            <div>Thrift Collectors</div>
+            <div class="report-stat-value">${db.users.filter(u => u.role === 'thrift_collector').length}</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="report-section">
+        <h3>📈 Transaction Analysis</h3>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-top:15px;">
+          <div style="background:#e8f5e9; padding:10px; border-radius:6px;">
+            <div style="font-weight:bold;">Daily Savings</div>
+            <div>${txCounts.DAILY} transactions</div>
+          </div>
+          <div style="background:#e3f2fd; padding:10px; border-radius:6px;">
+            <div style="font-weight:bold;">Weekly Savings</div>
+            <div>${txCounts.WEEKLY} transactions</div>
+          </div>
+          <div style="background:#f3e5f5; padding:10px; border-radius:6px;">
+            <div style="font-weight:bold;">Monthly Savings</div>
+            <div>${txCounts.MONTHLY} transactions</div>
+          </div>
+          <div style="background:#fff3e0; padding:10px; border-radius:6px;">
+            <div style="font-weight:bold;">Withdrawals</div>
+            <div>${txCounts.WITHDRAWAL} transactions</div>
+          </div>
+          <div style="background:#ffebee; padding:10px; border-radius:6px;">
+            <div style="font-weight:bold;">Loans Issued</div>
+            <div>${txCounts.LOAN} transactions</div>
+          </div>
+          <div style="background:#e8f5e9; padding:10px; border-radius:6px;">
+            <div style="font-weight:bold;">Loan Repayments</div>
+            <div>${txCounts.LOAN_REPAY} transactions</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="report-section">
+        <h3>🔄 Recent Transactions (Last 50)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Value Date</th>
+              <th>Customer ID</th>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Processed By</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+    
+    recentTxs.forEach(tx => {
+      const mem = db.members[tx.cust];
+      const name = mem ? mem.name : 'Unknown';
+      const isNeg = ['WITHDRAWAL', 'REVERSAL'].includes(tx.type);
+      const colorClass = isNeg ? 'negative' : 'positive';
+      const displayAmt = isNeg ? `-${ops.fmt(tx.amount)}` : ops.fmt(tx.amount);
+      
+      html += `
+        <tr>
+          <td>${tx.date}</td>
+          <td>${tx.valueDate || tx.date}</td>
+          <td>${tx.cust}</td>
+          <td>${name}</td>
+          <td>${tx.type} ${tx.reversed ? '(REV)' : ''}</td>
+          <td class="${colorClass}">${displayAmt}</td>
+          <td>${tx.processedBy || 'System'}</td>
+        </tr>
+      `;
+    });
+    
+    html += `
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="report-section">
+        <h3>📋 Inactive Customers</h3>
+    `;
+    
+    const inactiveMembers = Object.keys(db.members).filter(id => !db.members[id].active);
+    
+    if (inactiveMembers.length > 0) {
+      html += `
+        <table>
+          <thead>
+            <tr>
+              <th>Customer ID</th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Closure Date</th>
+              <th>Reason</th>
+              <th>Closed By</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      inactiveMembers.forEach(id => {
+        const mem = db.members[id];
+        html += `
+          <tr>
+            <td>${id}</td>
+            <td>${mem.name}</td>
+            <td>${mem.phone}</td>
+            <td>${mem.closureDate || 'N/A'}</td>
+            <td>${mem.closureReason || 'No reason provided'}</td>
+            <td>${mem.closedBy || 'N/A'}</td>
+          </tr>
+        `;
+      });
+      
+      html += `
+          </tbody>
+        </table>
+      `;
+    } else {
+      html += `<p style="color:#666; text-align:center;">No inactive customers</p>`;
+    }
+    
+    html += `
+      </div>
+      
+      <div style="margin-top:30px; padding-top:20px; border-top:2px solid #333; font-size:0.9rem; color:#666;">
+        <p><strong>Report Summary:</strong> This report provides a comprehensive overview of the OBATA SMART SAVINGS system as of ${new Date().toLocaleDateString()}.</p>
+        <p>Total transactions in system: ${db.ledger.length}</p>
+        <p>System last updated: ${new Date().toLocaleString()}</p>
+      </div>
+    `;
+    
+    document.getElementById('printableReport').innerHTML = html;
+    ui.show('reportModal');
+  },
+  
+  openStatement: () => {
+    const userRole = db.auth.role;
+    let id;
+    
+    if (userRole === 'admin') {
+      id = document.getElementById('adminStmtCustId').value.trim();
+    } else if (userRole === 'supervisor') {
+      id = document.getElementById('supervisorStmtCustId').value.trim();
+    } else {
+      id = document.getElementById('thriftStmtCustId').value.trim();
+    }
+    
+    if (!ops.isValidMember(id)) {
+      alert("Member not found");
+      return;
+    }
+    
+    const mem = db.members[id];
+    const txs = db.ledger.filter(l => l.cust === id);
+    
+    // Sort by timestamp (newest first for view, but usually statements are chronological)
+    // Let's do chronological
+    txs.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+    let html = `
+      <div style="text-align:center; border-bottom:2px solid #333; margin-bottom:20px;">
+        <h2>OBATA SMART SAVINGS</h2>
+        <p>Account Statement</p>
+      </div>
+      <p><strong>Member:</strong> ${mem.name} (#${id}) ${!mem.active ? '<span class="inactive-badge">INACTIVE</span>' : ''}</p>
+      <p><strong>Generated:</strong> ${new Date().toLocaleString()} by ${db.auth.name}</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Value Date</th>
+            <th>Type</th>
+            <th style="text-align:right">Amount</th>
+            <th>Processed By</th>
+            <th class="no-print">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    let runningBal = 0;
+    txs.forEach(t => {
+      if(!t.reversed && t.type !== 'REVERSAL') {
+        // Logic for running balance visualization could go here
+      }
+      
+      const isNeg = ['WITHDRAWAL', 'REVERSAL'].includes(t.type);
+      const colorClass = isNeg ? 'negative' : 'positive';
+      const displayAmt = isNeg ? `-${ops.fmt(t.amount)}` : ops.fmt(t.amount);
+      const rowStyle = t.reversed ? 'text-decoration:line-through; color:#999;' : '';
+
+      html += `
+        <tr style="${rowStyle}">
+          <td>${t.date}</td>
+          <td>${t.valueDate || t.date}</td>
+          <td>${t.type} ${t.reversed ? '(REV)' : ''}</td>
+          <td style="text-align:right" class="${colorClass}">${displayAmt}</td>
+          <td>${t.processedBy || 'System'}</td>
+          <td class="no-print">
+            ${!t.reversed && t.type !== 'REVERSAL' && db.auth.role === 'admin' ? 
+              `<button class="danger" style="padding:5px; font-size:0.8rem; width:auto;" onclick="ops.reverseTransaction(${t.txId})">Reverse</button>` 
+              : '-'}
+          </td>
+        </tr>
+      `;
+    });
+
+    html += `</tbody></table>`;
+    
+    // Summary Footer
+    const bal = ops.calcBalance(id);
+    html += `
+      <div style="margin-top:20px; display:flex; justify-content:space-between; border-top:2px solid #333; padding-top:10px;">
+        <strong>Net Savings Balance: ${ops.fmt(bal.savings)}</strong>
+        <strong>Loan Balance: ${ops.fmt(bal.loan)}</strong>
+      </div>
+      <div style="margin-top:10px; padding:10px; background:#f9f9f9; border-radius:6px;">
+        <strong>Net Position: ${ops.fmt(bal.savings - bal.loan)}</strong>
+        ${!mem.active ? '<p style="color:var(--danger); margin-top:5px;"><strong>⚠️ Account is inactive. No new transactions allowed.</strong></p>' : ''}
+      </div>
+    `;
+
+    document.getElementById('printableStatement').innerHTML = html;
+    ui.show('statementModal');
+  },
+
+  openProfile: () => {
+    const userRole = db.auth.role;
+    let id;
+    
+    if (userRole === 'admin') {
+      id = document.getElementById('adminProfileCustId').value.trim();
+    } else if (userRole === 'supervisor') {
+      id = document.getElementById('supervisorProfileCustId').value.trim();
+    } else {
+      id = document.getElementById('thriftProfileCustId').value.trim();
+    }
+    
+    if (!ops.isValidMember(id)) {
+      alert("Member not found");
+      return;
+    }
+
+    const mem = db.members[id];
+    const bal = ops.calcBalance(id);
+    const txCount = db.ledger.filter(l => l.cust === id).length;
+
+    const html = `
+      <div class="profile-header">
+        <div class="profile-avatar">${mem.name.charAt(0)}</div>
+        <div>
+          <h2 style="margin:0; border:none;">${mem.name} ${!mem.active ? '<span class="inactive-badge">INACTIVE</span>' : ''}</h2>
+          <p style="margin:0; color:#666;">Customer ID: #${id}</p>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-bottom:20px;">
+        <div class="stat-row">
+          <span>Phone:</span> <strong>${mem.phone}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Joined:</span> <strong>${mem.date}</strong>
+          ${mem.createdBy ? `<span>Registered by:</span> <strong>${mem.createdBy}</strong>` : ''}
+        </div>
+        <div class="stat-row">
+          <span>Account Status:</span> <strong style="color:${mem.active ? 'var(--success)' : 'var(--danger)'}">${mem.active ? 'ACTIVE' : 'INACTIVE'}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Total Transactions:</span> <strong>${txCount}</strong>
+        </div>
+        ${!mem.active ? `
+        <div class="stat-row">
+          <span>Account Closed:</span> <strong>${mem.closureDate || 'N/A'}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Closure Reason:</span> <strong>${mem.closureReason || 'No reason provided'}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Closed By:</span> <strong>${mem.closedBy || 'N/A'}</strong>
+        </div>
+        ` : ''}
+      </div>
+
+      <h3>Financial Summary</h3>
+      <div style="background:#f9f9f9; padding:15px; border-radius:8px;">
+        <div class="stat-row">
+          <span>Total Savings:</span> <strong class="positive">${ops.fmt(bal.savings)}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Active Loan:</span> <strong class="negative">${ops.fmt(bal.loan)}</strong>
+        </div>
+        <div class="stat-row" style="border:none; font-size:1.1rem; margin-top:10px; border-top:1px solid #ddd; padding-top:10px;">
+          <span>Net Position:</span> <strong>${ops.fmt(bal.savings - bal.loan)}</strong>
+        </div>
+      </div>
+      ${!mem.active ? `
+      <div style="margin-top:20px; padding:15px; background:#ffebee; border-radius:8px; border-left:4px solid var(--danger);">
+        <h4 style="margin:0; color:var(--danger);">⚠️ Account Inactive</h4>
+        <p style="margin:5px 0 0 0; color:#666;">This account is closed and cannot perform new transactions.</p>
+      </div>
+      ` : ''}
+    `;
+
+    document.getElementById('printableProfile').innerHTML = html;
+    ui.show('profileModal');
+  },
+
+  closeModal: (id) => {
+    ui.hide(id);
+    // Reset value date fields to empty
+    if (id === 'transactionConfirmationModal' || id === 'loanConfirmationModal' || id === 'withdrawalConfirmationModal') {
+      const userRole = db.auth.role;
+      
+      if (userRole === 'admin') {
+        document.getElementById('adminTransValueDate').value = '';
+        document.getElementById('adminLoanValueDate').value = '';
+        document.getElementById('adminWithdrawValueDate').value = '';
+      } else if (userRole === 'supervisor') {
+        document.getElementById('supervisorTransValueDate').value = '';
+        document.getElementById('supervisorLoanValueDate').value = '';
+        document.getElementById('supervisorWithdrawValueDate').value = '';
+      } else {
+        document.getElementById('thriftTransValueDate').value = '';
+        document.getElementById('thriftLoanValueDate').value = '';
+        document.getElementById('thriftWithdrawValueDate').value = '';
+      }
+    }
+  },
+
+  setupSupervisorDashboard: (user) => {
+    // Update welcome message
+    document.getElementById('supervisorWelcomeMsg').textContent = `Operator: ${user.name}`;
+    
+    // Show/Hide features based on permissions
+    const permissions = user.permissions;
+    
+    // Member Registration
+    if (permissions.memberCreation) {
+      document.getElementById('supervisorMemberRegistration').classList.remove('hidden');
+    } else {
+      document.getElementById('supervisorMemberRegistration').classList.add('hidden');
+    }
+    
+    // Transaction Posting
+    if (permissions.transactionPosting) {
+      document.getElementById('supervisorTransactionPosting').classList.remove('hidden');
+    } else {
+      document.getElementById('supervisorTransactionPosting').classList.add('hidden');
+    }
+    
+    // Withdrawal Processing
+    if (permissions.withdrawal) {
+      document.getElementById('supervisorWithdrawalProcessing').classList.remove('hidden');
+    } else {
+      document.getElementById('supervisorWithdrawalProcessing').classList.add('hidden');
+    }
+    
+    // Loan Management
+    if (permissions.loanManagement) {
+      document.getElementById('supervisorLoanManagement').classList.remove('hidden');
+    } else {
+      document.getElementById('supervisorLoanManagement').classList.add('hidden');
+    }
+    
+    // Account Closure
+    if (permissions.accountClosure) {
+      document.getElementById('supervisorAccountClosure').classList.remove('hidden');
+    } else {
+      document.getElementById('supervisorAccountClosure').classList.add('hidden');
+    }
+    
+    // Account Reactivation
+    if (permissions.accountReactivation) {
+      document.getElementById('supervisorAccountReactivation').classList.remove('hidden');
+    } else {
+      document.getElementById('supervisorAccountReactivation').classList.add('hidden');
+    }
+    
+    // Update permissions info
+    const activePermissions = Object.keys(permissions)
+      .filter(p => permissions[p] && !['manageUsers', 'importExport', 'systemSettings', 'driveManagement'].includes(p))
+      .map(p => {
+        const names = {
+          memberCreation: 'Create Members',
+          transactionPosting: 'Post Transactions',
+          withdrawal: 'Process Withdrawals',
+          loanManagement: 'Manage Loans',
+          accountClosure: 'Close Accounts',
+          accountReactivation: 'Reactivate Accounts',
+          viewStatements: 'View Statements',
+          searchCustomers: 'Search Customers',
+          generateReports: 'Generate Reports'
+        };
+        return names[p];
+      }).join(', ');
+    
+    document.getElementById('supervisorPermissionsInfo').textContent = 
+      `Permissions: ${activePermissions}`;
+    
+    // Load activity stats
+    const activity = userManager.getCurrentUserActivity(user.id);
+    document.getElementById('supervisorActivityStats').innerHTML = `
+      <div class="stat-row">
+        <span>Members Registered (30 days):</span> <strong>${activity.members}</strong>
+      </div>
+      <div class="stat-row">
+        <span>Transactions Processed (30 days):</span> <strong>${activity.transactions}</strong>
+      </div>
+      <div class="stat-row">
+        <span>Savings Deposits (30 days):</span> <strong>${activity.savings}</strong>
+      </div>
+      <div class="stat-row">
+        <span>Withdrawals (30 days):</span> <strong>${activity.withdrawals}</strong>
+      </div>
+      <div class="stat-row">
+        <span>Loan Transactions (30 days):</span> <strong>${activity.loans}</strong>
+      </div>
+    `;
+  },
+
+  setupThriftDashboard: (user) => {
+    // Update welcome message
+    document.getElementById('thriftWelcomeMsg').textContent = `Operator: ${user.name}`;
+    
+    // Show/Hide features based on permissions
+    const permissions = user.permissions;
+    
+    // Member Registration
+    if (permissions.memberCreation) {
+      document.getElementById('thriftMemberRegistration').classList.remove('hidden');
+    } else {
+      document.getElementById('thriftMemberRegistration').classList.add('hidden');
+    }
+    
+    // Transaction Posting
+    if (permissions.transactionPosting) {
+      document.getElementById('thriftTransactionPosting').classList.remove('hidden');
+    } else {
+      document.getElementById('thriftTransactionPosting').classList.add('hidden');
+    }
+    
+    // Withdrawal Processing
+    if (permissions.withdrawal) {
+      document.getElementById('thriftWithdrawalProcessing').classList.remove('hidden');
+    } else {
+      document.getElementById('thriftWithdrawalProcessing').classList.add('hidden');
+    }
+    
+    // Loan Management
+    if (permissions.loanManagement) {
+      document.getElementById('thriftLoanManagement').classList.remove('hidden');
+    } else {
+      document.getElementById('thriftLoanManagement').classList.add('hidden');
+    }
+    
+    // Update permissions info
+    const activePermissions = Object.keys(permissions)
+      .filter(p => permissions[p] && !['manageUsers', 'importExport', 'systemSettings', 'driveManagement', 'accountClosure', 'accountReactivation', 'generateReports'].includes(p))
+      .map(p => {
+        const names = {
+          memberCreation: 'Create Members',
+          transactionPosting: 'Post Transactions',
+          withdrawal: 'Process Withdrawals',
+          loanManagement: 'Manage Loans',
+          viewStatements: 'View Statements',
+          searchCustomers: 'Search Customers'
+        };
+        return names[p];
+      }).join(', ');
+    
+    document.getElementById('thriftPermissionsInfo').textContent = 
+      `Permissions: ${activePermissions}`;
+    
+    // Load activity stats
+    const activity = userManager.getCurrentUserActivity(user.id);
+    document.getElementById('thriftActivityStats').innerHTML = `
+      <div class="stat-row">
+        <span>Members Registered (30 days):</span> <strong>${activity.members}</strong>
+      </div>
+      <div class="stat-row">
+        <span>Transactions Processed (30 days):</span> <strong>${activity.transactions}</strong>
+      </div>
+      <div class="stat-row">
+        <span>Savings Deposits (30 days):</span> <strong>${activity.savings}</strong>
+      </div>
+      <div class="stat-row">
+        <span>Withdrawals (30 days):</span> <strong>${activity.withdrawals}</strong>
+      </div>
+      <div class="stat-row">
+        <span>Loan Transactions (30 days):</span> <strong>${activity.loans}</strong>
+      </div>
+    `;
+  }
+};
+
+// 7. Operations Logic
+const ops = {
+  fmt: (n) => '₦' + parseFloat(n).toLocaleString('en-NG', {minimumFractionDigits: 2}),
+
+  isValidMember: (id) => !!db.members[id],
+
+  isActiveMember: (id) => {
+    return db.members[id] && db.members[id].active;
+  },
+
+  checkName: (id, displayId) => {
+    const el = document.getElementById(displayId);
+    if(db.members[id]) {
+      el.innerText = "✓ " + db.members[id].name + (!db.members[id].active ? " (INACTIVE)" : "");
+      el.style.color = !db.members[id].active ? "var(--danger)" : "var(--primary)";
+    } else {
+      el.innerText = "";
+    }
+  },
+
+  calcBalance: (id) => {
+    let savings = 0;
+    let loan = 0;
+    
+    db.ledger.filter(l => l.cust === id && !l.reversed).forEach(l => {
+      // Savings Logic
+      if (['DAILY', 'WEEKLY', 'MONTHLY'].includes(l.type)) savings += l.amount;
+      if (l.type === 'WITHDRAWAL') savings -= l.amount;
+      
+      // Loan Logic
+      if (l.type === 'LOAN') loan += l.amount;
+      if (l.type === 'LOAN_REPAY') loan -= l.amount;
+    });
+
+    return { savings, loan };
+  },
+
+  checkDuplicateCustomer: (name, phone) => {
+    const existingMembers = Object.values(db.members);
+    
+    // Check for exact phone match (most reliable)
+    const phoneMatch = existingMembers.find(member => 
+        member.phone === phone
+    );
+    
+    // Check for similar name (fuzzy match - optional)
+    const nameMatch = existingMembers.find(member => 
+        member.name.toLowerCase() === name.toLowerCase()
+    );
+    
+    return { phoneMatch, nameMatch };
+  },
+
+  checkDuplicateWhileTyping: () => {
+    const userRole = db.auth.role;
+    let phone, warningElement;
+    
+    if (userRole === 'admin') {
+      phone = document.getElementById('adminNewMemPhone').value.trim();
+      warningElement = document.getElementById('adminDuplicateWarning');
+    } else if (userRole === 'supervisor') {
+      phone = document.getElementById('supervisorNewMemPhone').value.trim();
+      warningElement = document.getElementById('supervisorDuplicateWarning');
+    } else {
+      phone = document.getElementById('thriftNewMemPhone').value.trim();
+      warningElement = document.getElementById('thriftDuplicateWarning');
+    }
+    
+    if(!phone) {
+        warningElement.style.display = 'none';
+        return;
+    }
+    
+    const existingMembers = Object.values(db.members);
+    const duplicate = existingMembers.find(member => member.phone === phone);
+    
+    if(duplicate) {
+        warningElement.style.display = 'block';
+        warningElement.innerHTML = `⚠️ Phone number already exists for customer: ${duplicate.name} (ID: ${Object.keys(db.members).find(id => db.members[id].phone === phone)})`;
+    } else {
+        warningElement.style.display = 'none';
+    }
+  },
+
+  searchCustomers: () => {
+    const userRole = db.auth.role;
+    let query, resultsContainer;
+    
+    if (userRole === 'admin') {
+      query = document.getElementById('adminSearchQuery').value.trim().toLowerCase();
+      resultsContainer = document.getElementById('adminSearchResults');
+    } else if (userRole === 'supervisor') {
+      query = document.getElementById('supervisorSearchQuery').value.trim().toLowerCase();
+      resultsContainer = document.getElementById('supervisorSearchResults');
+    } else {
+      query = document.getElementById('thriftSearchQuery').value.trim().toLowerCase();
+      resultsContainer = document.getElementById('thriftSearchResults');
+    }
+    
+    if (!query) {
+      resultsContainer.classList.add('hidden');
+      return;
+    }
+    
+    const results = [];
+    
+    Object.keys(db.members).forEach(id => {
+      const mem = db.members[id];
+      if (mem.name.toLowerCase().includes(query) || mem.phone.includes(query)) {
+        results.push({ id, ...mem });
+      }
+    });
+    
+    if (results.length === 0) {
+      resultsContainer.innerHTML = '<div class="search-result-item">No customers found</div>';
+      resultsContainer.classList.remove('hidden');
+      return;
+    }
+    
+    let html = '';
+    results.forEach(customer => {
+      html += `
+        <div class="search-result-item ${!customer.active ? 'inactive-member' : ''}" 
+             onclick="ops.useCustomerId(${customer.id})">
+          <strong>${customer.name}</strong> ${!customer.active ? '<span class="inactive-badge">INACTIVE</span>' : ''}<br/>
+          <small>ID: ${customer.id} | Phone: ${customer.phone}</small>
+        </div>
+      `;
+    });
+    
+    resultsContainer.innerHTML = html;
+    resultsContainer.classList.remove('hidden');
+  },
+
+  useCustomerId: (id) => {
+    const userRole = db.auth.role;
+    
+    // Fill all ID fields with this customer ID
+    if (userRole === 'admin') {
+      document.getElementById('adminTransCustId').value = id;
+      document.getElementById('adminWithdrawCustId').value = id;
+      document.getElementById('adminLoanCustId').value = id;
+      document.getElementById('adminStmtCustId').value = id;
+      document.getElementById('adminProfileCustId').value = id;
+      document.getElementById('adminCloseCustId').value = id;
+      document.getElementById('adminReactivateCustId').value = id;
+      
+      // Update name displays
+      ops.checkName(id, 'adminTransNameDisplay');
+      ops.checkName(id, 'adminWithdrawNameDisplay');
+      ops.checkName(id, 'adminLoanNameDisplay');
+      ops.checkName(id, 'adminCloseNameDisplay');
+      ops.checkName(id, 'adminReactivateNameDisplay');
+      
+      // Clear search
+      document.getElementById('adminSearchQuery').value = '';
+      document.getElementById('adminSearchResults').classList.add('hidden');
+    } else if (userRole === 'supervisor') {
+      document.getElementById('supervisorTransCustId').value = id;
+      document.getElementById('supervisorWithdrawCustId').value = id;
+      document.getElementById('supervisorLoanCustId').value = id;
+      document.getElementById('supervisorStmtCustId').value = id;
+      document.getElementById('supervisorProfileCustId').value = id;
+      document.getElementById('supervisorCloseCustId').value = id;
+      document.getElementById('supervisorReactivateCustId').value = id;
+      
+      // Update name displays
+      ops.checkName(id, 'supervisorTransNameDisplay');
+      ops.checkName(id, 'supervisorWithdrawNameDisplay');
+      ops.checkName(id, 'supervisorLoanNameDisplay');
+      ops.checkName(id, 'supervisorCloseNameDisplay');
+      ops.checkName(id, 'supervisorReactivateNameDisplay');
+      
+      // Clear search
+      document.getElementById('supervisorSearchQuery').value = '';
+      document.getElementById('supervisorSearchResults').classList.add('hidden');
+    } else {
+      document.getElementById('thriftTransCustId').value = id;
+      document.getElementById('thriftWithdrawCustId').value = id;
+      document.getElementById('thriftLoanCustId').value = id;
+      document.getElementById('thriftStmtCustId').value = id;
+      document.getElementById('thriftProfileCustId').value = id;
+      
+      // Update name displays
+      ops.checkName(id, 'thriftTransNameDisplay');
+      ops.checkName(id, 'thriftWithdrawNameDisplay');
+      ops.checkName(id, 'thriftLoanNameDisplay');
+      
+      // Clear search
+      document.getElementById('thriftSearchQuery').value = '';
+      document.getElementById('thriftSearchResults').classList.add('hidden');
+    }
+    
+    // Show notification
+    alert(`Customer ID ${id} has been auto-filled in all forms`);
+  },
+
+  registerMember: () => {
+    const userRole = db.auth.role;
+    let name, phone;
+    
+    if (userRole === 'admin') {
+      name = document.getElementById('adminNewMemName').value.trim();
+      phone = document.getElementById('adminNewMemPhone').value.trim();
+    } else if (userRole === 'supervisor') {
+      name = document.getElementById('supervisorNewMemName').value.trim();
+      phone = document.getElementById('supervisorNewMemPhone').value.trim();
+    } else {
+      name = document.getElementById('thriftNewMemName').value.trim();
+      phone = document.getElementById('thriftNewMemPhone').value.trim();
+    }
+    
+    // Generate unique ID
+    db.lastId++;
+    const id = db.lastId;
+    
+    // Create new member
+    db.members[id] = {
+        name: name,
+        phone: phone,
+        date: new Date().toLocaleDateString(),
+        active: true,
+        timestamp: new Date().toISOString(),
+        createdBy: db.auth.name
+    };
+    
+    // Clear form
+    if (userRole === 'admin') {
+      document.getElementById('adminNewMemName').value = '';
+      document.getElementById('adminNewMemPhone').value = '';
+      document.getElementById('adminDuplicateWarning').style.display = 'none';
+    } else if (userRole === 'supervisor') {
+      document.getElementById('supervisorNewMemName').value = '';
+      document.getElementById('supervisorNewMemPhone').value = '';
+      document.getElementById('supervisorDuplicateWarning').style.display = 'none';
+    } else {
+      document.getElementById('thriftNewMemName').value = '';
+      document.getElementById('thriftNewMemPhone').value = '';
+      document.getElementById('thriftDuplicateWarning').style.display = 'none';
+    }
+    
+    // Close confirmation modal
+    ui.closeModal('memberConfirmationModal');
+    
+    // Show success message
+    alert(`✅ Member Registered Successfully!\n\nName: ${name}\nID: ${id}\nPhone: ${phone}\nDate: ${new Date().toLocaleDateString()}\nRegistered by: ${db.auth.name}`);
+    
+    // Save to localStorage
+    data.save();
+    
+    // Update activity stats
+    if (userRole !== 'admin' && db.auth.userId) {
+      const activity = userManager.getCurrentUserActivity(db.auth.userId);
+      const statsElement = userRole === 'supervisor' ? 'supervisorActivityStats' : 'thriftActivityStats';
+      document.getElementById(statsElement).innerHTML = `
+        <div class="stat-row">
+          <span>Members Registered (30 days):</span> <strong>${activity.members + 1}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Transactions Processed (30 days):</span> <strong>${activity.transactions}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Savings Deposits (30 days):</span> <strong>${activity.savings}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Withdrawals (30 days):</span> <strong>${activity.withdrawals}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Loan Transactions (30 days):</span> <strong>${activity.loans}</strong>
+        </div>
+      `;
+    }
+  },
+
+  postTransaction: () => {
+    const userRole = db.auth.role;
+    let id, type, amt, valueDate;
+    
+    if (userRole === 'admin') {
+      id = document.getElementById('adminTransCustId').value;
+      type = document.getElementById('adminTransType').value;
+      amt = parseFloat(document.getElementById('adminTransAmount').value);
+      valueDate = document.getElementById('adminTransValueDate').value;
+    } else if (userRole === 'supervisor') {
+      id = document.getElementById('supervisorTransCustId').value;
+      type = document.getElementById('supervisorTransType').value;
+      amt = parseFloat(document.getElementById('supervisorTransAmount').value);
+      valueDate = document.getElementById('supervisorTransValueDate').value;
+    } else {
+      id = document.getElementById('thriftTransCustId').value;
+      type = document.getElementById('thriftTransType').value;
+      amt = parseFloat(document.getElementById('thriftTransAmount').value);
+      valueDate = document.getElementById('thriftTransValueDate').value;
+    }
+
+    // Use today's date if value date is not provided
+    const effectiveValueDate = valueDate || new Date().toISOString().split('T')[0];
+
+    db.ledger.push({
+      txId: Date.now(),
+      cust: id,
+      type: type,
+      amount: amt,
+      date: new Date().toLocaleString(),
+      valueDate: effectiveValueDate,
+      reversed: false,
+      processedBy: db.auth.name
+    });
+
+    // Clear form
+    if (userRole === 'admin') {
+      document.getElementById('adminTransAmount').value = '';
+      document.getElementById('adminTransValueDate').value = '';
+    } else if (userRole === 'supervisor') {
+      document.getElementById('supervisorTransAmount').value = '';
+      document.getElementById('supervisorTransValueDate').value = '';
+    } else {
+      document.getElementById('thriftTransAmount').value = '';
+      document.getElementById('thriftTransValueDate').value = '';
+    }
+    
+    // Close confirmation modal
+    ui.closeModal('transactionConfirmationModal');
+    
+    alert("Transaction Successful");
+    data.save();
+    
+    // Update activity stats
+    if (userRole !== 'admin' && db.auth.userId) {
+      const activity = userManager.getCurrentUserActivity(db.auth.userId);
+      const statsElement = userRole === 'supervisor' ? 'supervisorActivityStats' : 'thriftActivityStats';
+      const isSavings = ['DAILY', 'WEEKLY', 'MONTHLY'].includes(type);
+      document.getElementById(statsElement).innerHTML = `
+        <div class="stat-row">
+          <span>Members Registered (30 days):</span> <strong>${activity.members}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Transactions Processed (30 days):</span> <strong>${activity.transactions + 1}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Savings Deposits (30 days):</span> <strong>${activity.savings + (isSavings ? 1 : 0)}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Withdrawals (30 days):</span> <strong>${activity.withdrawals}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Loan Transactions (30 days):</span> <strong>${activity.loans}</strong>
+        </div>
+      `;
+    }
+  },
+
+  postWithdrawal: () => {
+    const userRole = db.auth.role;
+    let id, amt, valueDate;
+    
+    if (userRole === 'admin') {
+      id = document.getElementById('adminWithdrawCustId').value;
+      amt = parseFloat(document.getElementById('adminWithdrawAmount').value);
+      valueDate = document.getElementById('adminWithdrawValueDate').value;
+    } else if (userRole === 'supervisor') {
+      id = document.getElementById('supervisorWithdrawCustId').value;
+      amt = parseFloat(document.getElementById('supervisorWithdrawAmount').value);
+      valueDate = document.getElementById('supervisorWithdrawValueDate').value;
+    } else {
+      id = document.getElementById('thriftWithdrawCustId').value;
+      amt = parseFloat(document.getElementById('thriftWithdrawAmount').value);
+      valueDate = document.getElementById('thriftWithdrawValueDate').value;
+    }
+
+    // Use today's date if value date is not provided
+    const effectiveValueDate = valueDate || new Date().toISOString().split('T')[0];
+
+    db.ledger.push({
+      txId: Date.now(),
+      cust: id,
+      type: 'WITHDRAWAL',
+      amount: amt,
+      date: new Date().toLocaleString(),
+      valueDate: effectiveValueDate,
+      reversed: false,
+      processedBy: db.auth.name
+    });
+
+    // Clear form
+    if (userRole === 'admin') {
+      document.getElementById('adminWithdrawAmount').value = '';
+      document.getElementById('adminWithdrawValueDate').value = '';
+    } else if (userRole === 'supervisor') {
+      document.getElementById('supervisorWithdrawAmount').value = '';
+      document.getElementById('supervisorWithdrawValueDate').value = '';
+    } else {
+      document.getElementById('thriftWithdrawAmount').value = '';
+      document.getElementById('thriftWithdrawValueDate').value = '';
+    }
+    
+    // Close confirmation modal
+    ui.closeModal('withdrawalConfirmationModal');
+    
+    alert("Withdrawal Processed Successfully");
+    data.save();
+    
+    // Update activity stats
+    if (userRole !== 'admin' && db.auth.userId) {
+      const activity = userManager.getCurrentUserActivity(db.auth.userId);
+      const statsElement = userRole === 'supervisor' ? 'supervisorActivityStats' : 'thriftActivityStats';
+      document.getElementById(statsElement).innerHTML = `
+        <div class="stat-row">
+          <span>Members Registered (30 days):</span> <strong>${activity.members}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Transactions Processed (30 days):</span> <strong>${activity.transactions + 1}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Savings Deposits (30 days):</span> <strong>${activity.savings}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Withdrawals (30 days):</span> <strong>${activity.withdrawals + 1}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Loan Transactions (30 days):</span> <strong>${activity.loans}</strong>
+        </div>
+      `;
+    }
+  },
+
+  postLoan: () => {
+    const userRole = db.auth.role;
+    let id, type, amt, valueDate;
+    
+    if (userRole === 'admin') {
+      id = document.getElementById('adminLoanCustId').value;
+      type = document.getElementById('adminLoanType').value;
+      amt = parseFloat(document.getElementById('adminLoanAmount').value);
+      valueDate = document.getElementById('adminLoanValueDate').value;
+    } else if (userRole === 'supervisor') {
+      id = document.getElementById('supervisorLoanCustId').value;
+      type = document.getElementById('supervisorLoanType').value;
+      amt = parseFloat(document.getElementById('supervisorLoanAmount').value);
+      valueDate = document.getElementById('supervisorLoanValueDate').value;
+    } else {
+      id = document.getElementById('thriftLoanCustId').value;
+      type = document.getElementById('thriftLoanType').value;
+      amt = parseFloat(document.getElementById('thriftLoanAmount').value);
+      valueDate = document.getElementById('thriftLoanValueDate').value;
+    }
+
+    // Use today's date if value date is not provided
+    const effectiveValueDate = valueDate || new Date().toISOString().split('T')[0];
+
+    db.ledger.push({
+      txId: Date.now(),
+      cust: id,
+      type: type, // LOAN or LOAN_REPAY
+      amount: amt,
+      date: new Date().toLocaleString(),
+      valueDate: effectiveValueDate,
+      reversed: false,
+      processedBy: db.auth.name
+    });
+
+    // Clear form
+    if (userRole === 'admin') {
+      document.getElementById('adminLoanAmount').value = '';
+      document.getElementById('adminLoanValueDate').value = '';
+    } else if (userRole === 'supervisor') {
+      document.getElementById('supervisorLoanAmount').value = '';
+      document.getElementById('supervisorLoanValueDate').value = '';
+    } else {
+      document.getElementById('thriftLoanAmount').value = '';
+      document.getElementById('thriftLoanValueDate').value = '';
+    }
+    
+    // Close confirmation modal
+    ui.closeModal('loanConfirmationModal');
+    
+    alert("Loan Updated");
+    data.save();
+    
+    // Update activity stats
+    if (userRole !== 'admin' && db.auth.userId) {
+      const activity = userManager.getCurrentUserActivity(db.auth.userId);
+      const statsElement = userRole === 'supervisor' ? 'supervisorActivityStats' : 'thriftActivityStats';
+      const isLoan = type === 'LOAN' || type === 'LOAN_REPAY';
+      document.getElementById(statsElement).innerHTML = `
+        <div class="stat-row">
+          <span>Members Registered (30 days):</span> <strong>${activity.members}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Transactions Processed (30 days):</span> <strong>${activity.transactions + 1}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Savings Deposits (30 days):</span> <strong>${activity.savings}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Withdrawals (30 days):</span> <strong>${activity.withdrawals}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Loan Transactions (30 days):</span> <strong>${activity.loans + (isLoan ? 1 : 0)}</strong>
+        </div>
+      `;
+    }
+  },
+
+  closeAccount: () => {
+    const userRole = db.auth.role;
+    let id, reason;
+    
+    if (userRole === 'admin') {
+      id = document.getElementById('adminCloseCustId').value.trim();
+      reason = document.getElementById('adminClosureReason').value.trim();
+    } else if (userRole === 'supervisor') {
+      id = document.getElementById('supervisorCloseCustId').value.trim();
+      reason = document.getElementById('supervisorClosureReason').value.trim();
+    } else {
+      return alert("You don't have permission to close accounts");
+    }
+    
+    if(!ops.isValidMember(id)) return alert("Invalid Customer ID");
+    if(!ops.isActiveMember(id)) return alert("Account is already inactive");
+    
+    // Check if account has zero balance
+    const bal = ops.calcBalance(id);
+    if(bal.savings > 0 || bal.loan > 0) {
+      const confirmClose = confirm(`This account has a balance:\nSavings: ${ops.fmt(bal.savings)}\nLoan: ${ops.fmt(bal.loan)}\n\nAre you sure you want to close this account?`);
+      if(!confirmClose) return;
+    }
+    
+    db.members[id].active = false;
+    db.members[id].closureDate = new Date().toLocaleDateString();
+    db.members[id].closureReason = reason || "No reason provided";
+    db.members[id].closedBy = db.auth.name;
+    
+    alert(`Account #${id} has been closed.\n\nCustomer: ${db.members[id].name}\nClosure Date: ${db.members[id].closureDate}\nReason: ${db.members[id].closureReason}`);
+    
+    // Clear form
+    if (userRole === 'admin') {
+      document.getElementById('adminCloseCustId').value = '';
+      document.getElementById('adminClosureReason').value = '';
+      document.getElementById('adminCloseNameDisplay').innerText = '';
+    } else if (userRole === 'supervisor') {
+      document.getElementById('supervisorCloseCustId').value = '';
+      document.getElementById('supervisorClosureReason').value = '';
+      document.getElementById('supervisorCloseNameDisplay').innerText = '';
+    }
+    
+    data.save();
+  },
+
+  reactivateAccount: () => {
+    const userRole = db.auth.role;
+    let id;
+    
+    if (userRole === 'admin') {
+      id = document.getElementById('adminReactivateCustId').value.trim();
+    } else if (userRole === 'supervisor') {
+      id = document.getElementById('supervisorReactivateCustId').value.trim();
+    } else {
+      return alert("You don't have permission to reactivate accounts");
+    }
+    
+    if(!ops.isValidMember(id)) return alert("Invalid Customer ID");
+    if(ops.isActiveMember(id)) return alert("Account is already active");
+    
+    db.members[id].active = true;
+    db.members[id].closureDate = null;
+    db.members[id].closureReason = null;
+    db.members[id].closedBy = null;
+    
+    alert(`Account #${id} has been reactivated.\n\nCustomer: ${db.members[id].name}\nStatus: ACTIVE`);
+    
+    // Clear form
+    if (userRole === 'admin') {
+      document.getElementById('adminReactivateCustId').value = '';
+      document.getElementById('adminReactivateNameDisplay').innerText = '';
+    } else if (userRole === 'supervisor') {
+      document.getElementById('supervisorReactivateCustId').value = '';
+      document.getElementById('supervisorReactivateNameDisplay').innerText = '';
+    }
+    
+    data.save();
+  },
+
+  reverseTransaction: (txId) => {
+    if(!confirm("Are you sure you want to reverse this transaction?")) return;
+
+    const txIndex = db.ledger.findIndex(t => t.txId === txId);
+    if(txIndex === -1) return;
+
+    const original = db.ledger[txIndex];
+    if(original.reversed) return alert("Already reversed");
+
+    // Check if account is active
+    if(!ops.isActiveMember(original.cust)) {
+      return alert("Cannot reverse transaction for inactive account");
+    }
+
+    // Mark original as reversed
+    db.ledger[txIndex].reversed = true;
+
+    // Add a record of reversal for audit trail
+    db.ledger.push({
+      txId: Date.now(),
+      cust: original.cust,
+      type: 'REVERSAL',
+      amount: original.amount, // Record the amount reversed
+      valueDate: original.valueDate,
+      ref: txId,
+      date: new Date().toLocaleString(),
+      reversed: true, // This entry itself is just a marker, doesn't affect bal calc because we ignore 'REVERSAL' type or filter logic
+      processedBy: db.auth.name
+    });
+
+    data.save();
+    ui.openStatement(); // Refresh view
+  },
+
+  changePassword: () => {
+    const old = document.getElementById('oldPass').value;
+    const newP = document.getElementById('newPass').value;
+
+    if(old !== db.auth.pass) return alert("Old password incorrect");
+    if(newP.length < 4) return alert("Password too short");
+
+    // Update admin password
+    const adminUser = db.users.find(u => u.id === 1);
+    if (adminUser) {
+      adminUser.password = newP;
+    }
+    
+    db.auth.pass = newP;
+    alert("Password updated! Please login again.");
+    data.save();
+    location.reload();
+  },
+
+  changeUserPassword: () => {
+    const current = document.getElementById('currentPassword').value;
+    const newP = document.getElementById('newPassword').value;
+    const confirmP = document.getElementById('confirmPassword').value;
+    
+    if (newP !== confirmP) {
+      alert("New passwords do not match");
+      return;
+    }
+    
+    if (newP.length < 4) {
+      alert("New password must be at least 4 characters");
+      return;
+    }
+    
+    const result = userManager.updateUserPassword(db.auth.userId, current, newP);
+    if (result.success) {
+      alert(result.message);
+      ui.closeModal('changePasswordModal');
+      
+      // Clear form
+      document.getElementById('currentPassword').value = '';
+      document.getElementById('newPassword').value = '';
+      document.getElementById('confirmPassword').value = '';
+    } else {
+      alert(result.message);
+    }
+  },
+
+  wipeAllData: () => {
+    const username = document.getElementById('wipeUsername').value;
+    const password = document.getElementById('wipePassword').value;
+    const confirmCheckbox = document.getElementById('wipeConfirmCheckbox').checked;
+    const confirmText = document.getElementById('wipeConfirmText').value;
+    
+    // Validate credentials
+    if(username !== db.auth.user || password !== db.auth.pass) {
+      alert("Invalid login credentials. Please enter correct username and password.");
+      return;
+    }
+    
+    // Validate confirmation checkbox
+    if(!confirmCheckbox) {
+      alert("Please check the confirmation box to acknowledge that you understand this action will delete ALL data.");
+      return;
+    }
+    
+    // Validate confirmation text
+    if(confirmText !== 'DELETE ALL DATA') {
+      alert("Please type 'DELETE ALL DATA' exactly as shown to confirm.");
+      return;
+    }
+    
+    // Final confirmation
+    if(!confirm("🚨 FINAL WARNING: This will DELETE ALL DATA permanently!\n\nAre you absolutely sure you want to proceed?")) {
+      return;
+    }
+    
+    // Perform wipe
+    data.wipeAllData();
+  }
+};
+
+// 8. Main Application Control
+const app = {
+  login: () => {
+    const u = document.getElementById('usernameInput').value;
+    const p = document.getElementById('passwordInput').value;
+    
+    // Clear any previous error message
+    document.getElementById('loginError').style.display = 'none';
+
+    // First try to authenticate as a user
+    const authenticatedUser = userManager.authenticateUser(u, p);
+    
+    if (authenticatedUser) {
+      // Hide login
+      ui.hide('loginCard');
+      
+      // Show appropriate dashboard based on role
+      if (authenticatedUser.role === 'admin') {
+        ui.show('adminDashboard');
+        document.getElementById('adminWelcomeMsg').innerText = `Operator: ${authenticatedUser.name}`;
+        app.updateAdminDashboard();
+      } else if (authenticatedUser.role === 'supervisor') {
+        ui.show('supervisorDashboard');
+        ui.setupSupervisorDashboard(authenticatedUser);
+        app.updateSupervisorDashboard();
+      } else if (authenticatedUser.role === 'thrift_collector') {
+        ui.show('thriftDashboard');
+        ui.setupThriftDashboard(authenticatedUser);
+        app.updateThriftDashboard();
+      }
+      
+      // Initialize auto-backup if enabled
+      if (db.settings.autoBackup && authenticatedUser.role === 'admin') {
+        driveManager.setupAutoBackup();
+      }
+    } else {
+      // Show error message
+      document.getElementById('loginError').style.display = 'block';
+      // Clear password field
+      document.getElementById('passwordInput').value = '';
+    }
+  },
+
+  logout: () => {
+    location.reload();
+  },
+
+  updateAdminDashboard: () => {
+    let totalSav = 0;
+    let totalLoanOut = 0; // Total money currently out as loans
+    let activeCustomers = 0;
+    let inactiveCustomers = 0;
+
+    // Calculate Global Totals
+    // Note: This is an aggregation of all member balances
+    const memberIds = Object.keys(db.members);
+    
+    memberIds.forEach(id => {
+      const bal = ops.calcBalance(id);
+      totalSav += bal.savings;
+      totalLoanOut += bal.loan;
+      if (db.members[id].active) activeCustomers++;
+      else inactiveCustomers++;
+    });
+
+    // Vault = Total Savings held - Money given out as Loans
+    const vault = totalSav - totalLoanOut;
+    const totalCustomers = memberIds.length;
+
+    document.getElementById('adminDisplayTotalSavings').innerText = ops.fmt(totalSav);
+    document.getElementById('adminDisplayTotalLoans').innerText = ops.fmt(totalLoanOut);
+    document.getElementById('adminDisplayVault').innerText = ops.fmt(vault);
+    document.getElementById('adminDisplayTotalCustomers').innerText = totalCustomers;
+    document.getElementById('adminDisplayActiveCustomers').innerText = `Active: ${activeCustomers} | Inactive: ${inactiveCustomers}`;
+  },
+
+  updateSupervisorDashboard: () => {
+    // For supervisors, we show the same stats as admin
+    app.updateAdminDashboard();
+  },
+
+  updateThriftDashboard: () => {
+    // For thrift collectors, we show the same stats as admin
+    app.updateAdminDashboard();
+  },
+
+  updateDashboard: () => {
+    // Update all dashboards
+    app.updateAdminDashboard();
+    app.updateSupervisorDashboard();
+    app.updateThriftDashboard();
+  }
+};
+
+// Initialize on page load
+window.addEventListener('load', () => {
+  driveManager.updateDriveStatus();
+  if (db.settings.autoBackup) {
+    driveManager.setupAutoBackup();
+  }
+  
+  // Auto-focus username field on page load
+  document.getElementById('usernameInput').focus();
+  
+  // Set default value date to today
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('adminTransValueDate').value = today;
+  document.getElementById('adminWithdrawValueDate').value = today;
+  document.getElementById('adminLoanValueDate').value = today;
+  document.getElementById('supervisorTransValueDate').value = today;
+  document.getElementById('supervisorWithdrawValueDate').value = today;
+  document.getElementById('supervisorLoanValueDate').value = today;
+  document.getElementById('thriftTransValueDate').value = today;
+  document.getElementById('thriftWithdrawValueDate').value = today;
+  document.getElementById('thriftLoanValueDate').value = today;
+});
+
+</script>
+</body>
+</html>
