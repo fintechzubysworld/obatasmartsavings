@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>OBATA SMART SAVINGS v2.5 (Cloud + Formats)</title>
+  <title>OBATA SMART SAVINGS v2.5 (Cloud + Formats) - Enhanced</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -609,6 +609,38 @@
     .role-supervisor { background-color: var(--pink); color: white; }
     .role-thrift { background-color: var(--teal); color: white; }
 
+    /* ENHANCED VERIFICATION STYLES */
+    .verification-high-risk {
+      background-color: rgba(198, 40, 40, 0.1) !important;
+      border-left: 4px solid var(--danger) !important;
+    }
+    
+    .verification-medium-risk {
+      background-color: rgba(249, 168, 37, 0.1) !important;
+      border-left: 4px solid var(--warning) !important;
+    }
+    
+    .verification-low-risk {
+      background-color: rgba(30, 136, 229, 0.1) !important;
+      border-left: 4px solid var(--primary) !important;
+    }
+    
+    .similarity-bar {
+      width: 100px;
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+    
+    .similarity-fill {
+      height: 100%;
+      transition: width 0.3s;
+    }
+
     /* ========================================================= */
     /* PRINT SUPPORT                                             */
     /* ========================================================= */
@@ -639,7 +671,7 @@
 
 <div id="loginCard" class="card" style="max-width: 400px; margin: 100px auto;">
   <h1 style="text-align: center; color: var(--primary);">OBATA SMART SAVINGS</h1>
-  <p style="text-align: center; color: #666; margin-bottom: 20px;">Secure Management System v2.5</p>
+  <p style="text-align: center; color: #666; margin-bottom: 20px;">Secure Management System v2.5 - Enhanced</p>
   
   <div style="margin-bottom: 20px; padding: 15px; background: #e8f0fe; border-radius: 8px; text-align: center;">
     <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #1967d2;">Cloud Storage</p>
@@ -673,6 +705,7 @@
       <button class="orange" style="width:auto;" onclick="ui.openDriveModal()">💿 Drive (F:)</button>
       <button class="brown" style="width:auto;" onclick="ui.openUserManagementModal()">👥 Manage Users</button>
       <button class="danger" style="width:auto;" onclick="ui.openWipeModal()">🗑️ Wipe Data</button>
+      <button id="integrityCheckBtn" class="teal" style="width:auto;" onclick="dataIntegrity.showIntegrityReport()">🔍 Check Data</button>
       <button class="danger" style="width:auto;" onclick="app.logout()">Logout</button>
     </div>
   </div>
@@ -1004,6 +1037,8 @@
     </div>
   </div>
 </div>
+
+<!-- Verification Modal (Dynamically Created) -->
 
 <div id="passwordModal" class="modal-overlay hidden">
   <div class="modal-content" style="max-width: 400px;">
@@ -2078,11 +2113,371 @@ const userManager = {
   }
 };
 
-// 4. Import/Export Manager (Updated with Back Buttons)
-const importData = {
-  currentFileType: null, fileData: null, importType: null,
+/**
+ * ENHANCED DATA VERIFICATION SYSTEM
+ */
+const dataVerifier = {
+  /**
+   * Comprehensive duplicate checking with multiple criteria
+   */
+  findPotentialDuplicates: (name, phone, existingMembers) => {
+    const potentialDuplicates = [];
+    const nameLower = name.toLowerCase().trim();
+    const phoneClean = phone.trim().replace(/\s+/g, '');
+    
+    Object.entries(existingMembers).forEach(([id, member]) => {
+      let similarityScore = 0;
+      let matchReasons = [];
+      
+      // 1. Phone number exact match
+      const memberPhoneClean = member.phone.trim().replace(/\s+/g, '');
+      if (memberPhoneClean === phoneClean) {
+        similarityScore += 100;
+        matchReasons.push('Exact phone number match');
+      }
+      
+      // 2. Phone number partial match (last 7 digits)
+      if (memberPhoneClean.slice(-7) === phoneClean.slice(-7) && phoneClean.length >= 7) {
+        similarityScore += 50;
+        matchReasons.push('Phone number ending match');
+      }
+      
+      // 3. Name exact match (case-insensitive)
+      if (member.name.toLowerCase() === nameLower) {
+        similarityScore += 100;
+        matchReasons.push('Exact name match');
+      }
+      
+      // 4. Name similarity (Levenshtein distance)
+      const nameSimilarity = dataVerifier.calculateNameSimilarity(member.name.toLowerCase(), nameLower);
+      if (nameSimilarity >= 0.8) {
+        similarityScore += Math.floor(nameSimilarity * 50);
+        matchReasons.push(`Name similarity: ${Math.floor(nameSimilarity * 100)}%`);
+      }
+      
+      // 5. Name token matching (first/last name)
+      const newNameTokens = nameLower.split(/\s+/);
+      const existingNameTokens = member.name.toLowerCase().split(/\s+/);
+      const commonTokens = newNameTokens.filter(token => 
+        existingNameTokens.some(existingToken => 
+          dataVerifier.calculateNameSimilarity(token, existingToken) >= 0.9
+        )
+      );
+      
+      if (commonTokens.length >= 1 && newNameTokens.length >= 2) {
+        similarityScore += commonTokens.length * 25;
+        matchReasons.push(`${commonTokens.length} name parts match`);
+      }
+      
+      // 6. Check for same name with different phone variations
+      if (member.name.toLowerCase() === nameLower && memberPhoneClean !== phoneClean) {
+        similarityScore += 30;
+        matchReasons.push('Same name, different phone');
+      }
+      
+      if (similarityScore >= 30) {
+        potentialDuplicates.push({
+          id: id,
+          name: member.name,
+          phone: member.phone,
+          joinDate: member.date,
+          status: member.active ? 'Active' : 'Inactive',
+          similarityScore: similarityScore,
+          matchReasons: matchReasons,
+          account: member
+        });
+      }
+    });
+    
+    // Sort by similarity score (highest first)
+    return potentialDuplicates.sort((a, b) => b.similarityScore - a.similarityScore);
+  },
+  
+  /**
+   * Calculate string similarity (Levenshtein distance normalized)
+   */
+  calculateNameSimilarity: (str1, str2) => {
+    if (!str1 || !str2) return 0;
+    
+    // Simple implementation - in production you might want a full Levenshtein algorithm
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+    
+    if (longer.length === 0) return 1.0;
+    
+    const editDistance = dataVerifier.levenshteinDistance(longer, shorter);
+    return (longer.length - editDistance) / parseFloat(longer.length);
+  },
+  
+  levenshteinDistance: (str1, str2) => {
+    const track = Array(str2.length + 1).fill(null).map(() =>
+      Array(str1.length + 1).fill(null));
+    
+    for (let i = 0; i <= str1.length; i += 1) {
+      track[0][i] = i;
+    }
+    
+    for (let j = 0; j <= str2.length; j += 1) {
+      track[j][0] = j;
+    }
+    
+    for (let j = 1; j <= str2.length; j += 1) {
+      for (let i = 1; i <= str1.length; i += 1) {
+        const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        track[j][i] = Math.min(
+          track[j][i - 1] + 1, // deletion
+          track[j - 1][i] + 1, // insertion
+          track[j - 1][i - 1] + indicator, // substitution
+        );
+      }
+    }
+    
+    return track[str2.length][str1.length];
+  },
+  
+  /**
+   * Validate phone number format
+   */
+  validatePhoneNumber: (phone) => {
+    const cleanPhone = phone.trim().replace(/\s+/g, '');
+    
+    // Nigerian phone number patterns
+    const patterns = [
+      /^0[7-9][0-1]\d{8}$/, // 070, 080, 081, 090, 091
+      /^\+234[7-9][0-1]\d{8}$/, // +234 format
+      /^234[7-9][0-1]\d{8}$/, // 234 format
+    ];
+    
+    return patterns.some(pattern => pattern.test(cleanPhone));
+  },
+  
+  /**
+   * Validate name format
+   */
+  validateName: (name) => {
+    if (!name || name.trim().length < 2) return false;
+    
+    // Check for minimum two characters and reasonable length
+    const trimmedName = name.trim();
+    if (trimmedName.length < 2 || trimmedName.length > 100) return false;
+    
+    // Check for valid characters (allow letters, spaces, hyphens, apostrophes)
+    const validPattern = /^[A-Za-zÀ-ÿ\s\-'.]+$/;
+    return validPattern.test(trimmedName);
+  },
+  
+  /**
+   * Comprehensive member validation before registration
+   */
+  validateNewMember: (name, phone, existingMembers) => {
+    const errors = [];
+    const warnings = [];
+    
+    // 1. Validate name
+    if (!dataVerifier.validateName(name)) {
+      errors.push('Invalid name format. Name must contain only letters, spaces, hyphens, or apostrophes.');
+    }
+    
+    // 2. Validate phone
+    if (!dataVerifier.validatePhoneNumber(phone)) {
+      errors.push('Invalid phone number format. Please use a valid Nigerian phone number.');
+    }
+    
+    // 3. Check for exact duplicates
+    const exactPhoneMatch = Object.values(existingMembers).find(m => 
+      m.phone.trim().replace(/\s+/g, '') === phone.trim().replace(/\s+/g, '')
+    );
+    
+    if (exactPhoneMatch) {
+      errors.push(`Phone number already registered to: ${exactPhoneMatch.name} (ID: ${Object.keys(existingMembers).find(id => existingMembers[id] === exactPhoneMatch)})`);
+    }
+    
+    // 4. Find potential duplicates (non-blocking, just warnings)
+    const potentialDuplicates = dataVerifier.findPotentialDuplicates(name, phone, existingMembers);
+    
+    if (potentialDuplicates.length > 0) {
+      potentialDuplicates.forEach(dup => {
+        if (dup.similarityScore >= 70) {
+          warnings.push(`⚠️ High similarity (${dup.similarityScore}%): ${dup.name} (ID: ${dup.id}) - ${dup.matchReasons.join(', ')}`);
+        } else if (dup.similarityScore >= 40) {
+          warnings.push(`ℹ️ Possible match (${dup.similarityScore}%): ${dup.name} (ID: ${dup.id})`);
+        }
+      });
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors: errors,
+      warnings: warnings,
+      potentialDuplicates: potentialDuplicates
+    };
+  },
+  
+  /**
+   * Display verification results in a modal
+   */
+  showVerificationResults: (validationResult, name, phone, onConfirm, onCancel) => {
+    const modalId = 'verificationModal';
+    
+    // Remove existing modal if present
+    const existingModal = document.getElementById(modalId);
+    if (existingModal) existingModal.remove();
+    
+    let modalHTML = `
+      <div id="${modalId}" class="modal-overlay">
+        <div class="modal-content" style="max-width: 700px;">
+          <h2>🔍 Account Verification</h2>
+          <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between;">
+              <div>
+                <strong>New Member:</strong><br>
+                Name: ${name}<br>
+                Phone: ${phone}
+              </div>
+              <div style="text-align: right;">
+                <strong>Validation Status:</strong><br>
+                ${validationResult.isValid ? '<span style="color: var(--success); font-weight: bold;">✓ VALID</span>' : '<span style="color: var(--danger); font-weight: bold;">✗ INVALID</span>'}
+              </div>
+            </div>
+          </div>
+    `;
+    
+    // Show errors
+    if (validationResult.errors.length > 0) {
+      modalHTML += `
+        <div style="margin: 20px 0; padding: 15px; background: rgba(198, 40, 40, 0.1); border-left: 4px solid var(--danger); border-radius: 4px;">
+          <h3 style="color: var(--danger); margin-top: 0;">❌ Validation Errors</h3>
+          <ul style="margin: 10px 0; padding-left: 20px;">
+      `;
+      validationResult.errors.forEach(error => {
+        modalHTML += `<li style="margin-bottom: 5px;">${error}</li>`;
+      });
+      modalHTML += `</ul></div>`;
+    }
+    
+    // Show warnings
+    if (validationResult.warnings.length > 0) {
+      modalHTML += `
+        <div style="margin: 20px 0; padding: 15px; background: rgba(249, 168, 37, 0.1); border-left: 4px solid var(--warning); border-radius: 4px;">
+          <h3 style="color: var(--warning); margin-top: 0;">⚠️ Potential Duplicates</h3>
+          <div style="max-height: 200px; overflow-y: auto; margin: 10px 0;">
+      `;
+      validationResult.warnings.forEach(warning => {
+        modalHTML += `<div style="padding: 8px; border-bottom: 1px solid rgba(249, 168, 37, 0.3);">${warning}</div>`;
+      });
+      modalHTML += `</div></div>`;
+    }
+    
+    // Show duplicate details if any
+    if (validationResult.potentialDuplicates.length > 0) {
+      modalHTML += `
+        <div style="margin: 20px 0;">
+          <h3>📋 Potential Duplicate Accounts</h3>
+          <div style="max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 6px;">
+            <table style="width: 100%; font-size: 0.9rem;">
+              <thead>
+                <tr style="background: #f8f9fa;">
+                  <th style="padding: 10px;">ID</th>
+                  <th style="padding: 10px;">Name</th>
+                  <th style="padding: 10px;">Phone</th>
+                  <th style="padding: 10px;">Status</th>
+                  <th style="padding: 10px;">Join Date</th>
+                  <th style="padding: 10px;">Similarity</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+      
+      validationResult.potentialDuplicates.forEach(dup => {
+        modalHTML += `
+          <tr style="border-bottom: 1px solid #eee; ${dup.similarityScore >= 70 ? 'background: rgba(249, 168, 37, 0.1);' : ''}">
+            <td style="padding: 10px;">${dup.id}</td>
+            <td style="padding: 10px;">${dup.name}</td>
+            <td style="padding: 10px;">${dup.phone}</td>
+            <td style="padding: 10px;">
+              <span style="padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; background: ${dup.status === 'Active' ? 'var(--success)' : '#757575'}; color: white;">
+                ${dup.status}
+              </span>
+            </td>
+            <td style="padding: 10px;">${dup.joinDate}</td>
+            <td style="padding: 10px;">
+              <div style="width: 100px; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden;">
+                <div style="height: 100%; width: ${Math.min(dup.similarityScore, 100)}%; background: ${dup.similarityScore >= 70 ? 'var(--warning)' : 'var(--primary)'};"></div>
+              </div>
+              <small>${dup.similarityScore}%</small>
+            </td>
+          </tr>
+        `;
+      });
+      
+      modalHTML += `</tbody></table></div>`;
+    }
+    
+    // Action buttons
+    modalHTML += `
+      <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <input type="checkbox" id="forceCreateCheckbox" ${validationResult.errors.length === 0 ? '' : 'disabled'}>
+          <label for="forceCreateCheckbox" style="margin-left: 8px; color: ${validationResult.errors.length === 0 ? 'inherit' : '#999'}">
+            ${validationResult.errors.length === 0 ? 'I confirm this is not a duplicate account' : 'Fix errors to proceed'}
+          </label>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="danger" onclick="dataVerifier.closeVerificationModal()">Cancel</button>
+          <button class="${validationResult.errors.length === 0 ? 'success' : 'secondary'}" 
+                  onclick="dataVerifier.handleVerificationConfirm()"
+                  ${validationResult.errors.length === 0 ? '' : 'disabled'}>
+            ${validationResult.errors.length === 0 ? 'Confirm & Create Account' : 'Fix Errors First'}
+          </button>
+        </div>
+      </div>
+    </div></div>`;
+    
+    // Add modal to DOM
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Store callbacks and data for later use
+    window.verificationData = {
+      validationResult: validationResult,
+      name: name,
+      phone: phone,
+      onConfirm: onConfirm,
+      onCancel: onCancel
+    };
+  },
+  
+  closeVerificationModal: () => {
+    const modal = document.getElementById('verificationModal');
+    if (modal) modal.remove();
+    if (window.verificationData && window.verificationData.onCancel) {
+      window.verificationData.onCancel();
+    }
+  },
+  
+  handleVerificationConfirm: () => {
+    const forceCreateCheckbox = document.getElementById('forceCreateCheckbox');
+    
+    if (!forceCreateCheckbox || !forceCreateCheckbox.checked) {
+      alert('Please confirm that this is not a duplicate account by checking the checkbox.');
+      return;
+    }
+    
+    const modal = document.getElementById('verificationModal');
+    if (modal) modal.remove();
+    
+    if (window.verificationData && window.verificationData.onConfirm) {
+      window.verificationData.onConfirm();
+    }
+  }
+};
+
+/**
+ * ENHANCED IMPORT/EXPORT WITH DATA VALIDATION
+ */
+const enhancedImportData = {
+  currentFileType: null, fileData: null, importType: null, validationErrors: [], importedMembers: [],
   selectFileType: (type) => {
-    importData.currentFileType = type;
+    enhancedImportData.currentFileType = type;
     document.getElementById('importPreview').classList.add('hidden');
     // Hide buttons, show option
     document.querySelector('.file-format-buttons').classList.add('hidden');
@@ -2091,7 +2486,11 @@ const importData = {
     document.getElementById(type+'Options').classList.remove('hidden');
   },
   resetImport: () => {
-    importData.currentFileType = null; importData.fileData = null; importData.importType = null;
+    enhancedImportData.currentFileType = null; 
+    enhancedImportData.fileData = null; 
+    enhancedImportData.importType = null;
+    enhancedImportData.validationErrors = [];
+    enhancedImportData.importedMembers = [];
     document.getElementById('importPreview').classList.add('hidden');
     document.getElementById('importComplete').classList.add('hidden');
     // Show buttons again
@@ -2106,7 +2505,7 @@ const importData = {
   handleCSVFile: (event) => {
     const file = event.target.files[0]; if (!file) return;
     const reader = new FileReader();
-    reader.onload = (e) => importData.parseCSV(e.target.result);
+    reader.onload = (e) => enhancedImportData.parseCSV(e.target.result);
     reader.readAsText(file);
   },
   handleExcelFile: (event) => {
@@ -2116,7 +2515,7 @@ const importData = {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
       const csv = XLSX.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]);
-      importData.parseCSV(csv);
+      enhancedImportData.parseCSV(csv);
     };
     reader.readAsArrayBuffer(file);
   },
@@ -2127,8 +2526,8 @@ const importData = {
       try {
         const backup = safeParse(e.target.result, null);
         if (backup) {
-          importData.fileData = backup;
-          importData.importType = 'full_backup';
+          enhancedImportData.fileData = backup;
+          enhancedImportData.importType = 'full_backup';
           document.getElementById('previewTable').innerHTML = `<div>Full System Backup: ${Object.keys(backup.data.members).length} members</div>`;
           document.getElementById('importPreview').classList.remove('hidden');
         } else alert("Invalid JSON");
@@ -2139,43 +2538,377 @@ const importData = {
   parseCSV: (csvContent) => {
     const lines = csvContent.split('\n');
     const transactions = [];
+    enhancedImportData.validationErrors = [];
+    enhancedImportData.importedMembers = new Set();
+    
     for (let i = 1; i < lines.length; i++) {
-      const parts = lines[i].trim().match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
-      if (parts && parts.length >= 5) {
-        transactions.push({
-          date: parts[0].replace(/"/g, ''), valueDate: parts[1] ? parts[1].replace(/"/g, '') : '',
-          cust: parts[2].replace(/"/g, ''), name: parts[3].replace(/"/g, ''), type: parts[4].replace(/"/g, ''),
-          amount: parseFloat(parts[5].replace(/"/g, '')) || 0, status: parts[6] ? parts[6].replace(/"/g, '') : 'OK',
+      const line = lines[i].trim();
+      if (!line) continue;
+      
+      // More robust CSV parsing that handles quoted fields
+      const parts = [];
+      let currentPart = '';
+      let inQuotes = false;
+      
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+        
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          parts.push(currentPart.trim());
+          currentPart = '';
+        } else {
+          currentPart += char;
+        }
+      }
+      parts.push(currentPart.trim());
+      
+      if (parts.length >= 5) {
+        const transaction = {
+          date: parts[0].replace(/"/g, ''),
+          valueDate: parts[1] ? parts[1].replace(/"/g, '') : parts[0].replace(/"/g, ''),
+          cust: parts[2].replace(/"/g, ''),
+          name: parts[3].replace(/"/g, ''),
+          type: parts[4].replace(/"/g, ''),
+          amount: parseFloat(parts[5].replace(/"/g, '')) || 0,
+          status: (parts[6] ? parts[6].replace(/"/g, '') : 'OK').toUpperCase(),
           processedBy: parts[7] ? parts[7].replace(/"/g, '') : 'Imported'
-        });
+        };
+        
+        // Validate transaction
+        const validation = enhancedImportData.validateTransaction(transaction, i);
+        if (validation.isValid) {
+          transactions.push(transaction);
+          
+          // Track imported members for verification
+          if (!enhancedImportData.importedMembers.has(transaction.cust)) {
+            enhancedImportData.importedMembers.push(transaction.cust);
+          }
+        } else {
+          enhancedImportData.validationErrors.push(`Line ${i + 1}: ${validation.error}`);
+        }
       }
     }
-    importData.fileData = transactions;
-    importData.importType = 'transactions';
-    let html = '<thead><tr><th>Date</th><th>ID</th><th>Type</th><th>Amount</th></tr></thead><tbody>';
-    transactions.slice(0, 5).forEach(tx => html += `<tr><td>${tx.date}</td><td>${tx.cust}</td><td>${tx.type}</td><td>${tx.amount}</td></tr>`);
+    
+    enhancedImportData.fileData = transactions;
+    enhancedImportData.importType = 'transactions';
+    enhancedImportData.importedMembers = Array.from(new Set(enhancedImportData.importedMembers));
+    
+    // Show preview with validation results
+    let html = '<thead><tr><th>Date</th><th>ID</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead><tbody>';
+    transactions.slice(0, 10).forEach(tx => {
+      html += `<tr style="${tx.status === 'REVERSED' ? 'text-decoration: line-through; color: #999;' : ''}">
+        <td>${tx.date}</td>
+        <td>${tx.cust}</td>
+        <td>${tx.type}</td>
+        <td>${ops.fmt(tx.amount)}</td>
+        <td>${tx.status}</td>
+      </tr>`;
+    });
     html += '</tbody>';
+    
     document.getElementById('previewTable').innerHTML = html;
+    
+    // Show validation summary
+    let stats = `Found ${transactions.length} valid transactions`;
+    if (enhancedImportData.validationErrors.length > 0) {
+      stats += `, ${enhancedImportData.validationErrors.length} errors`;
+    }
+    if (enhancedImportData.importedMembers.length > 0) {
+      stats += `, ${enhancedImportData.importedMembers.length} unique members`;
+    }
+    
+    document.getElementById('previewStats').innerHTML = `
+      <div style="margin: 10px 0;">
+        <strong>Import Summary:</strong> ${stats}
+      </div>
+      ${enhancedImportData.validationErrors.length > 0 ? `
+        <div style="margin: 10px 0; padding: 10px; background: rgba(198, 40, 40, 0.1); border-radius: 4px; max-height: 100px; overflow-y: auto;">
+          <strong>Validation Errors:</strong><br>
+          ${enhancedImportData.validationErrors.slice(0, 5).map(err => `• ${err}`).join('<br>')}
+          ${enhancedImportData.validationErrors.length > 5 ? `<br>... and ${enhancedImportData.validationErrors.length - 5} more errors` : ''}
+        </div>
+      ` : ''}
+    `;
+    
     document.getElementById('importPreview').classList.remove('hidden');
   },
-  confirmImport: () => {
-    if (!importData.fileData) return;
-    if (importData.importType === 'full_backup') {
-      if (!confirm("WARNING: Replace ALL data?")) return;
-      const d = importData.fileData.data;
-      db.auth = d.auth; db.members = d.members; db.ledger = d.ledger; db.lastId = d.lastId; db.users = d.users; db.settings = d.settings;
-    } else {
-      importData.fileData.forEach((tx, idx) => {
-        if (!db.members[tx.cust]) db.members[tx.cust] = { name: tx.name, phone: 'Imported', date: new Date().toLocaleDateString(), active: true, imported: true };
-        db.ledger.push({ txId: Date.now()+idx, cust: tx.cust, type: tx.type, amount: tx.amount, date: tx.date, valueDate: tx.valueDate || tx.date, reversed: tx.status==='REVERSED', processedBy: tx.processedBy });
-      });
+  
+  /**
+   * Validate a single transaction
+   */
+  validateTransaction: (transaction, lineNumber) => {
+    const errors = [];
+    
+    // Validate date
+    if (!transaction.date || isNaN(new Date(transaction.date))) {
+      errors.push('Invalid date format');
     }
+    
+    // Validate customer ID
+    if (!transaction.cust || transaction.cust.trim() === '') {
+      errors.push('Missing customer ID');
+    }
+    
+    // Validate name
+    if (!transaction.name || transaction.name.trim().length < 2) {
+      errors.push('Invalid customer name');
+    }
+    
+    // Validate transaction type
+    const validTypes = ['DAILY', 'WEEKLY', 'MONTHLY', 'WITHDRAWAL', 'LOAN', 'LOAN_REPAY'];
+    if (!validTypes.includes(transaction.type.toUpperCase())) {
+      errors.push(`Invalid transaction type: ${transaction.type}`);
+    }
+    
+    // Validate amount
+    if (isNaN(transaction.amount) || transaction.amount <= 0) {
+      errors.push('Invalid amount');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      error: errors.join(', ')
+    };
+  },
+  
+  /**
+   * Enhanced import confirmation with member verification
+   */
+  confirmImport: () => {
+    if (!enhancedImportData.fileData) return;
+    
+    // Check for potential duplicate members in import data
+    const duplicateCheck = enhancedImportData.checkImportDuplicates();
+    
+    if (duplicateCheck.hasDuplicates) {
+      if (!confirm(`Found ${duplicateCheck.duplicateCount} potential duplicate member(s) in import data. Continue anyway?`)) {
+        return;
+      }
+    }
+    
+    if (enhancedImportData.importType === 'full_backup') {
+      if (!confirm("WARNING: This will replace ALL current data. Continue?")) return;
+      
+      // Validate backup data structure
+      if (!enhancedImportData.validateBackupData(enhancedImportData.fileData)) {
+        alert("Invalid backup file structure. Import cancelled.");
+        return;
+      }
+      
+      const d = enhancedImportData.fileData.data;
+      db.auth = d.auth;
+      db.members = d.members;
+      db.ledger = d.ledger;
+      db.lastId = d.lastId;
+      db.users = d.users;
+      db.settings = d.settings;
+      
+      enhancedImportData.showImportResults('full_backup', {
+        members: Object.keys(d.members).length,
+        transactions: d.ledger.length,
+        users: d.users.length
+      });
+      
+    } else {
+      // Import transactions with enhanced validation
+      const importResults = enhancedImportData.processTransactionImport();
+      
+      enhancedImportData.showImportResults('transactions', importResults);
+    }
+    
     data.save();
+  },
+  
+  /**
+   * Check for duplicates within import data itself
+   */
+  checkImportDuplicates: () => {
+    if (!enhancedImportData.fileData || enhancedImportData.importType !== 'transactions') {
+      return { hasDuplicates: false, duplicateCount: 0 };
+    }
+    
+    const phoneMap = new Map();
+    const duplicateMembers = new Set();
+    
+    enhancedImportData.fileData.forEach(tx => {
+      const cleanPhone = tx.name; // Using name as identifier in this context
+      if (phoneMap.has(cleanPhone) && phoneMap.get(cleanPhone) !== tx.cust) {
+        duplicateMembers.add(cleanPhone);
+      } else {
+        phoneMap.set(cleanPhone, tx.cust);
+      }
+    });
+    
+    return {
+      hasDuplicates: duplicateMembers.size > 0,
+      duplicateCount: duplicateMembers.size,
+      duplicateMembers: Array.from(duplicateMembers)
+    };
+  },
+  
+  /**
+   * Validate backup data structure
+   */
+  validateBackupData: (backupData) => {
+    if (!backupData || !backupData.data) return false;
+    
+    const requiredKeys = ['members', 'ledger', 'users', 'lastId'];
+    const hasAllKeys = requiredKeys.every(key => backupData.data[key] !== undefined);
+    
+    if (!hasAllKeys) return false;
+    
+    // Additional validation
+    try {
+      // Check members is an object
+      if (typeof backupData.data.members !== 'object') return false;
+      
+      // Check ledger is an array
+      if (!Array.isArray(backupData.data.ledger)) return false;
+      
+      // Check users is an array
+      if (!Array.isArray(backupData.data.users)) return false;
+      
+      // Check lastId is a number
+      if (typeof backupData.data.lastId !== 'number') return false;
+      
+      return true;
+    } catch (error) {
+      return false;
+    }
+  },
+  
+  /**
+   * Process transaction import with validation
+   */
+  processTransactionImport: () => {
+    const results = {
+      total: enhancedImportData.fileData.length,
+      imported: 0,
+      skipped: 0,
+      errors: 0,
+      newMembers: 0,
+      existingMembers: 0
+    };
+    
+    const memberCache = new Set(Object.keys(db.members));
+    
+    enhancedImportData.fileData.forEach((tx, idx) => {
+      try {
+        // Check if member exists, create if not
+        if (!db.members[tx.cust]) {
+          db.members[tx.cust] = {
+            name: tx.name,
+            phone: 'Imported - ' + tx.cust, // Placeholder phone
+            date: new Date().toLocaleDateString(),
+            active: true,
+            imported: true,
+            importDate: new Date().toISOString(),
+            importSource: 'CSV Import'
+          };
+          results.newMembers++;
+        } else {
+          results.existingMembers++;
+        }
+        
+        // Add transaction to ledger
+        db.ledger.push({
+          txId: Date.now() + idx,
+          cust: tx.cust,
+          type: tx.type.toUpperCase(),
+          amount: tx.amount,
+          date: tx.date,
+          valueDate: tx.valueDate || tx.date,
+          reversed: tx.status === 'REVERSED',
+          processedBy: tx.processedBy,
+          importSource: 'CSV Import',
+          importDate: new Date().toISOString()
+        });
+        
+        results.imported++;
+      } catch (error) {
+        console.error('Error importing transaction:', error, tx);
+        results.errors++;
+        results.skipped++;
+      }
+    });
+    
+    // Update lastId if needed
+    const maxId = Math.max(...Object.keys(db.members).map(id => parseInt(id)).filter(id => !isNaN(id)));
+    if (maxId > db.lastId) {
+      db.lastId = maxId;
+    }
+    
+    return results;
+  },
+  
+  /**
+   * Show detailed import results
+   */
+  showImportResults: (importType, results) => {
     document.getElementById('importPreview').classList.add('hidden');
     document.getElementById('importComplete').classList.remove('hidden');
-    document.getElementById('importResults').innerText = "Import Successful!";
+    
+    let resultsHtml = '';
+    
+    if (importType === 'full_backup') {
+      resultsHtml = `
+        <div style="padding: 20px; background: rgba(46, 125, 50, 0.1); border-radius: 8px; margin: 10px 0;">
+          <h4 style="color: var(--success); margin-top: 0;">✅ Full System Restore Complete</h4>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;">
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: bold;">${results.members}</div>
+              <div>Members</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: bold;">${results.transactions}</div>
+              <div>Transactions</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: bold;">${results.users}</div>
+              <div>Users</div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      resultsHtml = `
+        <div style="padding: 20px; background: rgba(46, 125, 50, 0.1); border-radius: 8px; margin: 10px 0;">
+          <h4 style="color: var(--success); margin-top: 0;">✅ Transaction Import Complete</h4>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px;">
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: bold;">${results.imported}</div>
+              <div>Imported</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: bold;">${results.newMembers}</div>
+              <div>New Members</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: bold;">${results.existingMembers}</div>
+              <div>Existing Members</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: bold;">${results.errors}</div>
+              <div>Errors</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    resultsHtml += `
+      <div style="margin-top: 20px;">
+        <p>✅ Data has been successfully imported and is now writeable.</p>
+        <p>You can now perform all operations (transactions, updates, etc.) on the imported data.</p>
+      </div>
+    `;
+    
+    document.getElementById('importResults').innerHTML = resultsHtml;
   },
-  cancelImport: () => importData.resetImport()
+  
+  cancelImport: () => enhancedImportData.resetImport()
 };
 
 // 5. Drive Manager (Physical Drive F:) (Restored)
@@ -2227,7 +2960,7 @@ const driveManager = {
   processRestore: (content) => {
     const backup = safeParse(content);
     if(backup && backup.data && confirm('Restore backup? This replaces current data.')) {
-      db.members = backup.data.members; db.ledger = backup.data.ledger; db.users = backup.data.users; db.lastId = backup.data.lastId;
+      db.members = backup.data.members; db.ledger = backup.data.ledger; db.users = backup.users; db.lastId = backup.data.lastId;
       data.save(); alert('Restored successfully');
     }
   },
@@ -2251,6 +2984,158 @@ const driveManager = {
   }
 };
 
+/**
+ * ENHANCED DATA INTEGRITY CHECKS
+ */
+const dataIntegrity = {
+  /**
+   * Run comprehensive data integrity check
+   */
+  checkAllIntegrity: () => {
+    const issues = [];
+    
+    // Check 1: Members without transactions
+    Object.keys(db.members).forEach(id => {
+      const hasTransactions = db.ledger.some(tx => tx.cust == id);
+      if (!hasTransactions) {
+        issues.push({
+          type: 'warning',
+          message: `Member ${id} (${db.members[id].name}) has no transactions`
+        });
+      }
+    });
+    
+    // Check 2: Transactions referencing non-existent members
+    db.ledger.forEach(tx => {
+      if (!db.members[tx.cust]) {
+        issues.push({
+          type: 'error',
+          message: `Transaction ${tx.txId} references non-existent member ${tx.cust}`
+        });
+      }
+    });
+    
+    // Check 3: Negative balances
+    Object.keys(db.members).forEach(id => {
+      const balance = ops.calcBalance(id);
+      if (balance.savings < 0) {
+        issues.push({
+          type: 'error',
+          message: `Member ${id} (${db.members[id].name}) has negative savings: ${ops.fmt(balance.savings)}`
+        });
+      }
+    });
+    
+    // Check 4: Duplicate phone numbers
+    const phoneMap = new Map();
+    Object.entries(db.members).forEach(([id, member]) => {
+      const cleanPhone = member.phone.trim().replace(/\s+/g, '');
+      if (phoneMap.has(cleanPhone)) {
+        issues.push({
+          type: 'warning',
+          message: `Duplicate phone number: ${cleanPhone} used by ${member.name} (ID: ${id}) and ${phoneMap.get(cleanPhone).name} (ID: ${phoneMap.get(cleanPhone).id})`
+        });
+      } else {
+        phoneMap.set(cleanPhone, { id, name: member.name });
+      }
+    });
+    
+    return issues;
+  },
+  
+  /**
+   * Display integrity check results
+   */
+  showIntegrityReport: () => {
+    const issues = dataIntegrity.checkAllIntegrity();
+    
+    if (issues.length === 0) {
+      alert('✅ Data integrity check passed! No issues found.');
+      return;
+    }
+    
+    let reportHTML = `
+      <div class="modal-overlay">
+        <div class="modal-content" style="max-width: 800px;">
+          <h2>🔍 Data Integrity Report</h2>
+          <p>Found ${issues.length} issue(s) in the database</p>
+          
+          <div style="max-height: 400px; overflow-y: auto; margin: 20px 0;">
+    `;
+    
+    issues.forEach((issue, index) => {
+      const bgColor = issue.type === 'error' ? 'rgba(198, 40, 40, 0.1)' : 'rgba(249, 168, 37, 0.1)';
+      const borderColor = issue.type === 'error' ? 'var(--danger)' : 'var(--warning)';
+      
+      reportHTML += `
+        <div style="padding: 10px; margin-bottom: 10px; background: ${bgColor}; border-left: 4px solid ${borderColor}; border-radius: 4px;">
+          <strong>${issue.type.toUpperCase()}:</strong> ${issue.message}
+        </div>
+      `;
+    });
+    
+    reportHTML += `
+          </div>
+          
+          <div style="margin-top: 20px;">
+            <button class="success" onclick="dataIntegrity.fixCommonIssues()">🛠️ Fix Common Issues</button>
+            <button class="danger" onclick="this.closest('.modal-overlay').remove()">Close</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add modal to DOM
+    const existingModal = document.querySelector('.modal-overlay');
+    if (existingModal && existingModal.querySelector('h2')?.textContent === 'Data Integrity Report') {
+      existingModal.remove();
+    }
+    
+    document.body.insertAdjacentHTML('beforeend', reportHTML);
+  },
+  
+  /**
+   * Attempt to fix common data issues
+   */
+  fixCommonIssues: () => {
+    if (!confirm('Attempt to fix common data issues? This may modify your data.')) return;
+    
+    let fixesApplied = 0;
+    
+    // Fix 1: Remove transactions referencing non-existent members
+    const originalLength = db.ledger.length;
+    db.ledger = db.ledger.filter(tx => db.members[tx.cust]);
+    if (db.ledger.length < originalLength) {
+      fixesApplied += (originalLength - db.ledger.length);
+    }
+    
+    // Fix 2: Ensure all members have active flag
+    Object.keys(db.members).forEach(id => {
+      if (db.members[id].active === undefined) {
+        db.members[id].active = true;
+        fixesApplied++;
+      }
+    });
+    
+    // Fix 3: Update imported members with proper structure
+    Object.keys(db.members).forEach(id => {
+      if (db.members[id].imported && !db.members[id].importDate) {
+        db.members[id].importDate = new Date().toISOString();
+        fixesApplied++;
+      }
+    });
+    
+    data.save();
+    alert(`✅ Applied ${fixesApplied} fixes to database.`);
+    
+    // Close the modal
+    const modal = document.querySelector('.modal-overlay');
+    if (modal && modal.querySelector('h2')?.textContent === 'Data Integrity Report') {
+      modal.remove();
+    }
+  }
+};
+
 // 6. User Interface Functions
 const ui = {
   show: (id) => document.getElementById(id).classList.remove('hidden'),
@@ -2271,7 +3156,7 @@ const ui = {
   openPasswordModal: () => ui.show('passwordModal'),
   openChangePasswordModal: () => ui.show('changePasswordModal'),
   openUserManagementModal: () => { userManager.loadUserList(); ui.show('userManagementModal'); },
-  openImportModal: () => { importData.resetImport(); ui.show('importModal'); },
+  openImportModal: () => { enhancedImportData.resetImport(); ui.show('importModal'); },
   openDriveModal: () => { driveManager.updateDriveStatus(); driveManager.loadBackupHistory(); ui.show('driveModal'); },
   openWipeModal: () => { document.getElementById('wipeUsername').value=''; ui.show('wipeModal'); },
   closeModal: (id) => ui.hide(id),
@@ -2282,15 +3167,39 @@ const ui = {
     let phone = role === 'admin' ? document.getElementById('adminNewMemPhone').value : (role === 'supervisor' ? document.getElementById('supervisorNewMemPhone').value : document.getElementById('thriftNewMemPhone').value);
     
     if(!name || !phone) return alert("Name and Phone required");
-    const dup = ops.checkDuplicateCustomer(name, phone);
-    if(dup.phoneMatch) return alert("Phone already exists");
     
-    document.getElementById('confirmMemName').innerText = name;
-    document.getElementById('confirmMemPhone').innerText = phone;
-    document.getElementById('confirmMemDate').innerText = new Date().toLocaleDateString();
-    document.getElementById('confirmMemId').innerText = db.lastId + 1;
-    document.getElementById('confirmMemBy').innerText = db.auth.name;
-    ui.show('memberConfirmationModal');
+    // Perform comprehensive validation
+    const validationResult = dataVerifier.validateNewMember(name, phone, db.members);
+    
+    if (!validationResult.isValid) {
+      // Show validation errors
+      let errorMessage = "Cannot create account. Please fix the following errors:\n\n";
+      validationResult.errors.forEach(error => {
+        errorMessage += `• ${error}\n`;
+      });
+      alert(errorMessage);
+      return;
+    }
+    
+    // Show verification modal even if valid (for warnings)
+    dataVerifier.showVerificationResults(
+      validationResult,
+      name,
+      phone,
+      () => {
+        // On confirm - proceed with original confirmation
+        document.getElementById('confirmMemName').innerText = name;
+        document.getElementById('confirmMemPhone').innerText = phone;
+        document.getElementById('confirmMemDate').innerText = new Date().toLocaleDateString();
+        document.getElementById('confirmMemId').innerText = db.lastId + 1;
+        document.getElementById('confirmMemBy').innerText = db.auth.name;
+        ui.show('memberConfirmationModal');
+      },
+      () => {
+        // On cancel - do nothing
+        console.log('Member registration cancelled by user');
+      }
+    );
   },
   
   showTransactionConfirmation: () => {
@@ -2430,7 +3339,7 @@ const ui = {
   }
 };
 
-// 7. Operations Logic
+// 7. Enhanced Operations Logic
 const ops = {
   fmt: (n) => '₦' + parseFloat(n).toLocaleString('en-NG', {minimumFractionDigits: 2}),
   isValidMember: (id) => !!db.members[id],
@@ -2464,11 +3373,36 @@ const ops = {
     const role = db.auth.role;
     const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
     const phone = document.getElementById(prefix+'NewMemPhone').value;
+    const name = document.getElementById(prefix+'NewMemName').value;
     const warn = document.getElementById(prefix+'DuplicateWarning');
     if(!phone) { warn.style.display='none'; return; }
-    const dup = Object.values(db.members).find(m => m.phone === phone);
-    if(dup) { warn.style.display='block'; warn.innerText = `⚠️ Phone exists: ${dup.name}`; }
-    else warn.style.display='none';
+    
+    // Find potential duplicates using enhanced verification
+    const potentialDuplicates = dataVerifier.findPotentialDuplicates(name || 'New Member', phone, db.members);
+    
+    if (potentialDuplicates.length > 0) {
+      const topDuplicate = potentialDuplicates[0];
+      let warningText = '';
+      
+      if (topDuplicate.similarityScore >= 80) {
+        warningText = `🚨 HIGH RISK: ${topDuplicate.name} (ID: ${topDuplicate.id}) has ${topDuplicate.matchReasons[0]}`;
+        warn.style.backgroundColor = 'rgba(198, 40, 40, 0.2)';
+        warn.style.borderLeftColor = 'var(--danger)';
+      } else if (topDuplicate.similarityScore >= 50) {
+        warningText = `⚠️ Possible duplicate: ${topDuplicate.name} (ID: ${topDuplicate.id})`;
+        warn.style.backgroundColor = 'rgba(249, 168, 37, 0.2)';
+        warn.style.borderLeftColor = 'var(--warning)';
+      } else {
+        warningText = `ℹ️ Similar account: ${topDuplicate.name} (ID: ${topDuplicate.id})`;
+        warn.style.backgroundColor = 'rgba(30, 136, 229, 0.1)';
+        warn.style.borderLeftColor = 'var(--primary)';
+      }
+      
+      warn.innerHTML = warningText;
+      warn.style.display = 'block';
+    } else {
+      warn.style.display = 'none';
+    }
   },
 
   searchCustomers: () => {
@@ -2506,7 +3440,16 @@ const ops = {
     const phone = document.getElementById(prefix+'NewMemPhone').value;
     
     db.lastId++;
-    db.members[db.lastId] = { name: name, phone: phone, date: new Date().toLocaleDateString(), active: true, createdBy: db.auth.name, timestamp: new Date().toISOString() };
+    db.members[db.lastId] = { 
+      name: name, 
+      phone: phone, 
+      date: new Date().toLocaleDateString(), 
+      active: true, 
+      createdBy: db.auth.name, 
+      timestamp: new Date().toISOString(),
+      verified: true,
+      verificationDate: new Date().toISOString()
+    };
     
     document.getElementById(prefix+'NewMemName').value = '';
     document.getElementById(prefix+'NewMemPhone').value = '';
@@ -2610,6 +3553,30 @@ const ops = {
     const res = userManager.updateUserPassword(db.auth.userId, old, newP);
     alert(res.message);
     if(res.success) ui.closeModal('changePasswordModal');
+  },
+  
+  wipeAllData: () => {
+    const username = document.getElementById('wipeUsername').value;
+    const password = document.getElementById('wipePassword').value;
+    const confirmText = document.getElementById('wipeConfirmText').value;
+    const confirmCheckbox = document.getElementById('wipeConfirmCheckbox');
+    
+    if(username !== db.auth.user || password !== db.auth.pass) {
+      alert("Invalid credentials. Please enter correct username and password.");
+      return;
+    }
+    
+    if(!confirmCheckbox.checked) {
+      alert("Please confirm that you understand this action is irreversible.");
+      return;
+    }
+    
+    if(confirmText !== 'DELETE ALL DATA') {
+      alert("Please type 'DELETE ALL DATA' exactly as shown to confirm.");
+      return;
+    }
+    
+    data.wipeAllData();
   }
 };
 
@@ -2664,10 +3631,32 @@ const app = {
   }
 };
 
+// Replace original importData with enhanced version
+window.importData = enhancedImportData;
+
 // Initialize on page load
 window.addEventListener('load', () => {
   driveManager.updateDriveStatus();
   document.getElementById('usernameInput').focus();
+  
+  // Add integrity check button if not already present
+  const adminControls = document.querySelector('#adminDashboard .dashboard-controls');
+  if (adminControls && !document.getElementById('integrityCheckBtn')) {
+    const integrityButton = document.createElement('button');
+    integrityButton.id = 'integrityCheckBtn';
+    integrityButton.className = 'teal';
+    integrityButton.style.width = 'auto';
+    integrityButton.innerHTML = '🔍 Check Data';
+    integrityButton.onclick = dataIntegrity.showIntegrityReport;
+    
+    // Insert before the logout button
+    const logoutButton = adminControls.querySelector('button[onclick="app.logout()"]');
+    if (logoutButton) {
+      adminControls.insertBefore(integrityButton, logoutButton);
+    } else {
+      adminControls.appendChild(integrityButton);
+    }
+  }
   
   // Init Google Drive and Auto-Connect if setting is active
   gDrive.init();
@@ -2677,6 +3666,8 @@ window.addEventListener('load', () => {
         if(gDrive.tokenClient) gDrive.handleAuth();
     }, 1000);
   }
+  
+  console.log('Enhanced OBATA SMART SAVINGS v2.5 loaded with robust data verification');
 });
 
 </script>
