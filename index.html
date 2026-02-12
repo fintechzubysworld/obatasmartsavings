@@ -2583,7 +2583,7 @@ const enhancedImportData = {
           
           // Track imported members for verification
           if (!enhancedImportData.importedMembers.has(transaction.cust)) {
-            enhancedImportData.importedMembers.push(transaction.cust);
+            enhancedImportData.importedMembers.add(transaction.cust);
           }
         } else {
           enhancedImportData.validationErrors.push(`Line ${i + 1}: ${validation.error}`);
@@ -2593,7 +2593,7 @@ const enhancedImportData = {
     
     enhancedImportData.fileData = transactions;
     enhancedImportData.importType = 'transactions';
-    enhancedImportData.importedMembers = Array.from(new Set(enhancedImportData.importedMembers));
+    enhancedImportData.importedMembers = Array.from(enhancedImportData.importedMembers);
     
     // Show preview with validation results
     let html = '<thead><tr><th>Date</th><th>ID</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead><tbody>';
@@ -2960,7 +2960,7 @@ const driveManager = {
   processRestore: (content) => {
     const backup = safeParse(content);
     if(backup && backup.data && confirm('Restore backup? This replaces current data.')) {
-      db.members = backup.data.members; db.ledger = backup.data.ledger; db.users = backup.users; db.lastId = backup.data.lastId;
+      db.members = backup.data.members; db.ledger = backup.data.ledger; db.users = backup.data.users; db.lastId = backup.data.lastId;
       data.save(); alert('Restored successfully');
     }
   },
@@ -3286,9 +3286,18 @@ const ui = {
     const txs = db.ledger.filter(l => l.cust == id).sort((a,b)=>new Date(a.date)-new Date(b.date));
     const bal = ops.calcBalance(id);
     
+    // Enhanced statement with Value Date column
     let html = `<h2>Statement: ${mem.name}</h2><p>ID: ${id}</p>`;
-    html += `<table><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>By</th></tr></thead><tbody>`;
-    txs.forEach(t => html += `<tr style="${t.reversed?'text-decoration:line-through':''}"><td>${t.date}</td><td>${t.type}</td><td>${ops.fmt(t.amount)}</td><td>${t.processedBy}</td></tr>`);
+    html += `<table><thead><tr><th>Transaction Date</th><th>Value Date</th><th>Amount</th><th>Transaction Type</th><th>Processed By</th></tr></thead><tbody>`;
+    txs.forEach(t => {
+      html += `<tr style="${t.reversed?'text-decoration:line-through':''}">
+        <td>${t.date}</td>
+        <td>${t.valueDate || t.date}</td>
+        <td>${ops.fmt(t.amount)}</td>
+        <td>${t.type}</td>
+        <td>${t.processedBy}</td>
+      </tr>`;
+    });
     html += `</tbody></table><div style="margin-top:20px;"><strong>Savings Balance: ${ops.fmt(bal.savings)}</strong><br><strong>Loan Balance: ${ops.fmt(bal.loan)}</strong></div>`;
     
     document.getElementById('printableStatement').innerHTML = html;
@@ -3667,7 +3676,7 @@ window.addEventListener('load', () => {
     }, 1000);
   }
   
-  console.log('Enhanced OBATA SMART SAVINGS v2.5 loaded with robust data verification');
+  console.log('Enhanced OBATA SMART SAVINGS v2.5 loaded with robust data verification and enhanced statement');
 });
 
 </script>
