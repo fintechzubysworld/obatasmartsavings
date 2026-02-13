@@ -749,6 +749,7 @@
         <option value="MONTHLY">Monthly Savings</option>
       </select>
       <input id="adminTransAmount" type="number" placeholder="Amount (₦)" />
+      <input id="adminTransNarration" placeholder="Narration / Description (optional)" />
       <label for="adminTransValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
       <input id="adminTransValueDate" type="date" value="" />
       <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
@@ -760,6 +761,7 @@
       <input id="adminWithdrawCustId" placeholder="Customer ID" onchange="ops.checkName(this.value, 'adminWithdrawNameDisplay')" />
       <small id="adminWithdrawNameDisplay" style="color:var(--pink); font-weight:bold;"></small>
       <input id="adminWithdrawAmount" type="number" placeholder="Amount (₦)" />
+      <input id="adminWithdrawNarration" placeholder="Narration / Description (optional)" />
       <label for="adminWithdrawValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
       <input id="adminWithdrawValueDate" type="date" value="" />
       <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
@@ -775,6 +777,7 @@
         <option value="LOAN_REPAY">Loan Repayment (Collect)</option>
       </select>
       <input id="adminLoanAmount" type="number" placeholder="Amount (₦)" />
+      <input id="adminLoanNarration" placeholder="Narration / Description (optional)" />
       <label for="adminLoanValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
       <input id="adminLoanValueDate" type="date" value="" />
       <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
@@ -860,6 +863,7 @@
       <option value="MONTHLY">Monthly Savings</option>
     </select>
     <input id="supervisorTransAmount" type="number" placeholder="Amount (₦)" />
+    <input id="supervisorTransNarration" placeholder="Narration / Description (optional)" />
     <label for="supervisorTransValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
     <input id="supervisorTransValueDate" type="date" value="" />
     <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
@@ -871,6 +875,7 @@
     <input id="supervisorWithdrawCustId" placeholder="Customer ID" onchange="ops.checkName(this.value, 'supervisorWithdrawNameDisplay')" />
     <small id="supervisorWithdrawNameDisplay" style="color:var(--pink); font-weight:bold;"></small>
     <input id="supervisorWithdrawAmount" type="number" placeholder="Amount (₦)" />
+    <input id="supervisorWithdrawNarration" placeholder="Narration / Description (optional)" />
     <label for="supervisorWithdrawValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
     <input id="supervisorWithdrawValueDate" type="date" value="" />
     <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
@@ -886,6 +891,7 @@
       <option value="LOAN_REPAY">Loan Repayment (Collect)</option>
     </select>
     <input id="supervisorLoanAmount" type="number" placeholder="Amount (₦)" />
+    <input id="supervisorLoanNarration" placeholder="Narration / Description (optional)" />
     <label for="supervisorLoanValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
     <input id="supervisorLoanValueDate" type="date" value="" />
     <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
@@ -973,6 +979,7 @@
       <option value="MONTHLY">Monthly Savings</option>
     </select>
     <input id="thriftTransAmount" type="number" placeholder="Amount (₦)" />
+    <input id="thriftTransNarration" placeholder="Narration / Description (optional)" />
     <label for="thriftTransValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
     <input id="thriftTransValueDate" type="date" value="" />
     <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
@@ -984,6 +991,7 @@
     <input id="thriftWithdrawCustId" placeholder="Customer ID" onchange="ops.checkName(this.value, 'thriftWithdrawNameDisplay')" />
     <small id="thriftWithdrawNameDisplay" style="color:var(--pink); font-weight:bold;"></small>
     <input id="thriftWithdrawAmount" type="number" placeholder="Amount (₦)" />
+    <input id="thriftWithdrawNarration" placeholder="Narration / Description (optional)" />
     <label for="thriftWithdrawValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
     <input id="thriftWithdrawValueDate" type="date" value="" />
     <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
@@ -999,6 +1007,7 @@
       <option value="LOAN_REPAY">Loan Repayment (Collect)</option>
     </select>
     <input id="thriftLoanAmount" type="number" placeholder="Amount (₦)" />
+    <input id="thriftLoanNarration" placeholder="Narration / Description (optional)" />
     <label for="thriftLoanValueDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Value Date</label>
     <input id="thriftLoanValueDate" type="date" value="" />
     <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
@@ -1212,7 +1221,7 @@
       <div id="csvOptions" class="hidden">
         <button class="back-btn" onclick="importData.resetImport()">⬅ Back to Menu</button>
         <h3>CSV Import Options</h3>
-        <p>Format: Date, Customer ID, Name, Type, Amount, Status</p>
+        <p>Format: Date, Customer ID, Name, Type, Amount, Status, Narration</p>
         <input type="file" id="csvFileInput" accept=".csv" onchange="importData.handleCSVFile(event)" />
         <small style="display:block; margin-top:5px; color:#666;">Select a CSV file with transaction data</small>
       </div>
@@ -1222,7 +1231,7 @@
         <h3>Excel Import Options</h3>
         <p>Supports .xls, .xlsx, .xlsm formats</p>
         <input type="file" id="excelFileInput" accept=".xls,.xlsx,.xlsm" onchange="importData.handleExcelFile(event)" />
-        <small style="display:block; margin-top:5px; color:#666;">Excel file should have columns: Date, ID, Name, Type, Amount, Status</small>
+        <small style="display:block; margin-top:5px; color:#666;">Excel file should have columns: Date, ID, Name, Type, Amount, Status, Narration</small>
       </div>
       
       <div id="jsonOptions" class="hidden">
@@ -1375,6 +1384,10 @@
         <span class="confirmation-value" id="confirmTransAmount"></span>
       </div>
       <div class="confirmation-item">
+        <span class="confirmation-label">Narration:</span>
+        <span class="confirmation-value" id="confirmTransNarration"></span>
+      </div>
+      <div class="confirmation-item">
         <span class="confirmation-label">Value Date:</span>
         <span class="confirmation-value" id="confirmTransValueDate"></span>
       </div>
@@ -1412,6 +1425,10 @@
       <div class="confirmation-item">
         <span class="confirmation-label">Amount:</span>
         <span class="confirmation-value" id="confirmWithdrawAmount"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Narration:</span>
+        <span class="confirmation-value" id="confirmWithdrawNarration"></span>
       </div>
       <div class="confirmation-item">
         <span class="confirmation-label">Value Date:</span>
@@ -1459,6 +1476,10 @@
       <div class="confirmation-item">
         <span class="confirmation-label">Amount:</span>
         <span class="confirmation-value" id="confirmLoanAmount"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Narration:</span>
+        <span class="confirmation-value" id="confirmLoanNarration"></span>
       </div>
       <div class="confirmation-item">
         <span class="confirmation-label">Value Date:</span>
@@ -1828,10 +1849,10 @@ const data = {
   },
   
   exportCSV: () => {
-    let csv = "Date,Value Date,ID,Name,Type,Amount,Status,Processed By\n";
+    let csv = "Date,Value Date,ID,Name,Type,Amount,Status,Narration,Processed By\n";
     db.ledger.forEach(l => {
       const name = db.members[l.cust] ? db.members[l.cust].name : 'Unknown';
-      csv += `${l.date},${l.valueDate || l.date},${l.cust},"${name}",${l.type},${l.amount},${l.reversed ? 'REVERSED' : 'OK'},${l.processedBy || 'System'}\n`;
+      csv += `${l.date},${l.valueDate || l.date},${l.cust},"${name}",${l.type},${l.amount},${l.reversed ? 'REVERSED' : 'OK'},"${l.narration || ''}",${l.processedBy || 'System'}\n`;
     });
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -1942,12 +1963,12 @@ const data = {
     });
     
     csv += "\n\nTRANSACTION SUMMARY (Last 100)\n";
-    csv += "Date,Value Date,ID,Name,Type,Amount,Status,Processed By\n";
+    csv += "Date,Value Date,ID,Name,Type,Amount,Status,Narration,Processed By\n";
     
     const recentTxs = [...db.ledger].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 100);
     recentTxs.forEach(l => {
       const name = db.members[l.cust] ? db.members[l.cust].name : 'Unknown';
-      csv += `${l.date},${l.valueDate || l.date},${l.cust},"${name}",${l.type},${l.amount},${l.reversed ? 'REVERSED' : 'OK'},${l.processedBy || 'System'}\n`;
+      csv += `${l.date},${l.valueDate || l.date},${l.cust},"${name}",${l.type},${l.amount},${l.reversed ? 'REVERSED' : 'OK'},"${l.narration || ''}",${l.processedBy || 'System'}\n`;
     });
     
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -2573,7 +2594,8 @@ const enhancedImportData = {
           type: parts[4].replace(/"/g, ''),
           amount: parseFloat(parts[5].replace(/"/g, '')) || 0,
           status: (parts[6] ? parts[6].replace(/"/g, '') : 'OK').toUpperCase(),
-          processedBy: parts[7] ? parts[7].replace(/"/g, '') : 'Imported'
+          narration: parts[7] ? parts[7].replace(/"/g, '') : '',
+          processedBy: parts[8] ? parts[8].replace(/"/g, '') : 'Imported'
         };
         
         // Validate transaction
@@ -2596,7 +2618,7 @@ const enhancedImportData = {
     enhancedImportData.importedMembers = Array.from(enhancedImportData.importedMembers);
     
     // Show preview with validation results
-    let html = '<thead><tr><th>Date</th><th>ID</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead><tbody>';
+    let html = '<thead><tr><th>Date</th><th>ID</th><th>Type</th><th>Amount</th><th>Status</th><th>Narration</th></tr></thead><tbody>';
     transactions.slice(0, 10).forEach(tx => {
       html += `<tr style="${tx.status === 'REVERSED' ? 'text-decoration: line-through; color: #999;' : ''}">
         <td>${tx.date}</td>
@@ -2604,6 +2626,7 @@ const enhancedImportData = {
         <td>${tx.type}</td>
         <td>${ops.fmt(tx.amount)}</td>
         <td>${tx.status}</td>
+        <td>${tx.narration.substring(0, 20)}${tx.narration.length > 20 ? '...' : ''}</td>
       </tr>`;
     });
     html += '</tbody>';
@@ -2657,7 +2680,7 @@ const enhancedImportData = {
     }
     
     // Validate transaction type
-    const validTypes = ['DAILY', 'WEEKLY', 'MONTHLY', 'WITHDRAWAL', 'LOAN', 'LOAN_REPAY'];
+    const validTypes = ['DAILY', 'WEEKLY', 'MONTHLY', 'WITHDRAWAL', 'LOAN', 'LOAN_REPAY', 'REVERSAL'];
     if (!validTypes.includes(transaction.type.toUpperCase())) {
       errors.push(`Invalid transaction type: ${transaction.type}`);
     }
@@ -2821,6 +2844,7 @@ const enhancedImportData = {
           date: tx.date,
           valueDate: tx.valueDate || tx.date,
           reversed: tx.status === 'REVERSED',
+          narration: tx.narration || '',
           processedBy: tx.processedBy,
           importSource: 'CSV Import',
           importDate: new Date().toISOString()
@@ -3040,6 +3064,19 @@ const dataIntegrity = {
       }
     });
     
+    // Check 5: Reversal integrity
+    db.ledger.forEach(tx => {
+      if (tx.reversalOf) {
+        const original = db.ledger.find(t => t.txId === tx.reversalOf);
+        if (!original) {
+          issues.push({
+            type: 'error',
+            message: `Reversal transaction ${tx.txId} references non-existent original transaction ${tx.reversalOf}`
+          });
+        }
+      }
+    });
+    
     return issues;
   },
   
@@ -3207,6 +3244,7 @@ const ui = {
     const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
     const id = document.getElementById(prefix+'TransCustId').value;
     const amt = document.getElementById(prefix+'TransAmount').value;
+    const narration = document.getElementById(prefix+'TransNarration').value;
     
     if(!ops.isValidMember(id)) return alert("Invalid Member");
     if(!amt) return alert("Invalid Amount");
@@ -3214,6 +3252,7 @@ const ui = {
     document.getElementById('confirmTransCustomer').innerText = db.members[id].name;
     document.getElementById('confirmTransType').innerText = document.getElementById(prefix+'TransType').value;
     document.getElementById('confirmTransAmount').innerText = ops.fmt(amt);
+    document.getElementById('confirmTransNarration').innerText = narration || '—';
     document.getElementById('confirmTransValueDate').innerText = document.getElementById(prefix+'TransValueDate').value || new Date().toLocaleDateString();
     document.getElementById('confirmTransDate').innerText = new Date().toLocaleString();
     document.getElementById('confirmTransBy').innerText = db.auth.name;
@@ -3225,6 +3264,7 @@ const ui = {
     const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
     const id = document.getElementById(prefix+'WithdrawCustId').value;
     const amt = parseFloat(document.getElementById(prefix+'WithdrawAmount').value);
+    const narration = document.getElementById(prefix+'WithdrawNarration').value;
     
     if(!ops.isValidMember(id)) return alert("Invalid Member");
     const bal = ops.calcBalance(id);
@@ -3232,6 +3272,7 @@ const ui = {
     
     document.getElementById('confirmWithdrawCustomer').innerText = db.members[id].name;
     document.getElementById('confirmWithdrawAmount').innerText = ops.fmt(amt);
+    document.getElementById('confirmWithdrawNarration').innerText = narration || '—';
     document.getElementById('confirmWithdrawValueDate').innerText = document.getElementById(prefix+'WithdrawValueDate').value || new Date().toLocaleDateString();
     document.getElementById('confirmWithdrawBalance').innerText = ops.fmt(bal.savings);
     document.getElementById('confirmWithdrawNewBalance').innerText = ops.fmt(bal.savings - amt);
@@ -3244,12 +3285,14 @@ const ui = {
     const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
     const id = document.getElementById(prefix+'LoanCustId').value;
     const amt = parseFloat(document.getElementById(prefix+'LoanAmount').value);
+    const narration = document.getElementById(prefix+'LoanNarration').value;
     
     if(!ops.isValidMember(id)) return alert("Invalid Member");
     
     document.getElementById('confirmLoanCustomer').innerText = db.members[id].name;
     document.getElementById('confirmLoanType').innerText = document.getElementById(prefix+'LoanType').value;
     document.getElementById('confirmLoanAmount').innerText = ops.fmt(amt);
+    document.getElementById('confirmLoanNarration').innerText = narration || '—';
     document.getElementById('confirmLoanValueDate').innerText = document.getElementById(prefix+'LoanValueDate').value || new Date().toLocaleDateString();
     document.getElementById('confirmLoanDate').innerText = new Date().toLocaleString();
     document.getElementById('confirmLoanBy').innerText = db.auth.name;
@@ -3269,8 +3312,8 @@ const ui = {
     
     let html = `<h2>System Report</h2><p>Generated: ${new Date().toLocaleString()}</p>`;
     html += `<div class="report-stats-grid"><div class="report-stat-card"><div>Savings</div><div class="positive">${ops.fmt(totalSav)}</div></div><div class="report-stat-card"><div>Loans</div><div class="negative">${ops.fmt(totalLoan)}</div></div><div class="report-stat-card"><div>Active Customers</div><div>${active}</div></div></div>`;
-    html += `<h3>Recent Transactions</h3><table><thead><tr><th>Date</th><th>ID</th><th>Type</th><th>Amount</th></tr></thead><tbody>`;
-    recent.forEach(t => html += `<tr><td>${t.date}</td><td>${t.cust}</td><td>${t.type}</td><td>${ops.fmt(t.amount)}</td></tr>`);
+    html += `<h3>Recent Transactions</h3><table><thead><tr><th>Date</th><th>ID</th><th>Type</th><th>Amount</th><th>Narration</th></tr></thead><tbody>`;
+    recent.forEach(t => html += `<tr><td>${t.date}</td><td>${t.cust}</td><td>${t.type}</td><td>${ops.fmt(t.amount)}</td><td>${t.narration || ''}</td></tr>`);
     html += `</tbody></table>`;
     
     document.getElementById('printableReport').innerHTML = html;
@@ -3286,16 +3329,23 @@ const ui = {
     const txs = db.ledger.filter(l => l.cust == id).sort((a,b)=>new Date(a.date)-new Date(b.date));
     const bal = ops.calcBalance(id);
     
-    // Enhanced statement with Value Date column
+    // Enhanced statement with Value Date, Narration, and Reverse buttons
     let html = `<h2>Statement: ${mem.name}</h2><p>ID: ${id}</p>`;
-    html += `<table><thead><tr><th>Transaction Date</th><th>Value Date</th><th>Amount</th><th>Transaction Type</th><th>Processed By</th></tr></thead><tbody>`;
+    html += `<table><thead><tr><th>Transaction Date</th><th>Value Date</th><th>Amount</th><th>Transaction Type</th><th>Narration</th><th>Processed By</th><th>Action</th></tr></thead><tbody>`;
     txs.forEach(t => {
-      html += `<tr style="${t.reversed?'text-decoration:line-through':''}">
+      html += `<tr style="${t.reversed ? 'text-decoration:line-through; color:#999;' : ''}">
         <td>${t.date}</td>
         <td>${t.valueDate || t.date}</td>
         <td>${ops.fmt(t.amount)}</td>
-        <td>${t.type}</td>
+        <td>${t.type}${t.reversalOf ? ' (Reversal)' : ''}</td>
+        <td>${t.narration || ''}</td>
         <td>${t.processedBy}</td>
+        <td class="no-print">
+          ${!t.reversed && t.type !== 'REVERSAL' && db.auth.role !== 'thrift_collector' ? 
+            `<button class="danger" style="padding:5px 10px; font-size:0.8rem;" onclick="ops.reverseTransaction('${t.txId}')">↩ Reverse</button>` : 
+            t.reversed ? '<span style="color:var(--danger);">Reversed</span>' : ''
+          }
+        </td>
       </tr>`;
     });
     html += `</tbody></table><div style="margin-top:20px;"><strong>Savings Balance: ${ops.fmt(bal.savings)}</strong><br><strong>Loan Balance: ${ops.fmt(bal.loan)}</strong></div>`;
@@ -3474,9 +3524,21 @@ const ops = {
     const type = document.getElementById(prefix+'TransType').value;
     const amt = parseFloat(document.getElementById(prefix+'TransAmount').value);
     const vDate = document.getElementById(prefix+'TransValueDate').value || new Date().toISOString().split('T')[0];
+    const narration = document.getElementById(prefix+'TransNarration').value;
     
-    db.ledger.push({ txId: Date.now(), cust: id, type: type, amount: amt, date: new Date().toLocaleString(), valueDate: vDate, processedBy: db.auth.name });
+    db.ledger.push({ 
+      txId: Date.now(), 
+      cust: id, 
+      type: type, 
+      amount: amt, 
+      date: new Date().toLocaleString(), 
+      valueDate: vDate, 
+      narration: narration || '',
+      processedBy: db.auth.name,
+      reversed: false
+    });
     document.getElementById(prefix+'TransAmount').value = '';
+    document.getElementById(prefix+'TransNarration').value = '';
     ui.closeModal('transactionConfirmationModal');
     alert("Transaction Successful");
     data.save();
@@ -3488,9 +3550,21 @@ const ops = {
     const id = document.getElementById(prefix+'WithdrawCustId').value;
     const amt = parseFloat(document.getElementById(prefix+'WithdrawAmount').value);
     const vDate = document.getElementById(prefix+'WithdrawValueDate').value || new Date().toISOString().split('T')[0];
+    const narration = document.getElementById(prefix+'WithdrawNarration').value;
     
-    db.ledger.push({ txId: Date.now(), cust: id, type: 'WITHDRAWAL', amount: amt, date: new Date().toLocaleString(), valueDate: vDate, processedBy: db.auth.name });
+    db.ledger.push({ 
+      txId: Date.now(), 
+      cust: id, 
+      type: 'WITHDRAWAL', 
+      amount: amt, 
+      date: new Date().toLocaleString(), 
+      valueDate: vDate, 
+      narration: narration || '',
+      processedBy: db.auth.name,
+      reversed: false
+    });
     document.getElementById(prefix+'WithdrawAmount').value = '';
+    document.getElementById(prefix+'WithdrawNarration').value = '';
     ui.closeModal('withdrawalConfirmationModal');
     alert("Withdrawal Successful");
     data.save();
@@ -3503,12 +3577,93 @@ const ops = {
     const type = document.getElementById(prefix+'LoanType').value;
     const amt = parseFloat(document.getElementById(prefix+'LoanAmount').value);
     const vDate = document.getElementById(prefix+'LoanValueDate').value || new Date().toISOString().split('T')[0];
+    const narration = document.getElementById(prefix+'LoanNarration').value;
     
-    db.ledger.push({ txId: Date.now(), cust: id, type: type, amount: amt, date: new Date().toLocaleString(), valueDate: vDate, processedBy: db.auth.name });
+    db.ledger.push({ 
+      txId: Date.now(), 
+      cust: id, 
+      type: type, 
+      amount: amt, 
+      date: new Date().toLocaleString(), 
+      valueDate: vDate, 
+      narration: narration || '',
+      processedBy: db.auth.name,
+      reversed: false
+    });
     document.getElementById(prefix+'LoanAmount').value = '';
+    document.getElementById(prefix+'LoanNarration').value = '';
     ui.closeModal('loanConfirmationModal');
     alert("Loan Updated");
     data.save();
+  },
+
+  /**
+   * Reverse a transaction
+   * @param {string|number} txId - The ID of the transaction to reverse
+   */
+  reverseTransaction: (txId) => {
+    // Permission check: only admin and supervisor
+    if (db.auth.role === 'thrift_collector') {
+      alert("Permission Denied: Thrift collectors cannot reverse transactions.");
+      return;
+    }
+    
+    // Find the original transaction
+    const originalTx = db.ledger.find(tx => tx.txId == txId);
+    if (!originalTx) {
+      alert("Transaction not found.");
+      return;
+    }
+    
+    // Check if already reversed
+    if (originalTx.reversed) {
+      alert("This transaction has already been reversed.");
+      return;
+    }
+    
+    // Ask for reason
+    const reason = prompt("Enter reason for reversal:", "Reversal of transaction " + txId);
+    if (reason === null) return; // User cancelled
+    
+    // Create reversal transaction
+    const reversalTx = {
+      txId: Date.now(),
+      cust: originalTx.cust,
+      type: 'REVERSAL',
+      amount: originalTx.amount * -1, // Negative amount
+      date: new Date().toLocaleString(),
+      valueDate: new Date().toISOString().split('T')[0],
+      narration: `Reversal of transaction ${originalTx.txId}: ${reason}`,
+      processedBy: db.auth.name,
+      reversed: false,
+      reversalOf: originalTx.txId // Link to original
+    };
+    
+    // Mark original as reversed
+    originalTx.reversed = true;
+    originalTx.reversalReason = reason;
+    originalTx.reversedBy = db.auth.name;
+    originalTx.reversalDate = new Date().toISOString();
+    originalTx.reversalTxId = reversalTx.txId;
+    
+    // Add to ledger
+    db.ledger.push(reversalTx);
+    
+    data.save();
+    alert(`✅ Transaction ${txId} reversed successfully.\nReversal ID: ${reversalTx.txId}`);
+    
+    // Refresh statement if open
+    const statementModal = document.getElementById('statementModal');
+    if (!statementModal.classList.contains('hidden')) {
+      const role = db.auth.role;
+      const id = role === 'admin' ? document.getElementById('adminStmtCustId').value : 
+                (role === 'supervisor' ? document.getElementById('supervisorStmtCustId').value : 
+                document.getElementById('thriftStmtCustId').value);
+      if (id == originalTx.cust) {
+        // Regenerate the statement
+        ui.openStatement();
+      }
+    }
   },
 
   closeAccount: () => {
@@ -3676,7 +3831,7 @@ window.addEventListener('load', () => {
     }, 1000);
   }
   
-  console.log('Enhanced OBATA SMART SAVINGS v2.5 loaded with robust data verification and enhanced statement');
+  console.log('Enhanced OBATA SMART SAVINGS v2.5 loaded with robust data verification, narration, and transaction reversal');
 });
 
 </script>
