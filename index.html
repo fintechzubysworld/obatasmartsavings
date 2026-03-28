@@ -17,7 +17,7 @@
     :root { 
       --primary: #1e88e5; 
       --dark: #1565c0; 
-      --bg: #f5f7fa; 
+      --bg: #f5f7fa;
       --danger: #c62828; 
       --success: #2e7d32; 
       --warning: #f9a825;
@@ -32,21 +32,21 @@
 
     body { 
       font-family: 'Segoe UI', Arial, sans-serif; 
-      background: var(--bg); 
+      background: var(--bg);
       margin: 0; 
       color: var(--text); 
       padding-bottom: 50px;
     }
 
     .container { 
-      max-width: 1200px; 
+      max-width: 1200px;
       margin: auto; 
       padding: 20px; 
     }
 
     .card { 
       background: #fff; 
-      border-radius: 12px; 
+      border-radius: 12px;
       padding: 25px; 
       margin-bottom: 20px; 
       box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
@@ -56,51 +56,51 @@
     .grid { 
       display: grid; 
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-      gap: 20px; 
+      gap: 20px;
     }
 
     .hidden { 
-      display: none !important; 
+      display: none !important;
     }
 
     h1, h2, h3 { 
       margin-top: 0; 
-      color: #2c3e50; 
+      color: #2c3e50;
     }
 
     h2 { 
       font-size: 1.25rem; 
       border-bottom: 2px solid #eee; 
-      padding-bottom: 10px; 
+      padding-bottom: 10px;
       margin-bottom: 15px; 
     }
 
     /* INPUTS & BUTTONS */
     input, select, button, textarea { 
-      padding: 12px; 
+      padding: 12px;
       width: 100%; 
       margin-top: 10px; 
       border: 1px solid #ddd; 
       border-radius: 6px; 
       box-sizing: border-box; 
-      font-size: 1rem; 
+      font-size: 1rem;
     }
 
     input:focus, select:focus { 
       border-color: var(--primary); 
-      outline: none; 
+      outline: none;
       box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
     }
 
     button { 
-      background: var(--primary); 
+      background: var(--primary);
       color: #fff; 
       border: none; 
       cursor: pointer; 
       font-weight: 600; 
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      transition: background 0.2s; 
+      transition: background 0.2s;
     }
 
     button:hover { background: var(--dark); }
@@ -190,20 +190,20 @@
 
     /* TABLES & DATA */
     table { 
-      width: 100%; 
+      width: 100%;
       border-collapse: collapse; 
       margin-top: 15px; 
       font-size: 0.95rem;
     }
 
     th, td { 
-      padding: 12px; 
+      padding: 12px;
       border-bottom: 1px solid #eee; 
       text-align: left; 
     }
 
     th { 
-      background: #f8f9fa; 
+      background: #f8f9fa;
       color: #555; 
       font-weight: 600;
     }
@@ -650,7 +650,7 @@
       .modal-overlay { position: static; background: none; display: block; }
       .modal-content { 
         box-shadow: none; 
-        max-width: 100%; 
+        max-width: 100%;
         width: 100%; 
         max-height: none; 
         padding: 0;
@@ -756,6 +756,22 @@
       <button onclick="ui.showTransactionConfirmation()">Submit Transaction</button>
     </div>
 
+    <div class="card" style="border-left: 5px solid var(--teal);">
+      <h2>📅 Bulk / Arrears Posting</h2>
+      <p style="font-size:0.9rem; color:#666;">Auto-generate multiple daily savings for past arrears.</p>
+      <input id="adminBulkCustId" placeholder="Customer ID" onchange="ops.checkName(this.value, 'adminBulkNameDisplay')" />
+      <small id="adminBulkNameDisplay" style="color:var(--primary); font-weight:bold;"></small>
+      <input id="adminBulkAmount" type="number" placeholder="Amount PER DAY (₦)" />
+      <input id="adminBulkDays" type="number" placeholder="Total Number of Days" />
+      <label for="adminBulkStartDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Start Value Date</label>
+      <input id="adminBulkStartDate" type="date" />
+      <small style="display:block; margin-top:5px; color:#666;">The date the first transaction should be recorded as.</small>
+      <input id="adminBulkNarration" placeholder="Narration (e.g., Arrears recovery)" />
+      <button class="teal" onclick="ui.showBulkConfirmation()">Preview & Submit Bulk</button>
+    </div>
+  </div>
+  
+  <div class="grid">
     <div class="card" style="border-left: 5px solid var(--pink);">
       <h2>💸 Process Withdrawal</h2>
       <input id="adminWithdrawCustId" placeholder="Customer ID" onchange="ops.checkName(this.value, 'adminWithdrawNameDisplay')" />
@@ -783,18 +799,17 @@
       <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
       <button class="warning" onclick="ui.showLoanConfirmation()">Process Loan</button>
     </div>
-  </div>
-
-  <div class="grid">
+    
     <div class="card">
       <h2>🔍 Customer Search</h2>
       <p style="font-size:0.9rem; color:#666;">Search customers by name or phone number</p>
       <input id="adminSearchQuery" placeholder="Enter name or phone number..." oninput="ops.searchCustomers()" />
-      <div id="adminSearchResults" class="search-results hidden">
-        </div>
+      <div id="adminSearchResults" class="search-results hidden"></div>
       <small style="display:block; margin-top:10px; color:#666;">Click on a customer to auto-fill their ID in forms</small>
     </div>
+  </div>
 
+  <div class="grid">
     <div class="card">
       <h2>📄 Member Statement</h2>
       <p style="font-size:0.9rem; color:#666;">View history, reverse transactions, and print.</p>
@@ -808,9 +823,7 @@
       <input id="adminProfileCustId" placeholder="Customer ID" />
       <button class="secondary" onclick="ui.openProfile()">View Profile</button>
     </div>
-  </div>
 
-  <div class="grid">
     <div class="card" style="border-left: 5px solid var(--danger);">
       <h2>🚫 Account Closure</h2>
       <p style="font-size:0.9rem; color:#666;">Close a customer's account (marks as inactive)</p>
@@ -820,7 +833,9 @@
       <button class="danger" onclick="ops.closeAccount()">Close Account</button>
       <small style="display:block; margin-top:10px; color:#666;">Note: Closed accounts remain in system for records but cannot transact</small>
     </div>
+  </div>
 
+  <div class="grid">
     <div class="card" style="border-left: 5px solid var(--success);">
       <h2>✅ Reactivate Account</h2>
       <p style="font-size:0.9rem; color:#666;">Reactivate a previously closed account</p>
@@ -868,6 +883,20 @@
     <input id="supervisorTransValueDate" type="date" value="" />
     <small style="display:block; margin-top:5px; color:#666;">Leave empty to use today's date</small>
     <button onclick="ui.showTransactionConfirmation()">Submit Transaction</button>
+  </div>
+
+  <div id="supervisorBulkPosting" class="card hidden" style="border-left: 5px solid var(--teal);">
+    <h2>📅 Bulk / Arrears Posting</h2>
+    <p style="font-size:0.9rem; color:#666;">Auto-generate multiple daily savings for past arrears.</p>
+    <input id="supervisorBulkCustId" placeholder="Customer ID" onchange="ops.checkName(this.value, 'supervisorBulkNameDisplay')" />
+    <small id="supervisorBulkNameDisplay" style="color:var(--primary); font-weight:bold;"></small>
+    <input id="supervisorBulkAmount" type="number" placeholder="Amount PER DAY (₦)" />
+    <input id="supervisorBulkDays" type="number" placeholder="Total Number of Days" />
+    <label for="supervisorBulkStartDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Start Value Date</label>
+    <input id="supervisorBulkStartDate" type="date" />
+    <small style="display:block; margin-top:5px; color:#666;">The date the first transaction should be recorded as.</small>
+    <input id="supervisorBulkNarration" placeholder="Narration (e.g., Arrears recovery)" />
+    <button class="teal" onclick="ui.showBulkConfirmation()">Preview & Submit Bulk</button>
   </div>
 
   <div id="supervisorWithdrawalProcessing" class="card hidden" style="border-left: 5px solid var(--pink);">
@@ -919,8 +948,7 @@
     <h2>🔍 Customer Search</h2>
     <p style="font-size:0.9rem; color:#666;">Search customers by name or phone number</p>
     <input id="supervisorSearchQuery" placeholder="Enter name or phone number..." oninput="ops.searchCustomers()" />
-    <div id="supervisorSearchResults" class="search-results hidden">
-      </div>
+    <div id="supervisorSearchResults" class="search-results hidden"></div>
     <small style="display:block; margin-top:10px; color:#666;">Click on a customer to auto-fill their ID in forms</small>
   </div>
 
@@ -986,20 +1014,6 @@
     <button onclick="ui.showTransactionConfirmation()">Submit Transaction</button>
   </div>
 
-  <div class="card" style="border-left: 5px solid var(--teal);">
-      <h2>📅 Bulk / Arrears Posting</h2>
-      <p style="font-size:0.9rem; color:#666;">Auto-generate multiple daily savings for past arrears.</p>
-      <input id="adminBulkCustId" placeholder="Customer ID" onchange="ops.checkName(this.value, 'adminBulkNameDisplay')" />
-      <small id="adminBulkNameDisplay" style="color:var(--primary); font-weight:bold;"></small>
-      <input id="adminBulkAmount" type="number" placeholder="Amount PER DAY (₦)" />
-      <input id="adminBulkDays" type="number" placeholder="Total Number of Days" />
-      <label for="adminBulkStartDate" style="margin-top: 15px; display: block; font-weight: 600; color: #555;">Start Value Date</label>
-      <input id="adminBulkStartDate" type="date" />
-      <small style="display:block; margin-top:5px; color:#666;">The date the first transaction should be recorded as.</small>
-      <input id="adminBulkNarration" placeholder="Narration (e.g., Arrears recovery)" />
-      <button class="teal" onclick="ui.showBulkConfirmation()">Preview & Submit Bulk</button>
-    </div>
-
   <div id="thriftWithdrawalProcessing" class="card hidden" style="border-left: 5px solid var(--pink);">
     <h2>💸 Process Withdrawal</h2>
     <input id="thriftWithdrawCustId" placeholder="Customer ID" onchange="ops.checkName(this.value, 'thriftWithdrawNameDisplay')" />
@@ -1032,8 +1046,7 @@
     <h2>🔍 Customer Search</h2>
     <p style="font-size:0.9rem; color:#666;">Search customers by name or phone number</p>
     <input id="thriftSearchQuery" placeholder="Enter name or phone number..." oninput="ops.searchCustomers()" />
-    <div id="thriftSearchResults" class="search-results hidden">
-      </div>
+    <div id="thriftSearchResults" class="search-results hidden"></div>
     <small style="display:block; margin-top:10px; color:#666;">Click on a customer to auto-fill their ID in forms</small>
   </div>
 
@@ -1060,8 +1073,6 @@
     </div>
   </div>
 </div>
-
-<!-- Verification Modal (Dynamically Created) -->
 
 <div id="passwordModal" class="modal-overlay hidden">
   <div class="modal-content" style="max-width: 400px;">
@@ -1173,8 +1184,7 @@
     
     <div class="user-management-section">
       <h3>Existing Users</h3>
-      <div id="userList" class="user-list">
-        </div>
+      <div id="userList" class="user-list"></div>
     </div>
     
     <div style="margin-top:20px; display:flex; gap:10px;">
@@ -1185,8 +1195,7 @@
 
 <div id="statementModal" class="modal-overlay hidden">
   <div class="modal-content">
-    <div id="printableStatement">
-      </div>
+    <div id="printableStatement"></div>
     <div class="no-print" style="margin-top:20px; display:flex; gap:10px;">
       <button onclick="window.print()">🖨️ Print Statement</button>
       <button class="danger" onclick="ui.closeModal('statementModal')">Close</button>
@@ -1196,8 +1205,7 @@
 
 <div id="profileModal" class="modal-overlay hidden">
   <div class="modal-content">
-    <div id="printableProfile">
-      </div>
+    <div id="printableProfile"></div>
     <div class="no-print" style="margin-top:20px; display:flex; gap:10px;">
       <button onclick="window.print()">🖨️ Print Profile</button>
       <button class="danger" onclick="ui.closeModal('profileModal')">Close</button>
@@ -1207,8 +1215,7 @@
 
 <div id="reportModal" class="modal-overlay hidden">
   <div class="modal-content">
-    <div id="printableReport">
-      </div>
+    <div id="printableReport"></div>
     <div class="no-print" style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
       <button onclick="window.print()">🖨️ Print Report</button>
       <button class="success" onclick="data.exportReportCSV()">📥 Export as CSV</button>
@@ -1259,8 +1266,7 @@
       <div id="importPreview" class="hidden">
         <h3>Import Preview</h3>
         <div class="preview-table">
-          <table id="previewTable">
-            </table>
+          <table id="previewTable"></table>
         </div>
         <p id="previewStats" style="color:#666;"></p>
         <div class="progress-bar">
@@ -1322,8 +1328,7 @@
       
       <div class="backup-history" id="backupHistorySection">
         <h3>Backup History</h3>
-        <div id="backupHistoryList">
-          </div>
+        <div id="backupHistoryList"></div>
       </div>
       
       <div style="margin-top:20px; padding:15px; background:#f5f5f5; border-radius:8px;">
@@ -1631,7 +1636,6 @@ const db = {
     backupHistory: []
   })
 };
-
 // Initialize defaults
 Object.keys(db.members).forEach(id => { if (db.members[id].active === undefined) db.members[id].active = true; });
 if (db.users.length === 0) {
@@ -1662,7 +1666,6 @@ const gDrive = {
       });
       gDrive.checkToken();
     });
-
     gDrive.tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: GOOGLE_CONFIG.CLIENT_ID,
       scope: GOOGLE_CONFIG.SCOPES,
@@ -1734,7 +1737,6 @@ const gDrive = {
       
       // 2. Find Database File
       gDrive.fileId = await gDrive.findFileInFolder(GOOGLE_CONFIG.DB_FILE_NAME, gDrive.folderId);
-      
       if (gDrive.fileId) {
         // 3a. If exists, Load from Cloud
         await gDrive.loadData();
@@ -1782,7 +1784,6 @@ const gDrive = {
 
   saveData: async () => {
     if (!gDrive.isAuthorized || !gDrive.folderId) return;
-
     ui.updateSyncStatus('active', 'Syncing...');
     gDrive.isSyncing = true;
 
@@ -1798,23 +1799,19 @@ const gDrive = {
         settings: db.settings
       }
     });
-
     const file = new Blob([dataContent], {type: 'application/json'});
     const metadata = {
       'name': GOOGLE_CONFIG.DB_FILE_NAME,
       'mimeType': 'application/json',
       'parents': [gDrive.folderId]
     };
-
     const accessToken = gapi.auth.getToken().access_token;
     const form = new FormData();
     form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
     form.append('file', file);
-
     try {
       let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
       let method = 'POST';
-
       if (gDrive.fileId) {
         url = `https://www.googleapis.com/upload/drive/v3/files/${gDrive.fileId}?uploadType=multipart`;
         method = 'PATCH';
@@ -1822,7 +1819,6 @@ const gDrive = {
         const updateForm = new FormData();
         updateForm.append('metadata', new Blob([JSON.stringify(updateMeta)], {type: 'application/json'}));
         updateForm.append('file', file);
-        
         await fetch(url, {
           method: method,
           headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
@@ -1854,7 +1850,6 @@ const gDrive = {
         fileId: gDrive.fileId,
         alt: 'media'
       });
-      
       const cloudDB = response.result;
       if (cloudDB && cloudDB.data) {
         db.auth = cloudDB.data.auth;
@@ -1927,7 +1922,6 @@ const data = {
     
     const backupStr = JSON.stringify(backup, null, 2);
     const fileName = `Obata_Full_Backup_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
-    
     if (driveManager.driveHandle) {
       try {
         const fileHandle = await driveManager.driveHandle.getFileHandle(fileName, { create: true });
@@ -1962,7 +1956,6 @@ const data = {
       transactions: db.ledger.length,
       users: db.users.length
     });
-    
     if (db.settings.backupHistory.length > 20) {
       db.settings.backupHistory = db.settings.backupHistory.slice(0, 20);
     }
@@ -1984,7 +1977,6 @@ const data = {
       const mem = db.members[id];
       csv += `${id},"${mem.name}",${mem.phone},${mem.active ? 'Active' : 'Inactive'},${mem.date},${mem.closureDate || 'N/A'},"${mem.closureReason || 'N/A'}"\n`;
     });
-    
     csv += "\n\nFINANCIAL SUMMARY\n";
     csv += "Total Savings,Total Loans,Vault Cash,Active Customers,Inactive Customers\n";
     
@@ -2000,7 +1992,6 @@ const data = {
       if (db.members[id].active) activeCustomers++;
       else inactiveCustomers++;
     });
-    
     const vault = totalSav - totalLoanOut;
     
     csv += `${ops.fmt(totalSav).replace('₦', '')},${ops.fmt(totalLoanOut).replace('₦', '')},${ops.fmt(vault).replace('₦', '')},${activeCustomers},${inactiveCustomers}\n`;
@@ -2010,16 +2001,13 @@ const data = {
     db.users.forEach(user => {
       csv += `${user.id},${user.username},"${user.name}",${user.role},"${Object.keys(user.permissions || {}).filter(p => user.permissions[p]).join(', ')}",${user.lastLogin || 'Never'}\n`;
     });
-    
     csv += "\n\nTRANSACTION SUMMARY (Last 100)\n";
     csv += "Date,Value Date,ID,Name,Type,Amount,Status,Narration,Processed By\n";
-    
     const recentTxs = [...db.ledger].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 100);
     recentTxs.forEach(l => {
       const name = db.members[l.cust] ? db.members[l.cust].name : 'Unknown';
       csv += `${l.date},${l.valueDate || l.date},${l.cust},"${name}",${l.type},${l.amount},${l.reversed ? 'REVERSED' : 'OK'},"${l.narration || ''}",${l.processedBy || 'System'}\n`;
     });
-    
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -2030,7 +2018,6 @@ const data = {
 
   wipeAllData: () => {
     localStorage.clear();
-    
     db.auth = { user: 'Admin', pass: 'admin123', role: 'admin', name: 'Administrator' };
     db.members = {};
     db.ledger = [];
@@ -2041,12 +2028,10 @@ const data = {
       created: new Date().toISOString(), lastLogin: null
     }];
     db.settings = { autoBackup: false, backupTime: "02:00", driveConnected: false, drivePath: null, lastBackup: null, backupHistory: [] };
-    
     alert("✅ All data has been wiped clean!\n\nSystem has been reset to factory defaults.\n\nDefault login: Admin/admin123");
     location.reload();
   }
 };
-
 // 3. User Management System (Restored)
 const userManager = {
   getNextUserId: () => {
@@ -2057,7 +2042,6 @@ const userManager = {
   showRolePermissions: () => {
     const role = document.getElementById('newUserRole').value;
     document.getElementById('roleDisplay').textContent = role === 'supervisor' ? 'Supervisor' : 'Thrift Collector';
-    
     if (role === 'supervisor') {
       document.getElementById('thriftPermissions').classList.add('hidden');
       document.getElementById('supervisorPermissions').classList.remove('hidden');
@@ -2073,7 +2057,6 @@ const userManager = {
     const username = document.getElementById('newUserUsername').value.trim();
     const password = document.getElementById('newUserPassword').value;
     const confirmPassword = document.getElementById('newUserConfirmPassword').value;
-    
     if (!name || !username || !password) return alert("Please fill in all required fields");
     if (password !== confirmPassword) return alert("Passwords do not match");
     if (password.length < 4) return alert("Password must be at least 4 characters");
@@ -2109,7 +2092,6 @@ const userManager = {
       id: userManager.getNextUserId(), username: username, password: password, name: name, role: role, permissions: permissions,
       created: new Date().toISOString(), createdBy: db.auth.user, lastLogin: null, active: true
     };
-    
     db.users.push(newUser);
     data.save();
     userManager.loadUserList();
@@ -2120,7 +2102,6 @@ const userManager = {
     const userList = document.getElementById('userList');
     if (!userList) return;
     let html = '';
-    
     db.users.forEach(user => {
       const permissions = Object.keys(user.permissions || {}).filter(p => user.permissions[p]).map(p => `<span class="permission-badge ${user.active ? '' : 'inactive'}">${p}</span>`).join('');
       html += `
@@ -2171,7 +2152,8 @@ const userManager = {
   getCurrentUserActivity: (userId) => {
     const user = db.users.find(u => u.id === userId);
     if (!user) return { transactions: 0, members: 0, loans: 0, withdrawals: 0, savings: 0 };
-    const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const userTransactions = db.ledger.filter(tx => tx.processedBy === user.username && new Date(tx.date) >= thirtyDaysAgo);
     return {
       transactions: userTransactions.length,
@@ -2233,7 +2215,6 @@ const dataVerifier = {
           dataVerifier.calculateNameSimilarity(token, existingToken) >= 0.9
         )
       );
-      
       if (commonTokens.length >= 1 && newNameTokens.length >= 2) {
         similarityScore += commonTokens.length * 25;
         matchReasons.push(`${commonTokens.length} name parts match`);
@@ -2268,13 +2249,11 @@ const dataVerifier = {
    */
   calculateNameSimilarity: (str1, str2) => {
     if (!str1 || !str2) return 0;
-    
     // Simple implementation - in production you might want a full Levenshtein algorithm
     const longer = str1.length > str2.length ? str1 : str2;
     const shorter = str1.length > str2.length ? str2 : str1;
     
     if (longer.length === 0) return 1.0;
-    
     const editDistance = dataVerifier.levenshteinDistance(longer, shorter);
     return (longer.length - editDistance) / parseFloat(longer.length);
   },
@@ -2282,7 +2261,6 @@ const dataVerifier = {
   levenshteinDistance: (str1, str2) => {
     const track = Array(str2.length + 1).fill(null).map(() =>
       Array(str1.length + 1).fill(null));
-    
     for (let i = 0; i <= str1.length; i += 1) {
       track[0][i] = i;
     }
@@ -2310,14 +2288,12 @@ const dataVerifier = {
    */
   validatePhoneNumber: (phone) => {
     const cleanPhone = phone.trim().replace(/\s+/g, '');
-    
     // Nigerian phone number patterns
     const patterns = [
       /^0[7-9][0-1]\d{8}$/, // 070, 080, 081, 090, 091
       /^\+234[7-9][0-1]\d{8}$/, // +234 format
       /^234[7-9][0-1]\d{8}$/, // 234 format
     ];
-    
     return patterns.some(pattern => pattern.test(cleanPhone));
   },
   
@@ -2326,11 +2302,9 @@ const dataVerifier = {
    */
   validateName: (name) => {
     if (!name || name.trim().length < 2) return false;
-    
     // Check for minimum two characters and reasonable length
     const trimmedName = name.trim();
     if (trimmedName.length < 2 || trimmedName.length > 100) return false;
-    
     // Check for valid characters (allow letters, spaces, hyphens, apostrophes)
     const validPattern = /^[A-Za-zÀ-ÿ\s\-'.]+$/;
     return validPattern.test(trimmedName);
@@ -2357,14 +2331,12 @@ const dataVerifier = {
     const exactPhoneMatch = Object.values(existingMembers).find(m => 
       m.phone.trim().replace(/\s+/g, '') === phone.trim().replace(/\s+/g, '')
     );
-    
     if (exactPhoneMatch) {
       errors.push(`Phone number already registered to: ${exactPhoneMatch.name} (ID: ${Object.keys(existingMembers).find(id => existingMembers[id] === exactPhoneMatch)})`);
     }
     
     // 4. Find potential duplicates (non-blocking, just warnings)
     const potentialDuplicates = dataVerifier.findPotentialDuplicates(name, phone, existingMembers);
-    
     if (potentialDuplicates.length > 0) {
       potentialDuplicates.forEach(dup => {
         if (dup.similarityScore >= 70) {
@@ -2388,11 +2360,9 @@ const dataVerifier = {
    */
   showVerificationResults: (validationResult, name, phone, onConfirm, onCancel) => {
     const modalId = 'verificationModal';
-    
     // Remove existing modal if present
     const existingModal = document.getElementById(modalId);
     if (existingModal) existingModal.remove();
-    
     let modalHTML = `
       <div id="${modalId}" class="modal-overlay">
         <div class="modal-content" style="max-width: 700px;">
@@ -2411,7 +2381,6 @@ const dataVerifier = {
             </div>
           </div>
     `;
-    
     // Show errors
     if (validationResult.errors.length > 0) {
       modalHTML += `
@@ -2457,7 +2426,6 @@ const dataVerifier = {
               </thead>
               <tbody>
       `;
-      
       validationResult.potentialDuplicates.forEach(dup => {
         modalHTML += `
           <tr style="border-bottom: 1px solid #eee; ${dup.similarityScore >= 70 ? 'background: rgba(249, 168, 37, 0.1);' : ''}">
@@ -2465,7 +2433,7 @@ const dataVerifier = {
             <td style="padding: 10px;">${dup.name}</td>
             <td style="padding: 10px;">${dup.phone}</td>
             <td style="padding: 10px;">
-              <span style="padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; background: ${dup.status === 'Active' ? 'var(--success)' : '#757575'}; color: white;">
+               <span style="padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; background: ${dup.status === 'Active' ? 'var(--success)' : '#757575'}; color: white;">
                 ${dup.status}
               </span>
             </td>
@@ -2526,7 +2494,6 @@ const dataVerifier = {
   
   handleVerificationConfirm: () => {
     const forceCreateCheckbox = document.getElementById('forceCreateCheckbox');
-    
     if (!forceCreateCheckbox || !forceCreateCheckbox.checked) {
       alert('Please confirm that this is not a duplicate account by checking the checkbox.');
       return;
@@ -2534,13 +2501,11 @@ const dataVerifier = {
     
     const modal = document.getElementById('verificationModal');
     if (modal) modal.remove();
-    
     if (window.verificationData && window.verificationData.onConfirm) {
       window.verificationData.onConfirm();
     }
   }
 };
-
 /**
  * ENHANCED IMPORT/EXPORT WITH DATA VALIDATION
  */
@@ -2601,7 +2566,8 @@ const enhancedImportData = {
           document.getElementById('previewTable').innerHTML = `<div>Full System Backup: ${Object.keys(backup.data.members).length} members</div>`;
           document.getElementById('importPreview').classList.remove('hidden');
         } else alert("Invalid JSON");
-      } catch (e) { alert("Invalid JSON"); }
+      } catch (e) { alert("Invalid JSON");
+      }
     };
     reader.readAsText(file);
   },
@@ -2610,7 +2576,6 @@ const enhancedImportData = {
     const transactions = [];
     enhancedImportData.validationErrors = [];
     enhancedImportData.importedMembers = new Set();
-    
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
@@ -2622,7 +2587,6 @@ const enhancedImportData = {
       
       for (let j = 0; j < line.length; j++) {
         const char = line[j];
-        
         if (char === '"') {
           inQuotes = !inQuotes;
         } else if (char === ',' && !inQuotes) {
@@ -2633,7 +2597,7 @@ const enhancedImportData = {
         }
       }
       parts.push(currentPart.trim());
-      
+    
       if (parts.length >= 5) {
         const transaction = {
           date: parts[0].replace(/"/g, ''),
@@ -2703,7 +2667,6 @@ const enhancedImportData = {
         </div>
       ` : ''}
     `;
-    
     document.getElementById('importPreview').classList.remove('hidden');
   },
   
@@ -2712,7 +2675,6 @@ const enhancedImportData = {
    */
   validateTransaction: (transaction, lineNumber) => {
     const errors = [];
-    
     // Validate date
     if (!transaction.date || isNaN(new Date(transaction.date))) {
       errors.push('Invalid date format');
@@ -2750,10 +2712,8 @@ const enhancedImportData = {
    */
   confirmImport: () => {
     if (!enhancedImportData.fileData) return;
-    
     // Check for potential duplicate members in import data
     const duplicateCheck = enhancedImportData.checkImportDuplicates();
-    
     if (duplicateCheck.hasDuplicates) {
       if (!confirm(`Found ${duplicateCheck.duplicateCount} potential duplicate member(s) in import data. Continue anyway?`)) {
         return;
@@ -2762,7 +2722,6 @@ const enhancedImportData = {
     
     if (enhancedImportData.importType === 'full_backup') {
       if (!confirm("WARNING: This will replace ALL current data. Continue?")) return;
-      
       // Validate backup data structure
       if (!enhancedImportData.validateBackupData(enhancedImportData.fileData)) {
         alert("Invalid backup file structure. Import cancelled.");
@@ -2776,17 +2735,14 @@ const enhancedImportData = {
       db.lastId = d.lastId;
       db.users = d.users;
       db.settings = d.settings;
-      
       enhancedImportData.showImportResults('full_backup', {
         members: Object.keys(d.members).length,
         transactions: d.ledger.length,
         users: d.users.length
       });
-      
     } else {
       // Import transactions with enhanced validation
       const importResults = enhancedImportData.processTransactionImport();
-      
       enhancedImportData.showImportResults('transactions', importResults);
     }
     
@@ -2803,7 +2759,6 @@ const enhancedImportData = {
     
     const phoneMap = new Map();
     const duplicateMembers = new Set();
-    
     enhancedImportData.fileData.forEach(tx => {
       const cleanPhone = tx.name; // Using name as identifier in this context
       if (phoneMap.has(cleanPhone) && phoneMap.get(cleanPhone) !== tx.cust) {
@@ -2812,7 +2767,6 @@ const enhancedImportData = {
         phoneMap.set(cleanPhone, tx.cust);
       }
     });
-    
     return {
       hasDuplicates: duplicateMembers.size > 0,
       duplicateCount: duplicateMembers.size,
@@ -2825,23 +2779,18 @@ const enhancedImportData = {
    */
   validateBackupData: (backupData) => {
     if (!backupData || !backupData.data) return false;
-    
     const requiredKeys = ['members', 'ledger', 'users', 'lastId'];
     const hasAllKeys = requiredKeys.every(key => backupData.data[key] !== undefined);
     
     if (!hasAllKeys) return false;
-    
     // Additional validation
     try {
       // Check members is an object
       if (typeof backupData.data.members !== 'object') return false;
-      
       // Check ledger is an array
       if (!Array.isArray(backupData.data.ledger)) return false;
-      
       // Check users is an array
       if (!Array.isArray(backupData.data.users)) return false;
-      
       // Check lastId is a number
       if (typeof backupData.data.lastId !== 'number') return false;
       
@@ -2863,7 +2812,6 @@ const enhancedImportData = {
       newMembers: 0,
       existingMembers: 0
     };
-    
     const memberCache = new Set(Object.keys(db.members));
     
     enhancedImportData.fileData.forEach((tx, idx) => {
@@ -2898,7 +2846,6 @@ const enhancedImportData = {
           importSource: 'CSV Import',
           importDate: new Date().toISOString()
         });
-        
         results.imported++;
       } catch (error) {
         console.error('Error importing transaction:', error, tx);
@@ -2993,14 +2940,17 @@ const driveManager = {
         const handle = await window.showDirectoryPicker();
         driveManager.driveHandle = handle;
         db.settings.driveConnected = true; db.settings.drivePath = 'External Drive';
-        data.save(); driveManager.updateDriveStatus(); alert('✅ Drive connected successfully!');
+        data.save(); driveManager.updateDriveStatus();
+        alert('✅ Drive connected successfully!');
       } else {
         if(confirm('Browser does not support direct drive access. Use simulated download?')) {
-          db.settings.driveConnected = true; db.settings.drivePath = 'Simulated Drive';
+          db.settings.driveConnected = true;
+          db.settings.drivePath = 'Simulated Drive';
           data.save(); driveManager.updateDriveStatus();
         }
       }
-    } catch (e) { alert('Failed: ' + e.message); }
+    } catch (e) { alert('Failed: ' + e.message);
+    }
   },
   disconnectDrive: () => {
     db.settings.driveConnected = false; db.settings.drivePath = null; driveManager.driveHandle = null;
@@ -3017,7 +2967,8 @@ const driveManager = {
       document.getElementById('driveStatusText').innerText = 'Not Connected';
     }
   },
-  backupToDrive: async () => { if(!db.settings.driveConnected) return alert('Connect drive first'); await data.exportFullBackup(); },
+  backupToDrive: async () => { if(!db.settings.driveConnected) return alert('Connect drive first'); await data.exportFullBackup();
+  },
   restoreFromDrive: async () => {
     if(!db.settings.driveConnected) return alert('Connect drive first');
     // Simple restore logic via file picker
@@ -3033,17 +2984,20 @@ const driveManager = {
   processRestore: (content) => {
     const backup = safeParse(content);
     if(backup && backup.data && confirm('Restore backup? This replaces current data.')) {
-      db.members = backup.data.members; db.ledger = backup.data.ledger; db.users = backup.data.users; db.lastId = backup.data.lastId;
+      db.members = backup.data.members;
+      db.ledger = backup.data.ledger; db.users = backup.data.users; db.lastId = backup.data.lastId;
       data.save(); alert('Restored successfully');
     }
   },
   scheduleAutoBackup: () => {
     const time = prompt('Enter backup time (HH:MM):', db.settings.backupTime || '02:00');
-    if(time) { db.settings.autoBackup = true; db.settings.backupTime = time; data.save(); driveManager.setupAutoBackup(); alert('Scheduled'); }
+    if(time) { db.settings.autoBackup = true; db.settings.backupTime = time; data.save(); driveManager.setupAutoBackup(); alert('Scheduled');
+    }
   },
   setupAutoBackup: () => {
     if(!db.settings.autoBackup) return;
-    const now = new Date(); const [h, m] = db.settings.backupTime.split(':');
+    const now = new Date();
+    const [h, m] = db.settings.backupTime.split(':');
     const target = new Date(now); target.setHours(h, m, 0, 0);
     if(target <= now) target.setDate(target.getDate() + 1);
     setTimeout(() => { if(db.settings.driveConnected) driveManager.backupToDrive(); driveManager.setupAutoBackup(); }, target - now);
@@ -3056,7 +3010,6 @@ const driveManager = {
     list.innerHTML = html || '<p style="text-align:center">No backups</p>';
   }
 };
-
 /**
  * ENHANCED DATA INTEGRITY CHECKS
  */
@@ -3066,7 +3019,6 @@ const dataIntegrity = {
    */
   checkAllIntegrity: () => {
     const issues = [];
-    
     // Check 1: Members without transactions
     Object.keys(db.members).forEach(id => {
       const hasTransactions = db.ledger.some(tx => tx.cust == id);
@@ -3077,7 +3029,6 @@ const dataIntegrity = {
         });
       }
     });
-    
     // Check 2: Transactions referencing non-existent members
     db.ledger.forEach(tx => {
       if (!db.members[tx.cust]) {
@@ -3087,7 +3038,6 @@ const dataIntegrity = {
         });
       }
     });
-    
     // Check 3: Negative balances
     Object.keys(db.members).forEach(id => {
       const balance = ops.calcBalance(id);
@@ -3098,7 +3048,6 @@ const dataIntegrity = {
         });
       }
     });
-    
     // Check 4: Duplicate phone numbers
     const phoneMap = new Map();
     Object.entries(db.members).forEach(([id, member]) => {
@@ -3134,7 +3083,6 @@ const dataIntegrity = {
    */
   showIntegrityReport: () => {
     const issues = dataIntegrity.checkAllIntegrity();
-    
     if (issues.length === 0) {
       alert('✅ Data integrity check passed! No issues found.');
       return;
@@ -3148,7 +3096,6 @@ const dataIntegrity = {
           
           <div style="max-height: 400px; overflow-y: auto; margin: 20px 0;">
     `;
-    
     issues.forEach((issue, index) => {
       const bgColor = issue.type === 'error' ? 'rgba(198, 40, 40, 0.1)' : 'rgba(249, 168, 37, 0.1)';
       const borderColor = issue.type === 'error' ? 'var(--danger)' : 'var(--warning)';
@@ -3170,7 +3117,6 @@ const dataIntegrity = {
         </div>
       </div>
     `;
-    
     // Add modal to DOM
     const existingModal = document.querySelector('.modal-overlay');
     if (existingModal && existingModal.querySelector('h2')?.textContent === 'Data Integrity Report') {
@@ -3185,7 +3131,6 @@ const dataIntegrity = {
    */
   fixCommonIssues: () => {
     if (!confirm('Attempt to fix common data issues? This may modify your data.')) return;
-    
     let fixesApplied = 0;
     
     // Fix 1: Remove transactions referencing non-existent members
@@ -3202,7 +3147,6 @@ const dataIntegrity = {
         fixesApplied++;
       }
     });
-    
     // Fix 3: Update imported members with proper structure
     Object.keys(db.members).forEach(id => {
       if (db.members[id].imported && !db.members[id].importDate) {
@@ -3210,7 +3154,6 @@ const dataIntegrity = {
         fixesApplied++;
       }
     });
-    
     data.save();
     alert(`✅ Applied ${fixesApplied} fixes to database.`);
     
@@ -3221,7 +3164,6 @@ const dataIntegrity = {
     }
   }
 };
-
 // 6. User Interface Functions
 const ui = {
   show: (id) => document.getElementById(id).classList.remove('hidden'),
@@ -3233,17 +3175,23 @@ const ui = {
     const txt = document.getElementById('syncText');
     el.classList.remove('hidden');
     ind.className = 'sync-indicator';
-    if (state === 'active') { ind.classList.add('sync-active'); txt.innerText = text || 'Syncing...'; }
-    else if (state === 'online') { ind.classList.add('sync-online'); txt.innerText = text || 'Online'; }
-    else if (state === 'error') { ind.classList.add('sync-error'); txt.innerText = text || 'Error'; }
-    else { ind.style.background = '#ccc'; txt.innerText = 'Offline'; }
+    if (state === 'active') { ind.classList.add('sync-active');
+      txt.innerText = text || 'Syncing...'; }
+    else if (state === 'online') { ind.classList.add('sync-online'); txt.innerText = text ||
+      'Online'; }
+    else if (state === 'error') { ind.classList.add('sync-error'); txt.innerText = text || 'Error';
+    }
+    else { ind.style.background = '#ccc'; txt.innerText = 'Offline';
+    }
   },
   
   openPasswordModal: () => ui.show('passwordModal'),
   openChangePasswordModal: () => ui.show('changePasswordModal'),
-  openUserManagementModal: () => { userManager.loadUserList(); ui.show('userManagementModal'); },
+  openUserManagementModal: () => { userManager.loadUserList();
+    ui.show('userManagementModal'); },
   openImportModal: () => { enhancedImportData.resetImport(); ui.show('importModal'); },
-  openDriveModal: () => { driveManager.updateDriveStatus(); driveManager.loadBackupHistory(); ui.show('driveModal'); },
+  openDriveModal: () => { driveManager.updateDriveStatus(); driveManager.loadBackupHistory(); ui.show('driveModal');
+  },
   openWipeModal: () => { document.getElementById('wipeUsername').value=''; ui.show('wipeModal'); },
   closeModal: (id) => ui.hide(id),
   
@@ -3251,12 +3199,10 @@ const ui = {
     const role = db.auth.role;
     let name = role === 'admin' ? document.getElementById('adminNewMemName').value : (role === 'supervisor' ? document.getElementById('supervisorNewMemName').value : document.getElementById('thriftNewMemName').value);
     let phone = role === 'admin' ? document.getElementById('adminNewMemPhone').value : (role === 'supervisor' ? document.getElementById('supervisorNewMemPhone').value : document.getElementById('thriftNewMemPhone').value);
-    
     if(!name || !phone) return alert("Name and Phone required");
     
     // Perform comprehensive validation
     const validationResult = dataVerifier.validateNewMember(name, phone, db.members);
-    
     if (!validationResult.isValid) {
       // Show validation errors
       let errorMessage = "Cannot create account. Please fix the following errors:\n\n";
@@ -3307,12 +3253,15 @@ const ui = {
     document.getElementById('confirmTransBy').innerText = db.auth.name;
     ui.show('transactionConfirmationModal');
   },
-  
+
   showBulkConfirmation: () => {
     const role = db.auth.role;
     const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
     
-    const id = document.getElementById(prefix+'BulkCustId').value;
+    const idEl = document.getElementById(prefix+'BulkCustId');
+    if(!idEl) return alert("Bulk posting not available for this role.");
+    
+    const id = idEl.value;
     const amt = parseFloat(document.getElementById(prefix+'BulkAmount').value);
     const days = parseInt(document.getElementById(prefix+'BulkDays').value);
     const startDateStr = document.getElementById(prefix+'BulkStartDate').value;
@@ -3334,6 +3283,7 @@ const ui = {
 
     ui.show('bulkConfirmationModal');
   },
+  
   showWithdrawalConfirmation: () => {
     const role = db.auth.role;
     const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
@@ -3449,9 +3399,13 @@ const ui = {
     document.getElementById('supervisorWelcomeMsg').textContent = `Operator: ${user.name}`;
     const p = user.permissions;
     const map = {
-      supervisorMemberRegistration: p.memberCreation, supervisorTransactionPosting: p.transactionPosting,
-      supervisorWithdrawalProcessing: p.withdrawal, supervisorLoanManagement: p.loanManagement,
-      supervisorAccountClosure: p.accountClosure, supervisorAccountReactivation: p.accountReactivation
+      supervisorMemberRegistration: p.memberCreation, 
+      supervisorTransactionPosting: p.transactionPosting,
+      supervisorBulkPosting: p.transactionPosting, 
+      supervisorWithdrawalProcessing: p.withdrawal, 
+      supervisorLoanManagement: p.loanManagement,
+      supervisorAccountClosure: p.accountClosure, 
+      supervisorAccountReactivation: p.accountReactivation
     };
     Object.keys(map).forEach(id => document.getElementById(id).classList[map[id]?'remove':'add']('hidden'));
     
@@ -3472,7 +3426,6 @@ const ui = {
     document.getElementById('thriftActivityStats').innerHTML = `<div class="stat-row"><span>Transactions (30d):</span><strong>${activity.transactions}</strong></div>`;
   }
 };
-
 // 7. Enhanced Operations Logic
 const ops = {
   fmt: (n) => '₦' + parseFloat(n).toLocaleString('en-NG', {minimumFractionDigits: 2}),
@@ -3509,15 +3462,14 @@ const ops = {
     const phone = document.getElementById(prefix+'NewMemPhone').value;
     const name = document.getElementById(prefix+'NewMemName').value;
     const warn = document.getElementById(prefix+'DuplicateWarning');
-    if(!phone) { warn.style.display='none'; return; }
+    if(!phone) { warn.style.display='none'; return;
+    }
     
     // Find potential duplicates using enhanced verification
     const potentialDuplicates = dataVerifier.findPotentialDuplicates(name || 'New Member', phone, db.members);
-    
     if (potentialDuplicates.length > 0) {
       const topDuplicate = potentialDuplicates[0];
       let warningText = '';
-      
       if (topDuplicate.similarityScore >= 80) {
         warningText = `🚨 HIGH RISK: ${topDuplicate.name} (ID: ${topDuplicate.id}) has ${topDuplicate.matchReasons[0]}`;
         warn.style.backgroundColor = 'rgba(198, 40, 40, 0.2)';
@@ -3559,7 +3511,7 @@ const ops = {
   useCustomerId: (id) => {
     const role = db.auth.role;
     const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
-    ['Trans', 'Withdraw', 'Loan', 'Stmt', 'Profile', 'Close', 'Reactivate'].forEach(type => {
+    ['Trans', 'Bulk', 'Withdraw', 'Loan', 'Stmt', 'Profile', 'Close', 'Reactivate'].forEach(type => {
       const el = document.getElementById(prefix+type+'CustId');
       if(el) { el.value = id; ops.checkName(id, prefix+type+'NameDisplay'); }
     });
@@ -3584,7 +3536,6 @@ const ops = {
       verified: true,
       verificationDate: new Date().toISOString()
     };
-    
     document.getElementById(prefix+'NewMemName').value = '';
     document.getElementById(prefix+'NewMemPhone').value = '';
     ui.closeModal('memberConfirmationModal');
@@ -3600,7 +3551,6 @@ const ops = {
     const amt = parseFloat(document.getElementById(prefix+'TransAmount').value);
     const vDate = document.getElementById(prefix+'TransValueDate').value || new Date().toISOString().split('T')[0];
     const narration = document.getElementById(prefix+'TransNarration').value;
-    
     db.ledger.push({ 
       txId: Date.now(), 
       cust: id, 
@@ -3651,14 +3601,18 @@ const ops = {
     }
 
     // Clear fields
+    document.getElementById(prefix+'BulkCustId').value = '';
+    document.getElementById(prefix+'BulkNameDisplay').innerText = '';
     document.getElementById(prefix+'BulkAmount').value = '';
     document.getElementById(prefix+'BulkDays').value = '';
     document.getElementById(prefix+'BulkNarration').value = '';
+    document.getElementById(prefix+'BulkStartDate').value = '';
     
     ui.closeModal('bulkConfirmationModal');
     alert(`✅ Successfully posted ${days} transactions totaling ${ops.fmt(amt * days)}.`);
     data.save();
   },
+
   postWithdrawal: () => {
     const role = db.auth.role;
     const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
@@ -3666,7 +3620,6 @@ const ops = {
     const amt = parseFloat(document.getElementById(prefix+'WithdrawAmount').value);
     const vDate = document.getElementById(prefix+'WithdrawValueDate').value || new Date().toISOString().split('T')[0];
     const narration = document.getElementById(prefix+'WithdrawNarration').value;
-    
     db.ledger.push({ 
       txId: Date.now(), 
       cust: id, 
@@ -3693,7 +3646,6 @@ const ops = {
     const amt = parseFloat(document.getElementById(prefix+'LoanAmount').value);
     const vDate = document.getElementById(prefix+'LoanValueDate').value || new Date().toISOString().split('T')[0];
     const narration = document.getElementById(prefix+'LoanNarration').value;
-    
     db.ledger.push({ 
       txId: Date.now(), 
       cust: id, 
@@ -3753,7 +3705,6 @@ const ops = {
       reversed: false,
       reversalOf: originalTx.txId // Link to original
     };
-    
     // Mark original as reversed
     originalTx.reversed = true;
     originalTx.reversalReason = reason;
@@ -3839,7 +3790,6 @@ const ops = {
     const password = document.getElementById('wipePassword').value;
     const confirmText = document.getElementById('wipeConfirmText').value;
     const confirmCheckbox = document.getElementById('wipeConfirmCheckbox');
-    
     if(username !== db.auth.user || password !== db.auth.pass) {
       alert("Invalid credentials. Please enter correct username and password.");
       return;
@@ -3858,7 +3808,6 @@ const ops = {
     data.wipeAllData();
   }
 };
-
 // 8. Main Application Control
 const app = {
   login: () => {
@@ -3909,7 +3858,6 @@ const app = {
     }
   }
 };
-
 // Replace original importData with enhanced version
 window.importData = enhancedImportData;
 
