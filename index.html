@@ -2,39 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>OBATA SMART SAVINGS v2.5 (Firestore + Cloud)</title>
+  <title>OBATA SMART SAVINGS v2.5 (Cloud + Formats) - Enhanced</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- XLSX for Excel import -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-  <!-- Firebase SDK (modular) -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, orderBy, writeBatch, enableNetwork, disableNetwork } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAE8a-gYLB3yHwshUtYmb8WJG2i_BEuzjk",
-      authDomain: "obata-smart-savings.firebaseapp.com",
-      databaseURL: "https://obata-smart-savings-default-rtdb.firebaseio.com",
-      projectId: "obata-smart-savings",
-      storageBucket: "obata-smart-savings.firebasestorage.app",
-      messagingSenderId: "970795074243",
-      appId: "1:970795074243:web:d104dfdc48c587dbf29876",
-      measurementId: "G-4BMHMYNFSM"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const dbFirestore = getFirestore(app);
-
-    // Make Firestore available globally
-    window.firestore = { db: dbFirestore, doc, setDoc, getDoc, collection, getDocs, query, orderBy, writeBatch, enableNetwork, disableNetwork };
-  </script>
-
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script src="https://accounts.google.com/gsi/client"></script>
+  
   <style>
     /* ========================================================= */
-    /* CORE STYLES (same as original, fully included)           */
+    /* CORE STYLES (exactly as original)                         */
     /* ========================================================= */
     :root { 
       --primary: #1e88e5; 
@@ -97,6 +74,7 @@
       margin-bottom: 15px; 
     }
 
+    /* INPUTS & BUTTONS */
     input, select, button, textarea { 
       padding: 12px; 
       width: 100%; 
@@ -105,6 +83,12 @@
       border-radius: 6px; 
       box-sizing: border-box; 
       font-size: 1rem; 
+    }
+
+    input:focus, select:focus { 
+      border-color: var(--primary); 
+      outline: none; 
+      box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
     }
 
     button { 
@@ -120,14 +104,24 @@
 
     button:hover { background: var(--dark); }
     button.danger { background: var(--danger); }
+    button.danger:hover { background: #b71c1c; }
     button.success { background: var(--success); }
+    button.success:hover { background: #1b5e20; }
     button.secondary { background: #78909c; }
+    button.secondary:hover { background: #546e7a; }
     button.warning { background: var(--warning); color: #000; }
     button.purple { background: var(--purple); }
+    button.purple:hover { background: #7b1fa2; }
     button.orange { background: var(--orange); }
+    button.orange:hover { background: #f57c00; }
     button.teal { background: var(--teal); }
+    button.teal:hover { background: #00796b; }
     button.brown { background: var(--brown); }
+    button.brown:hover { background: #5d4037; }
     button.pink { background: var(--pink); }
+    button.pink:hover { background: #c2185b; }
+    
+    /* Small Back Button Style */
     button.back-btn {
       background: #eee;
       color: #333;
@@ -139,6 +133,26 @@
       gap: 5px;
       border: 1px solid #ccc;
     }
+    button.back-btn:hover {
+      background: #e0e0e0;
+    }
+
+    /* GOOGLE DRIVE SPECIFIC STYLES */
+    button.google-drive {
+      background: #fff;
+      color: #757575;
+      border: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      position: relative;
+    }
+    button.google-drive:hover {
+      background: #f8f9fa;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .g-icon { width: 18px; height: 18px; }
 
     .sync-status {
       position: fixed;
@@ -153,8 +167,10 @@
       gap: 10px;
       font-size: 0.9rem;
       z-index: 9999;
+      transition: all 0.3s ease;
+      border: 1px solid #eee;
     }
-
+    
     .sync-indicator {
       width: 10px;
       height: 10px;
@@ -171,14 +187,45 @@
       100% { opacity: 1; }
     }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-    th { background: #f8f9fa; color: #555; font-weight: 600; }
-    .money { font-family: 'Courier New', monospace; font-weight: bold; font-size: 1.2rem; }
-    .customer-count { font-size: 1.5rem; color: var(--purple); font-weight: bold; }
+    /* TABLES & DATA */
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: 15px; 
+      font-size: 0.95rem;
+    }
+
+    th, td { 
+      padding: 12px; 
+      border-bottom: 1px solid #eee; 
+      text-align: left; 
+    }
+
+    th { 
+      background: #f8f9fa; 
+      color: #555; 
+      font-weight: 600;
+    }
+
+    tr:hover { background-color: #f1f1f1; }
+
+    .money { 
+      font-family: 'Courier New', monospace; 
+      font-weight: bold; 
+      font-size: 1.2rem;
+    }
+
+    .customer-count {
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      font-size: 1.5rem;
+      color: var(--purple);
+    }
+
     .negative { color: var(--danger); }
     .positive { color: var(--success); }
 
+    /* MODAL STYLES */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -198,8 +245,197 @@
       max-width: 800px;
       max-height: 90vh;
       overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     }
 
+    /* PROFILE STYLES */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #eee;
+    }
+    .profile-avatar {
+      width: 60px;
+      height: 60px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    /* DUPLICATE WARNING STYLES */
+    .duplicate-warning {
+      color: var(--danger);
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-top: 5px;
+      padding: 8px;
+      background-color: rgba(198, 40, 40, 0.1);
+      border-radius: 4px;
+      border-left: 3px solid var(--danger);
+      display: none;
+    }
+
+    /* SEARCH RESULTS */
+    .search-results {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 10px;
+      border: 1px solid #eee;
+      border-radius: 6px;
+      padding: 10px;
+      background: #f9f9f9;
+    }
+
+    .search-result-item {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .search-result-item:hover {
+      background: #e3f2fd;
+    }
+
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+
+    .inactive-member {
+      opacity: 0.6;
+      background-color: #f5f5f5;
+    }
+
+    .inactive-badge {
+      background-color: #757575;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+
+    /* REPORT STYLES */
+    .report-section {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .report-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .report-stat-card {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .report-stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    /* IMPORT/EXPORT STYLES */
+    .import-export-section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .file-format-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .file-format-buttons button {
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .drive-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+
+    .drive-connected {
+      background-color: rgba(46, 125, 50, 0.1);
+      color: var(--success);
+      border-left: 4px solid var(--success);
+    }
+
+    .drive-disconnected {
+      background-color: rgba(198, 40, 40, 0.1);
+      color: var(--danger);
+      border-left: 4px solid var(--danger);
+    }
+
+    .preview-table {
+      max-height: 300px;
+      overflow-y: auto;
+      margin: 15px 0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    .backup-history {
+      margin-top: 20px;
+    }
+
+    .backup-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .backup-item:last-child {
+      border-bottom: none;
+    }
+
+    .progress-bar {
+      height: 20px;
+      background-color: #e0e0e0;
+      border-radius: 10px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: var(--primary);
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    /* CONFIRMATION STYLES */
     .confirmation-details {
       background: #f9f9f9;
       padding: 20px;
@@ -215,6 +451,150 @@
       border-bottom: 1px solid #eee;
     }
 
+    .confirmation-item:last-child {
+      border-bottom: none;
+    }
+
+    .confirmation-label {
+      font-weight: 600;
+      color: #555;
+    }
+
+    .confirmation-value {
+      font-weight: bold;
+    }
+
+    /* WIPE DATA STYLES */
+    .wipe-warning {
+      background-color: rgba(198, 40, 40, 0.1);
+      border-left: 4px solid var(--danger);
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+
+    .wipe-warning h3 {
+      color: var(--danger);
+      margin-top: 0;
+    }
+
+    /* USER MANAGEMENT STYLES */
+    .user-management-section {
+      margin-top: 30px;
+    }
+
+    .user-list {
+      margin-top: 15px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .user-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      background: #fff;
+    }
+
+    .user-item:last-child {
+      border-bottom: none;
+    }
+
+    .user-info {
+      flex: 1;
+    }
+
+    .user-name {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .user-role {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .user-permissions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 5px;
+    }
+
+    .permission-badge {
+      background-color: #e3f2fd;
+      color: var(--primary);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+    }
+
+    .permission-badge.inactive {
+      background-color: #f5f5f5;
+      color: #999;
+    }
+
+    .user-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .user-actions button {
+      width: auto;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+
+    .privilege-checkboxes {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin: 15px 0;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checkbox-group label {
+      margin: 0;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+
+    .user-form-section {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    /* THRIFT COLLECTOR & SUPERVISOR VIEW */
+    .thrift-view .dashboard-controls,
+    .supervisor-view .dashboard-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .thrift-view .card,
+    .supervisor-view .card {
+      border-left-width: 5px;
+    }
+
     .role-badge {
       display: inline-block;
       padding: 3px 10px;
@@ -223,18 +603,61 @@
       font-weight: 600;
       margin-left: 8px;
     }
+
     .role-admin { background-color: var(--danger); color: white; }
     .role-supervisor { background-color: var(--pink); color: white; }
     .role-thrift { background-color: var(--teal); color: white; }
 
-    .duplicate-warning { color: var(--danger); font-weight: bold; font-size: 0.9rem; margin-top: 5px; padding: 8px; background-color: rgba(198, 40, 40, 0.1); border-radius: 4px; border-left: 3px solid var(--danger); display: none; }
-    .search-results { max-height: 300px; overflow-y: auto; margin-top: 10px; border: 1px solid #eee; border-radius: 6px; padding: 10px; background: #f9f9f9; }
-    .search-result-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
-    .search-result-item:hover { background: #e3f2fd; }
-    .drive-status { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 6px; margin-top: 10px; }
-    .drive-connected { background-color: rgba(46, 125, 50, 0.1); color: var(--success); border-left: 4px solid var(--success); }
-    .drive-disconnected { background-color: rgba(198, 40, 40, 0.1); color: var(--danger); border-left: 4px solid var(--danger); }
-    /* ... other styles omitted for brevity but same as original */
+    /* ENHANCED VERIFICATION STYLES */
+    .verification-high-risk {
+      background-color: rgba(198, 40, 40, 0.1) !important;
+      border-left: 4px solid var(--danger) !important;
+    }
+    
+    .verification-medium-risk {
+      background-color: rgba(249, 168, 37, 0.1) !important;
+      border-left: 4px solid var(--warning) !important;
+    }
+    
+    .verification-low-risk {
+      background-color: rgba(30, 136, 229, 0.1) !important;
+      border-left: 4px solid var(--primary) !important;
+    }
+    
+    .similarity-bar {
+      width: 100px;
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+    
+    .similarity-fill {
+      height: 100%;
+      transition: width 0.3s;
+    }
+
+    /* ========================================================= */
+    /* PRINT SUPPORT                                             */
+    /* ========================================================= */
+    @media print {
+      body { background: #fff; padding: 0; }
+      .no-print, .container > .grid, #loginCard, .dashboard-controls, .sync-status { display: none !important; }
+      .modal-overlay { position: static; background: none; display: block; }
+      .modal-content { 
+        box-shadow: none; 
+        max-width: 100%; 
+        width: 100%; 
+        max-height: none; 
+        padding: 0;
+        margin: 0;
+      }
+      button { display: none !important; }
+      h2 { border-bottom: 2px solid #000; }
+    }
   </style>
 </head>
 
@@ -247,11 +670,18 @@
 
 <div id="loginCard" class="card" style="max-width: 400px; margin: 100px auto;">
   <h1 style="text-align: center; color: var(--primary);">OBATA SMART SAVINGS</h1>
-  <p style="text-align: center; color: #666; margin-bottom: 20px;">Secure Management System v2.5 (Firestore Cloud)</p>
+  <p style="text-align: center; color: #666; margin-bottom: 20px;">Secure Management System v2.5 - Enhanced</p>
   
   <div style="margin-bottom: 20px; padding: 15px; background: #e8f0fe; border-radius: 8px; text-align: center;">
-    <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #1967d2;">Cloud Storage: Firestore</p>
-    <small id="cloud_status" style="display: block; margin-top: 5px; color: #666;">Connecting...</small>
+    <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #1967d2;">Cloud Storage</p>
+    <button id="authorize_button" class="google-drive" onclick="gDrive.handleAuth()" style="width: 100%;">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" class="g-icon" alt="G">
+      Connect Google Drive
+    </button>
+    <button id="signout_button" class="google-drive" onclick="gDrive.handleSignout()" style="width: 100%; display: none;">
+      Disconnect Drive
+    </button>
+    <small id="auth_status" style="display: block; margin-top: 5px; color: #666;">Not connected</small>
   </div>
 
   <input id="usernameInput" placeholder="Username" />
@@ -260,7 +690,6 @@
   <p id="loginError" style="color: var(--danger); text-align: center; margin-top: 10px; display: none;">Invalid credentials</p>
 </div>
 
-<!-- Admin Dashboard (includes bulk card) -->
 <div id="adminDashboard" class="container hidden">
   <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
     <div>
@@ -271,7 +700,7 @@
       <button class="secondary" style="width:auto;" onclick="ui.openPasswordModal()">🔐 Password</button>
       <button class="teal" style="width:auto;" onclick="ui.openImportModal()">📤 Import Data</button>
       <button class="purple" style="width:auto;" onclick="ui.openReportModal()">📊 Generate Report</button>
-      <button class="success" style="width:auto;" onclick="data.exportCSV()">💾 Backup (CSV)</button>
+      <button class="success" style="width:auto;" onclick="data.exportCSV()">💾 Backup</button>
       <button class="orange" style="width:auto;" onclick="ui.openDriveModal()">💿 Drive (F:)</button>
       <button class="brown" style="width:auto;" onclick="ui.openUserManagementModal()">👥 Manage Users</button>
       <button class="danger" style="width:auto;" onclick="ui.openWipeModal()">🗑️ Wipe Data</button>
@@ -379,7 +808,8 @@
       <h2>🔍 Customer Search</h2>
       <p style="font-size:0.9rem; color:#666;">Search customers by name or phone number</p>
       <input id="adminSearchQuery" placeholder="Enter name or phone number..." oninput="ops.searchCustomers()" />
-      <div id="adminSearchResults" class="search-results hidden"></div>
+      <div id="adminSearchResults" class="search-results hidden">
+        </div>
       <small style="display:block; margin-top:10px; color:#666;">Click on a customer to auto-fill their ID in forms</small>
     </div>
 
@@ -419,7 +849,6 @@
   </div>
 </div>
 
-<!-- Supervisor Dashboard (bulk card) -->
 <div id="supervisorDashboard" class="container hidden supervisor-view">
   <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
     <div>
@@ -526,7 +955,8 @@
     <h2>🔍 Customer Search</h2>
     <p style="font-size:0.9rem; color:#666;">Search customers by name or phone number</p>
     <input id="supervisorSearchQuery" placeholder="Enter name or phone number..." oninput="ops.searchCustomers()" />
-    <div id="supervisorSearchResults" class="search-results hidden"></div>
+    <div id="supervisorSearchResults" class="search-results hidden">
+      </div>
     <small style="display:block; margin-top:10px; color:#666;">Click on a customer to auto-fill their ID in forms</small>
   </div>
 
@@ -642,7 +1072,8 @@
     <h2>🔍 Customer Search</h2>
     <p style="font-size:0.9rem; color:#666;">Search customers by name or phone number</p>
     <input id="thriftSearchQuery" placeholder="Enter name or phone number..." oninput="ops.searchCustomers()" />
-    <div id="thriftSearchResults" class="search-results hidden"></div>
+    <div id="thriftSearchResults" class="search-results hidden">
+      </div>
     <small style="display:block; margin-top:10px; color:#666;">Click on a customer to auto-fill their ID in forms</small>
   </div>
 
@@ -694,186 +1125,2903 @@
 </div>
 
 <!-- Existing modals (password, user, statement, etc.) same as original -->
-<div id="passwordModal" class="modal-overlay hidden"><div class="modal-content"><h2>Change Admin Password</h2><input id="oldPass" type="password" placeholder="Old Password" /><input id="newPass" type="password" placeholder="New Password" /><button onclick="ops.changePassword()">Update Password</button><button class="danger" onclick="ui.closeModal('passwordModal')">Cancel</button></div></div>
-<div id="changePasswordModal" class="modal-overlay hidden"><div class="modal-content"><h2>Change Password</h2><input id="currentPassword" type="password" placeholder="Current Password" /><input id="newPassword" type="password" placeholder="New Password" /><input id="confirmPassword" type="password" placeholder="Confirm New Password" /><button onclick="ops.changeUserPassword()">Update Password</button><button class="danger" onclick="ui.closeModal('changePasswordModal')">Cancel</button></div></div>
-<div id="userManagementModal" class="modal-overlay hidden"><div class="modal-content"><h2>👥 User Management</h2><div class="user-form-section"><select id="newUserRole"><option value="thrift_collector">Thrift Collector</option><option value="supervisor">Supervisor</option></select><input id="newUserName" placeholder="Full Name" /><input id="newUserUsername" placeholder="Username" /><input id="newUserPassword" type="password" placeholder="Temporary Password" /><input id="newUserConfirmPassword" type="password" placeholder="Confirm Password" /><div><h4>Permissions for <span id="roleDisplay">Thrift Collector</span></h4><div id="thriftPermissions" class="privilege-checkboxes">...</div><div id="supervisorPermissions" class="privilege-checkboxes hidden">...</div></div><button class="success" onclick="userManager.createUser()">Create User</button></div><div class="user-management-section"><h3>Existing Users</h3><div id="userList" class="user-list"></div></div><button class="danger" onclick="ui.closeModal('userManagementModal')">Close</button></div></div>
-<div id="statementModal" class="modal-overlay hidden"><div class="modal-content"><div id="printableStatement"></div><div class="no-print"><button onclick="window.print()">🖨️ Print Statement</button><button class="danger" onclick="ui.closeModal('statementModal')">Close</button></div></div></div>
-<div id="profileModal" class="modal-overlay hidden"><div class="modal-content"><div id="printableProfile"></div><div class="no-print"><button onclick="window.print()">🖨️ Print Profile</button><button class="danger" onclick="ui.closeModal('profileModal')">Close</button></div></div></div>
-<div id="reportModal" class="modal-overlay hidden"><div class="modal-content"><div id="printableReport"></div><div class="no-print"><button onclick="window.print()">🖨️ Print Report</button><button class="success" onclick="data.exportReportCSV()">📥 Export as CSV</button><button class="danger" onclick="ui.closeModal('reportModal')">Close</button></div></div></div>
-<div id="importModal" class="modal-overlay hidden"><div class="modal-content"><h2>📤 Import & Restore Data</h2><div class="import-export-section"><div><div class="file-format-buttons"><button class="secondary" onclick="importData.selectFileType('csv')">CSV File</button><button class="secondary" onclick="importData.selectFileType('excel')">Excel File</button><button class="secondary" onclick="importData.selectFileType('json')">JSON Backup</button></div></div><div id="csvOptions" class="hidden"><button class="back-btn" onclick="importData.resetImport()">⬅ Back</button><input type="file" id="csvFileInput" accept=".csv" onchange="importData.handleCSVFile(event)" /></div><div id="excelOptions" class="hidden"><button class="back-btn" onclick="importData.resetImport()">⬅ Back</button><input type="file" id="excelFileInput" accept=".xls,.xlsx,.xlsm" onchange="importData.handleExcelFile(event)" /></div><div id="jsonOptions" class="hidden"><button class="back-btn" onclick="importData.resetImport()">⬅ Back</button><input type="file" id="jsonFileInput" accept=".json" onchange="importData.handleJSONFile(event)" /></div><div id="importPreview" class="hidden"><div class="preview-table"><table id="previewTable">    </table></div><p id="previewStats"></p><div class="progress-bar"><div id="importProgress" class="progress-fill"></div></div><button class="success" id="confirmImportBtn" onclick="importData.confirmImport()">Confirm Import</button><button class="danger" onclick="importData.cancelImport()">Cancel</button></div><div id="importComplete" class="hidden"><h3 style="color:var(--success);">✅ Import Complete!</h3><p id="importResults"></p><button onclick="importData.resetImport()">Import Another File</button><button class="danger" onclick="ui.closeModal('importModal')">Close</button></div></div></div></div>
-<div id="driveModal" class="modal-overlay hidden"><div class="modal-content"><h2>💿 Physical Drive Management (F:)</h2><div id="driveStatus" class="drive-status drive-disconnected"><div>💿</div><div><h3>Drive Status: <span id="driveStatusText">Not Connected</span></h3><p id="driveInfo">No external drive connected</p></div></div><div class="import-export-section"><div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"><button class="teal" onclick="driveManager.connectDrive()">🔗 Connect to Drive</button><button class="success" onclick="driveManager.backupToDrive()">💾 Backup to Drive</button><button class="warning" onclick="driveManager.restoreFromDrive()">🔄 Restore from Drive</button><button class="secondary" onclick="driveManager.scheduleAutoBackup()">⏰ Auto-Backup</button></div><div class="backup-history"><h3>Backup History</h3><div id="backupHistoryList"></div></div><div><button class="danger" onclick="driveManager.disconnectDrive()">Disconnect Drive</button><button class="secondary" onclick="ui.closeModal('driveModal')">Close</button></div></div></div></div>
-<div id="memberConfirmationModal" class="modal-overlay hidden"><div class="modal-content"><h2>👤 Confirm Member Registration</h2><div class="confirmation-details"><div class="confirmation-item"><span class="confirmation-label">Full Name:</span><span class="confirmation-value" id="confirmMemName"></span></div><div class="confirmation-item"><span class="confirmation-label">Phone Number:</span><span class="confirmation-value" id="confirmMemPhone"></span></div><div class="confirmation-item"><span class="confirmation-label">Registration Date:</span><span class="confirmation-value" id="confirmMemDate"></span></div><div class="confirmation-item"><span class="confirmation-label">Generated ID:</span><span class="confirmation-value" id="confirmMemId"></span></div><div class="confirmation-item"><span class="confirmation-label">Registered By:</span><span class="confirmation-value" id="confirmMemBy"></span></div></div><button class="success" onclick="ops.registerMember()">Confirm & Create Account</button><button class="danger" onclick="ui.closeModal('memberConfirmationModal')">Cancel</button></div></div>
-<div id="transactionConfirmationModal" class="modal-overlay hidden"><div class="modal-content"><h2>💰 Confirm Transaction</h2><div class="confirmation-details"><div class="confirmation-item"><span class="confirmation-label">Customer:</span><span class="confirmation-value" id="confirmTransCustomer"></span></div><div class="confirmation-item"><span class="confirmation-label">Transaction Type:</span><span class="confirmation-value" id="confirmTransType"></span></div><div class="confirmation-item"><span class="confirmation-label">Amount:</span><span class="confirmation-value" id="confirmTransAmount"></span></div><div class="confirmation-item"><span class="confirmation-label">Narration:</span><span class="confirmation-value" id="confirmTransNarration"></span></div><div class="confirmation-item"><span class="confirmation-label">Value Date:</span><span class="confirmation-value" id="confirmTransValueDate"></span></div><div class="confirmation-item"><span class="confirmation-label">Transaction Date:</span><span class="confirmation-value" id="confirmTransDate"></span></div><div class="confirmation-item"><span class="confirmation-label">Processed By:</span><span class="confirmation-value" id="confirmTransBy"></span></div></div><button class="success" onclick="ops.postTransaction()">Confirm & Submit</button><button class="danger" onclick="ui.closeModal('transactionConfirmationModal')">Cancel</button></div></div>
-<div id="withdrawalConfirmationModal" class="modal-overlay hidden"><div class="modal-content"><h2>💸 Confirm Withdrawal</h2><div class="confirmation-details"><div class="confirmation-item"><span class="confirmation-label">Customer:</span><span class="confirmation-value" id="confirmWithdrawCustomer"></span></div><div class="confirmation-item"><span class="confirmation-label">Amount:</span><span class="confirmation-value" id="confirmWithdrawAmount"></span></div><div class="confirmation-item"><span class="confirmation-label">Narration:</span><span class="confirmation-value" id="confirmWithdrawNarration"></span></div><div class="confirmation-item"><span class="confirmation-label">Value Date:</span><span class="confirmation-value" id="confirmWithdrawValueDate"></span></div><div class="confirmation-item"><span class="confirmation-label">Available Balance:</span><span class="confirmation-value" id="confirmWithdrawBalance"></span></div><div class="confirmation-item"><span class="confirmation-label">New Balance:</span><span class="confirmation-value" id="confirmWithdrawNewBalance"></span></div><div class="confirmation-item"><span class="confirmation-label">Processed By:</span><span class="confirmation-value" id="confirmWithdrawBy"></span></div></div><button class="pink" onclick="ops.postWithdrawal()">Confirm & Process</button><button class="danger" onclick="ui.closeModal('withdrawalConfirmationModal')">Cancel</button></div></div>
-<div id="loanConfirmationModal" class="modal-overlay hidden"><div class="modal-content"><h2>💸 Confirm Loan Transaction</h2><div class="confirmation-details"><div class="confirmation-item"><span class="confirmation-label">Customer:</span><span class="confirmation-value" id="confirmLoanCustomer"></span></div><div class="confirmation-item"><span class="confirmation-label">Transaction Type:</span><span class="confirmation-value" id="confirmLoanType"></span></div><div class="confirmation-item"><span class="confirmation-label">Amount:</span><span class="confirmation-value" id="confirmLoanAmount"></span></div><div class="confirmation-item"><span class="confirmation-label">Narration:</span><span class="confirmation-value" id="confirmLoanNarration"></span></div><div class="confirmation-item"><span class="confirmation-label">Value Date:</span><span class="confirmation-value" id="confirmLoanValueDate"></span></div><div class="confirmation-item"><span class="confirmation-label">Processed By:</span><span class="confirmation-value" id="confirmLoanBy"></span></div></div><button class="success" onclick="ops.postLoan()">Confirm & Process</button><button class="danger" onclick="ui.closeModal('loanConfirmationModal')">Cancel</button></div></div>
-<div id="wipeModal" class="modal-overlay hidden"><div class="modal-content"><h2 style="color:var(--danger);">⚠️ Wipe All System Data</h2><div class="wipe-warning"><h3>🚨 EXTREME CAUTION REQUIRED</h3><p>This action will permanently delete ALL data. This cannot be undone.</p></div><input id="wipeUsername" placeholder="Username" /><input id="wipePassword" type="password" placeholder="Password" /><div><input type="checkbox" id="wipeConfirmCheckbox" /><label>I understand this will delete ALL data permanently and I have made a backup</label></div><div><input type="text" id="wipeConfirmText" placeholder="Type 'DELETE ALL DATA' to confirm" /></div><button class="danger" onclick="ops.wipeAllData()">🗑️ Wipe All Data</button><button class="secondary" onclick="ui.closeModal('wipeModal')">Cancel</button></div></div>
+<div id="passwordModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 400px;">
+    <h2>Change Admin Password</h2>
+    <input id="oldPass" type="password" placeholder="Old Password" />
+    <input id="newPass" type="password" placeholder="New Password" />
+    <button onclick="ops.changePassword()">Update Password</button>
+    <button class="danger" onclick="ui.closeModal('passwordModal')">Cancel</button>
+  </div>
+</div>
 
-<script type="module">
-  // Import Firebase modules (already loaded in <script type="module"> above)
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+<div id="changePasswordModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 400px;">
+    <h2>Change Password</h2>
+    <input id="currentPassword" type="password" placeholder="Current Password" />
+    <input id="newPassword" type="password" placeholder="New Password" />
+    <input id="confirmPassword" type="password" placeholder="Confirm New Password" />
+    <button onclick="ops.changeUserPassword()">Update Password</button>
+    <button class="danger" onclick="ui.closeModal('changePasswordModal')">Cancel</button>
+  </div>
+</div>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAE8a-gYLB3yHwshUtYmb8WJG2i_BEuzjk",
-    authDomain: "obata-smart-savings.firebaseapp.com",
-    databaseURL: "https://obata-smart-savings-default-rtdb.firebaseio.com",
-    projectId: "obata-smart-savings",
-    storageBucket: "obata-smart-savings.firebasestorage.app",
-    messagingSenderId: "970795074243",
-    appId: "1:970795074243:web:d104dfdc48c587dbf29876",
-    measurementId: "G-4BMHMYNFSM"
-  };
+<div id="userManagementModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 800px;">
+    <h2>👥 User Management</h2>
+    <p style="color:#666; margin-bottom:20px;">Create and manage thrift collector and supervisor accounts with specific permissions.</p>
+    
+    <div class="user-form-section">
+      <h3>Create New User</h3>
+      <select id="newUserRole" onchange="userManager.showRolePermissions()">
+        <option value="thrift_collector">Thrift Collector</option>
+        <option value="supervisor">Supervisor</option>
+      </select>
+      <input id="newUserName" placeholder="Full Name" />
+      <input id="newUserUsername" placeholder="Username" />
+      <input id="newUserPassword" type="password" placeholder="Temporary Password" />
+      <input id="newUserConfirmPassword" type="password" placeholder="Confirm Password" />
+      
+      <div style="margin: 15px 0;">
+        <h4>Permissions for <span id="roleDisplay">Thrift Collector</span></h4>
+        <div id="thriftPermissions" class="privilege-checkboxes">
+          <div class="checkbox-group">
+            <input type="checkbox" id="permMemberCreation" checked />
+            <label for="permMemberCreation">Member Creation</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="permTransactionPosting" checked />
+            <label for="permTransactionPosting">Transaction Posting</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="permWithdrawal" checked />
+            <label for="permWithdrawal">Withdrawal Processing</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="permLoanManagement" checked />
+            <label for="permLoanManagement">Loan Management</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="permViewStatements" checked />
+            <label for="permViewStatements">View Statements</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="permSearchCustomers" checked />
+            <label for="permSearchCustomers">Search Customers</label>
+          </div>
+        </div>
+        <div id="supervisorPermissions" class="privilege-checkboxes hidden">
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermMemberCreation" checked />
+            <label for="supervisorPermMemberCreation">Member Creation</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermTransactionPosting" checked />
+            <label for="supervisorPermTransactionPosting">Transaction Posting</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermWithdrawal" checked />
+            <label for="supervisorPermWithdrawal">Withdrawal Processing</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermLoanManagement" checked />
+            <label for="supervisorPermLoanManagement">Loan Management</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermAccountClosure" checked />
+            <label for="supervisorPermAccountClosure">Account Closure</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermAccountReactivation" checked />
+            <label for="supervisorPermAccountReactivation">Account Reactivation</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermViewStatements" checked />
+            <label for="supervisorPermViewStatements">View Statements</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermSearchCustomers" checked />
+            <label for="supervisorPermSearchCustomers">Search Customers</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="supervisorPermGenerateReports" checked />
+            <label for="supervisorPermGenerateReports">Generate Reports</label>
+          </div>
+        </div>
+      </div>
+      
+      <button class="success" onclick="userManager.createUser()">Create User</button>
+    </div>
+    
+    <div class="user-management-section">
+      <h3>Existing Users</h3>
+      <div id="userList" class="user-list">
+        </div>
+    </div>
+    
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="danger" onclick="ui.closeModal('userManagementModal')">Close</button>
+    </div>
+  </div>
+</div>
 
-  const appFirebase = initializeApp(firebaseConfig);
-  const dbFirestore = getFirestore(appFirebase);
+<div id="statementModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div id="printableStatement">
+      </div>
+    <div class="no-print" style="margin-top:20px; display:flex; gap:10px;">
+      <button onclick="window.print()">🖨️ Print Statement</button>
+      <button class="danger" onclick="ui.closeModal('statementModal')">Close</button>
+    </div>
+  </div>
+</div>
 
-  // Make Firestore globally accessible (for other non-module scripts)
-  window.firestore = { db: dbFirestore, doc, setDoc, getDoc, collection, getDocs, query, orderBy, writeBatch };
+<div id="profileModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div id="printableProfile">
+      </div>
+    <div class="no-print" style="margin-top:20px; display:flex; gap:10px;">
+      <button onclick="window.print()">🖨️ Print Profile</button>
+      <button class="danger" onclick="ui.closeModal('profileModal')">Close</button>
+    </div>
+  </div>
+</div>
 
-  // Global references to the collections
-  const membersCol = collection(dbFirestore, "members");
-  const ledgerCol = collection(dbFirestore, "ledger");
-  const usersCol = collection(dbFirestore, "users");
-  const settingsDoc = doc(dbFirestore, "settings", "app");
+<div id="reportModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div id="printableReport">
+      </div>
+    <div class="no-print" style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+      <button onclick="window.print()">🖨️ Print Report</button>
+      <button class="success" onclick="data.exportReportCSV()">📥 Export as CSV</button>
+      <button class="danger" onclick="ui.closeModal('reportModal')">Close</button>
+    </div>
+  </div>
+</div>
 
-  // Helper functions to load/save data to Firestore
-  async function loadFirestoreData() {
-    try {
-      // Load members
-      const membersSnapshot = await getDocs(membersCol);
-      const members = {};
-      membersSnapshot.forEach(doc => { members[doc.id] = doc.data(); });
+<div id="importModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 800px;">
+    <h2>📤 Import & Restore Data</h2>
+    <p style="color:#666; margin-bottom:20px;">Import data from CSV, Excel (XLS/XLSX), or JSON files. You can also restore from a previous backup.</p>
+    
+    <div class="import-export-section">
+      <div>
+        <h3>Select File Type</h3>
+        <div class="file-format-buttons">
+          <button class="secondary" onclick="importData.selectFileType('csv')">CSV File</button>
+          <button class="secondary" onclick="importData.selectFileType('excel')">Excel File</button>
+          <button class="secondary" onclick="importData.selectFileType('json')">JSON Backup</button>
+        </div>
+      </div>
+      
+      <div id="csvOptions" class="hidden">
+        <button class="back-btn" onclick="importData.resetImport()">⬅ Back to Menu</button>
+        <h3>CSV Import Options</h3>
+        <p>Format: Date, Customer ID, Name, Type, Amount, Status, Narration</p>
+        <input type="file" id="csvFileInput" accept=".csv" onchange="importData.handleCSVFile(event)" />
+        <small style="display:block; margin-top:5px; color:#666;">Select a CSV file with transaction data</small>
+      </div>
+      
+      <div id="excelOptions" class="hidden">
+        <button class="back-btn" onclick="importData.resetImport()">⬅ Back to Menu</button>
+        <h3>Excel Import Options</h3>
+        <p>Supports .xls, .xlsx, .xlsm formats</p>
+        <input type="file" id="excelFileInput" accept=".xls,.xlsx,.xlsm" onchange="importData.handleExcelFile(event)" />
+        <small style="display:block; margin-top:5px; color:#666;">Excel file should have columns: Date, ID, Name, Type, Amount, Status, Narration</small>
+      </div>
+      
+      <div id="jsonOptions" class="hidden">
+        <button class="back-btn" onclick="importData.resetImport()">⬅ Back to Menu</button>
+        <h3>JSON Backup Restore</h3>
+        <p>Restore complete system backup (members, transactions, settings)</p>
+        <input type="file" id="jsonFileInput" accept=".json" onchange="importData.handleJSONFile(event)" />
+        <small style="display:block; margin-top:5px; color:#666;">This will replace ALL current data. Make a backup first!</small>
+      </div>
+      
+      <div id="importPreview" class="hidden">
+        <h3>Import Preview</h3>
+        <div class="preview-table">
+          <table id="previewTable">
+             </table>
+        </div>
+        <p id="previewStats" style="color:#666;"></p>
+        <div class="progress-bar">
+          <div id="importProgress" class="progress-fill"></div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button class="success" id="confirmImportBtn" onclick="importData.confirmImport()">Confirm Import</button>
+          <button class="danger" onclick="importData.cancelImport()">Cancel</button>
+        </div>
+      </div>
+      
+      <div id="importComplete" class="hidden">
+        <h3 style="color:var(--success);">✅ Import Complete!</h3>
+        <p id="importResults"></p>
+        <button onclick="importData.resetImport()">Import Another File</button>
+        <button class="danger" onclick="ui.closeModal('importModal')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-      // Load ledger (ordered by date)
-      const ledgerQuery = query(ledgerCol, orderBy("date", "desc"));
-      const ledgerSnapshot = await getDocs(ledgerQuery);
-      const ledger = [];
-      ledgerSnapshot.forEach(doc => ledger.push(doc.data()));
+<div id="driveModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 800px;">
+    <h2>💿 Physical Drive Management (F:)</h2>
+    <p style="color:#666; margin-bottom:20px;">Connect to external drives for persistent storage and automated backups.</p>
+    
+    <div id="driveStatus" class="drive-status drive-disconnected">
+      <div style="font-size:24px;">💿</div>
+      <div>
+        <h3 style="margin:0;">Drive Status: <span id="driveStatusText">Not Connected</span></h3>
+        <p style="margin:5px 0 0 0; color:inherit;" id="driveInfo">No external drive connected</p>
+      </div>
+    </div>
+    
+    <div class="import-export-section">
+      <h3>Drive Operations</h3>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
+        <div>
+          <button class="teal" onclick="driveManager.connectDrive()">🔗 Connect to Drive</button>
+          <small style="display:block; margin-top:5px; color:#666;">Connect to external drive (F: or other)</small>
+        </div>
+        
+        <div>
+          <button class="success" onclick="driveManager.backupToDrive()">💾 Backup to Drive</button>
+          <small style="display:block; margin-top:5px; color:#666;">Create backup on connected drive</small>
+        </div>
+        
+        <div>
+          <button class="warning" onclick="driveManager.restoreFromDrive()">🔄 Restore from Drive</button>
+          <small style="display:block; margin-top:5px; color:#666;">Restore data from drive backup</small>
+        </div>
+        
+        <div>
+          <button class="secondary" onclick="driveManager.scheduleAutoBackup()">⏰ Auto-Backup</button>
+          <small style="display:block; margin-top:5px; color:#666;">Schedule automatic backups</small>
+        </div>
+      </div>
+      
+      <div class="backup-history" id="backupHistorySection">
+        <h3>Backup History</h3>
+        <div id="backupHistoryList">
+          </div>
+      </div>
+      
+      <div style="margin-top:20px; padding:15px; background:#f5f5f5; border-radius:8px;">
+        <h4>📋 Drive Requirements</h4>
+        <ul style="margin:10px 0; padding-left:20px;">
+          <li>Drive must be formatted as FAT32, NTFS, or exFAT</li>
+          <li>Minimum free space: 10MB</li>
+          <li>Backups are stored in: <code>Obata_Backups/</code> folder</li>
+          <li>Auto-backup runs daily at 2:00 AM</li>
+        </ul>
+      </div>
+      
+      <div style="margin-top:20px; display:flex; gap:10px;">
+        <button class="danger" onclick="driveManager.disconnectDrive()">Disconnect Drive</button>
+        <button class="secondary" onclick="ui.closeModal('driveModal')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-      // Load users
-      const usersSnapshot = await getDocs(usersCol);
-      const users = [];
-      usersSnapshot.forEach(doc => users.push(doc.data()));
+<div id="memberConfirmationModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 500px;">
+    <h2>👤 Confirm Member Registration</h2>
+    <p style="color:#666;">Please review the member details before creating the account:</p>
+    
+    <div class="confirmation-details">
+      <div class="confirmation-item">
+        <span class="confirmation-label">Full Name:</span>
+        <span class="confirmation-value" id="confirmMemName"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Phone Number:</span>
+        <span class="confirmation-value" id="confirmMemPhone"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Registration Date:</span>
+        <span class="confirmation-value" id="confirmMemDate"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Generated ID:</span>
+        <span class="confirmation-value" id="confirmMemId"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Registered By:</span>
+        <span class="confirmation-value" id="confirmMemBy"></span>
+      </div>
+    </div>
+    
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="success" onclick="ops.registerMember()">✅ Confirm & Create Account</button>
+      <button class="danger" onclick="ui.closeModal('memberConfirmationModal')">✗ Cancel</button>
+    </div>
+  </div>
+</div>
 
-      // Load settings
-      const settingsSnap = await getDoc(settingsDoc);
-      const settings = settingsSnap.exists() ? settingsSnap.data() : { autoBackup: false, backupTime: "02:00", driveConnected: false, drivePath: null, lastBackup: null, backupHistory: [] };
+<div id="transactionConfirmationModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 500px;">
+    <h2>💰 Confirm Transaction</h2>
+    <p style="color:#666;">Please review the transaction details before submitting:</p>
+    
+    <div class="confirmation-details">
+      <div class="confirmation-item">
+        <span class="confirmation-label">Customer:</span>
+        <span class="confirmation-value" id="confirmTransCustomer"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Transaction Type:</span>
+        <span class="confirmation-value" id="confirmTransType"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Amount:</span>
+        <span class="confirmation-value" id="confirmTransAmount"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Narration:</span>
+        <span class="confirmation-value" id="confirmTransNarration"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Value Date:</span>
+        <span class="confirmation-value" id="confirmTransValueDate"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Transaction Date:</span>
+        <span class="confirmation-value" id="confirmTransDate"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Processed By:</span>
+        <span class="confirmation-value" id="confirmTransBy"></span>
+      </div>
+    </div>
+    
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="success" onclick="ops.postTransaction()">✅ Confirm & Submit Transaction</button>
+      <button class="danger" onclick="ui.closeModal('transactionConfirmationModal')">✗ Cancel</button>
+    </div>
+  </div>
+</div>
 
-      return { members, ledger, users, settings };
-    } catch (error) {
-      console.error("Error loading from Firestore:", error);
-      return null;
-    }
-  }
+<div id="withdrawalConfirmationModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 500px;">
+    <h2>💸 Confirm Withdrawal</h2>
+    <p style="color:#666;">Please review the withdrawal details before processing:</p>
+    
+    <div class="confirmation-details">
+      <div class="confirmation-item">
+        <span class="confirmation-label">Customer:</span>
+        <span class="confirmation-value" id="confirmWithdrawCustomer"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Transaction Type:</span>
+        <span class="confirmation-value" id="confirmWithdrawType">WITHDRAWAL</span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Amount:</span>
+        <span class="confirmation-value" id="confirmWithdrawAmount"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Narration:</span>
+        <span class="confirmation-value" id="confirmWithdrawNarration"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Value Date:</span>
+        <span class="confirmation-value" id="confirmWithdrawValueDate"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Transaction Date:</span>
+        <span class="confirmation-value" id="confirmWithdrawDate"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Processed By:</span>
+        <span class="confirmation-value" id="confirmWithdrawBy"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Available Balance:</span>
+        <span class="confirmation-value" id="confirmWithdrawBalance"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">New Balance:</span>
+        <span class="confirmation-value" id="confirmWithdrawNewBalance"></span>
+      </div>
+    </div>
+    
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="pink" onclick="ops.postWithdrawal()">✅ Confirm & Process Withdrawal</button>
+      <button class="danger" onclick="ui.closeModal('withdrawalConfirmationModal')">✗ Cancel</button>
+    </div>
+  </div>
+</div>
 
-  async function saveToFirestore(data) {
-    // This function saves the entire app state to Firestore using batched writes.
-    // It's called after any modification.
-    const batch = writeBatch(dbFirestore);
+<div id="loanConfirmationModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 500px;">
+    <h2>💸 Confirm Loan Transaction</h2>
+    <p style="color:#666;">Please review the loan details before processing:</p>
+    
+    <div class="confirmation-details">
+      <div class="confirmation-item">
+        <span class="confirmation-label">Customer:</span>
+        <span class="confirmation-value" id="confirmLoanCustomer"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Transaction Type:</span>
+        <span class="confirmation-value" id="confirmLoanType"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Amount:</span>
+        <span class="confirmation-value" id="confirmLoanAmount"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Narration:</span>
+        <span class="confirmation-value" id="confirmLoanNarration"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Value Date:</span>
+        <span class="confirmation-value" id="confirmLoanValueDate"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Transaction Date:</span>
+        <span class="confirmation-value" id="confirmLoanDate"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Processed By:</span>
+        <span class="confirmation-value" id="confirmLoanBy"></span>
+      </div>
+    </div>
+    
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="success" onclick="ops.postLoan()">✅ Confirm & Process Loan</button>
+      <button class="danger" onclick="ui.closeModal('loanConfirmationModal')">✗ Cancel</button>
+    </div>
+  </div>
+</div>
 
-    // Save members
-    for (const [id, member] of Object.entries(data.members)) {
-      const memberRef = doc(dbFirestore, "members", id);
-      batch.set(memberRef, member);
-    }
-
-    // Save ledger (each transaction as a document with txId as ID)
-    for (const tx of data.ledger) {
-      const txRef = doc(dbFirestore, "ledger", tx.txId.toString());
-      batch.set(txRef, tx);
-    }
-
-    // Save users (using username as ID for uniqueness)
-    for (const user of data.users) {
-      const userRef = doc(dbFirestore, "users", user.username);
-      batch.set(userRef, user);
-    }
-
-    // Save settings
-    batch.set(settingsDoc, data.settings);
-
-    try {
-      await batch.commit();
-      console.log("Firestore sync complete");
-      ui.updateSyncStatus('online', 'Cloud Synced');
-    } catch (error) {
-      console.error("Firestore save error:", error);
-      ui.updateSyncStatus('error', 'Sync Failed');
-      alert("Failed to save to cloud. Check your internet connection.");
-    }
-  }
-
-  // Initialize local db from Firestore on page load
-  let initialLoadComplete = false;
-
-  // Override the existing data.save() method to also sync to Firestore
-  const originalDataSave = data.save;
-  data.save = async function() {
-    // Save to localStorage first
-    data.saveLocalOnly();
-
-    // Then save to Firestore
-    await saveToFirestore({ members: db.members, ledger: db.ledger, users: db.users, settings: db.settings });
-  };
-
-  // On page load, try to load from Firestore, fallback to localStorage if offline
-  (async function initializeApp() {
-    const firestoreData = await loadFirestoreData();
-    if (firestoreData) {
-      db.members = firestoreData.members;
-      db.ledger = firestoreData.ledger;
-      db.users = firestoreData.users;
-      db.settings = firestoreData.settings;
-      // Ensure lastId is set correctly (max member ID)
-      const maxId = Math.max(...Object.keys(db.members).map(id => parseInt(id)).filter(id => !isNaN(id)), 100);
-      db.lastId = maxId;
-      data.saveLocalOnly(); // cache in localStorage
-      console.log("Data loaded from Firestore");
-      ui.updateSyncStatus('online', 'Connected');
-    } else {
-      // Fallback to localStorage
-      console.log("Using localStorage fallback");
-      ui.updateSyncStatus('offline', 'Offline Mode');
-    }
-
-    // Ensure default admin user exists if no users
-    if (db.users.length === 0) {
-      db.users.push({
-        id: 1, username: 'Admin', password: 'admin123', name: 'Administrator', role: 'admin',
-        permissions: { memberCreation: true, transactionPosting: true, withdrawal: true, loanManagement: true, accountClosure: true, accountReactivation: true, viewStatements: true, searchCustomers: true, generateReports: true, manageUsers: true, importExport: true, systemSettings: true, driveManagement: true },
-        created: new Date().toISOString(), lastLogin: null
-      });
-      await data.save(); // will sync to Firestore
-    }
-
-    app.updateDashboard();
-    document.getElementById('cloud_status').innerText = dbFirestore ? 'Cloud Connected' : 'Local Mode';
-    initialLoadComplete = true;
-  })();
-
-  // Make sure the rest of the original script (non-module) can access the updated data.save
-  window.data = data;
-  window.db = db;
-  window.userManager = userManager;
-  window.ops = ops;
-  window.ui = ui;
-  window.app = app;
-  window.driveManager = driveManager;
-  window.dataIntegrity = dataIntegrity;
-  window.importData = importData;
-  window.dataVerifier = dataVerifier;
-  window.gDrive = gDrive; // keep for compatibility (Drive module still present but not primary)
-</script>
+<div id="wipeModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 600px;">
+    <h2 style="color: var(--danger);">⚠️ Wipe All System Data</h2>
+    
+    <div class="wipe-warning">
+      <h3>🚨 EXTREME CAUTION REQUIRED</h3>
+      <p>This action will <strong>permanently delete ALL data</strong> from the system including:</p>
+      <ul style="margin: 10px 0 10px 20px;">
+        <li>All customer records</li>
+        <li>All transaction history</li>
+        <li>All loan records</li>
+        <li>System settings and backups</li>
+        <li>All user accounts</li>
+      </ul>
+      <p><strong>This action cannot be undone!</strong> Make sure you have a backup before proceeding.</p>
+    </div>
+    
+    <div style="margin: 20px 0;">
+      <p><strong>To confirm data wipe, please re-enter your login credentials:</strong></p>
+      <input id="wipeUsername" placeholder="Username" />
+      <input id="wipePassword" type="password" placeholder="Password" />
+      
+      <div style="margin-top: 15px;">
+        <input type="checkbox" id="wipeConfirmCheckbox" />
+        <label for="wipeConfirmCheckbox" style="margin-left: 5px;">
+          I understand this will delete ALL data permanently and I have made a backup
+        </label>
+      </div>
+      
+      <div style="margin-top: 15px;">
+        <input type="text" id="wipeConfirmText" placeholder="Type 'DELETE ALL DATA' to confirm" />
+      </div>
+    </div>
+    
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="danger" onclick="ops.wipeAllData()">🗑️ Wipe All Data</button>
+      <button class="secondary" onclick="ui.closeModal('wipeModal')">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <script>
-  // The rest of the original script (all functions) goes here.
-  // To keep this answer manageable, I will not repeat the entire 1200+ lines.
-  // In the final file, the complete original JavaScript (with all functions)
-  // is included exactly as in the previous version, but with the data.save()
-  // method overridden as shown above.
-  // For the purpose of this answer, I'll place a placeholder indicating the full script is present.
-  // The actual file you will receive contains the complete original code with Firestore integration.
-  console.log("Full original script with Firestore integration loaded.");
+/**
+ * GOOGLE DRIVE CONFIGURATION
+ */
+const GOOGLE_CONFIG = {
+  CLIENT_ID: '672649423935-e3g0m98jkikrp6p4e5iesd3mqs4tfpqi.apps.googleusercontent.com',
+  API_KEY: 'AIzaSyD91n0Uv-It5GUtfrXyNRXWs8o1eTWiHAo',
+  SCOPES: 'https://www.googleapis.com/auth/drive.file',
+  DISCOVERY_DOCS: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+  FOLDER_NAME: 'Obata smart savings',
+  DB_FILE_NAME: 'database.json',
+  TARGET_EMAIL: 'fintech.zubysworld@gmail.com' 
+};
+
+/**
+ * APP LOGIC
+ */
+
+function safeParse(jsonString, defaultValue) {
+  if (jsonString === null || jsonString === undefined) return defaultValue;
+  try { return JSON.parse(jsonString); } catch (e) { console.error('Error parsing JSON:', e); return defaultValue; }
+}
+
+// 1. Data Store Initialization
+const db = {
+  auth: safeParse(localStorage.getItem('obata_auth'), { user: 'Admin', pass: 'admin123', role: 'admin', name: 'Administrator' }),
+  members: safeParse(localStorage.getItem('obata_members'), {}),
+  ledger: safeParse(localStorage.getItem('obata_ledger'), []),
+  lastId: parseInt(localStorage.getItem('obata_last_id')) || 100,
+  users: safeParse(localStorage.getItem('obata_users'), []),
+  settings: safeParse(localStorage.getItem('obata_settings'), {
+    autoBackup: false,
+    backupTime: "02:00",
+    driveConnected: false,
+    drivePath: null,
+    lastBackup: null,
+    backupHistory: []
+  })
+};
+
+// Initialize defaults
+Object.keys(db.members).forEach(id => { if (db.members[id].active === undefined) db.members[id].active = true; });
+if (db.users.length === 0) {
+  db.users.push({
+    id: 1, username: 'Admin', password: 'admin123', name: 'Administrator', role: 'admin',
+    permissions: { memberCreation: true, transactionPosting: true, withdrawal: true, loanManagement: true, accountClosure: true, accountReactivation: true, viewStatements: true, searchCustomers: true, generateReports: true, manageUsers: true, importExport: true, systemSettings: true, driveManagement: true },
+    created: new Date().toISOString(), lastLogin: null
+  });
+}
+
+/**
+ * GOOGLE DRIVE MODULE
+ */
+const gDrive = {
+  tokenClient: null,
+  accessToken: null,
+  folderId: null,
+  fileId: null,
+  isAuthorized: false,
+  isSyncing: false,
+
+  init: () => {
+    // Load GAPI and GIS
+    gapi.load('client', async () => {
+      await gapi.client.init({
+        apiKey: GOOGLE_CONFIG.API_KEY,
+        discoveryDocs: GOOGLE_CONFIG.DISCOVERY_DOCS,
+      });
+      gDrive.checkToken();
+    });
+
+    gDrive.tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CONFIG.CLIENT_ID,
+      scope: GOOGLE_CONFIG.SCOPES,
+      callback: async (resp) => {
+        if (resp.error !== undefined) {
+          throw (resp);
+        }
+        gDrive.accessToken = resp.access_token;
+        gDrive.isAuthorized = true;
+        document.getElementById('authorize_button').style.display = 'none';
+        document.getElementById('signout_button').style.display = 'flex';
+        document.getElementById('auth_status').innerText = 'Connected to Drive';
+        document.getElementById('auth_status').style.color = 'var(--success)';
+        
+        await gDrive.initializeStorage();
+      },
+    });
+  },
+  
+  checkToken: () => {
+    // If drive was connected, try to restore session automatically
+    if(db.settings.driveConnected) {
+       // We can't auto-request token without interaction unless session exists.
+       // We'll mark as active and try to sync
+       console.log("Drive marked as connected. Attempting auto-reconnect...");
+    }
+  },
+
+  handleAuth: () => {
+    if (gDrive.tokenClient) {
+      // Prompt 'none' attempts silent auth if possible, else use standard prompt
+      gDrive.tokenClient.requestAccessToken({prompt: ''});
+    } else {
+      alert("Google API not initialized. Check your internet connection.");
+    }
+  },
+
+  handleSignout: () => {
+    const token = gapi.client.getToken();
+    if (token !== null) {
+      google.accounts.oauth2.revoke(token.access_token);
+      gapi.client.setToken('');
+      gDrive.accessToken = null;
+      gDrive.isAuthorized = false;
+      // Update local setting
+      db.settings.driveConnected = false;
+      data.saveLocalOnly();
+      
+      document.getElementById('authorize_button').style.display = 'flex';
+      document.getElementById('signout_button').style.display = 'none';
+      document.getElementById('auth_status').innerText = 'Not connected';
+      document.getElementById('auth_status').style.color = '#666';
+      ui.updateSyncStatus('offline');
+    }
+  },
+
+  initializeStorage: async () => {
+    ui.updateSyncStatus('active', 'Connecting...');
+    try {
+      // Mark setting as true for auto-connect next time
+      db.settings.driveConnected = true;
+      data.saveLocalOnly();
+
+      // 1. Find or Create Folder
+      gDrive.folderId = await gDrive.findFolder(GOOGLE_CONFIG.FOLDER_NAME);
+      if (!gDrive.folderId) {
+        gDrive.folderId = await gDrive.createFolder(GOOGLE_CONFIG.FOLDER_NAME);
+      }
+      
+      // 2. Find Database File
+      gDrive.fileId = await gDrive.findFileInFolder(GOOGLE_CONFIG.DB_FILE_NAME, gDrive.folderId);
+      
+      if (gDrive.fileId) {
+        // 3a. If exists, Load from Cloud
+        await gDrive.loadData();
+      } else {
+        // 3b. If not exists, Upload current Local state
+        await gDrive.saveData();
+      }
+      ui.updateSyncStatus('online');
+    } catch (err) {
+      console.error("Drive Init Error:", err);
+      ui.updateSyncStatus('error', 'Connection Failed');
+      alert("Failed to initialize Drive storage. Check console.");
+    }
+  },
+
+  findFolder: async (name) => {
+    const response = await gapi.client.drive.files.list({
+      q: `mimeType='application/vnd.google-apps.folder' and name='${name}' and trashed=false`,
+      fields: 'files(id, name)',
+      spaces: 'drive',
+    });
+    return response.result.files.length > 0 ? response.result.files[0].id : null;
+  },
+
+  createFolder: async (name) => {
+    const fileMetadata = {
+      'name': name,
+      'mimeType': 'application/vnd.google-apps.folder'
+    };
+    const response = await gapi.client.drive.files.create({
+      resource: fileMetadata,
+      fields: 'id'
+    });
+    return response.result.id;
+  },
+
+  findFileInFolder: async (fileName, folderId) => {
+    const response = await gapi.client.drive.files.list({
+      q: `name='${fileName}' and '${folderId}' in parents and trashed=false`,
+      fields: 'files(id, name)',
+      spaces: 'drive',
+    });
+    return response.result.files.length > 0 ? response.result.files[0].id : null;
+  },
+
+  saveData: async () => {
+    if (!gDrive.isAuthorized || !gDrive.folderId) return;
+
+    ui.updateSyncStatus('active', 'Syncing...');
+    gDrive.isSyncing = true;
+
+    const dataContent = JSON.stringify({
+      version: "2.5",
+      lastUpdated: new Date().toISOString(),
+      data: {
+        auth: db.auth,
+        members: db.members,
+        ledger: db.ledger,
+        lastId: db.lastId,
+        users: db.users,
+        settings: db.settings
+      }
+    });
+
+    const file = new Blob([dataContent], {type: 'application/json'});
+    const metadata = {
+      'name': GOOGLE_CONFIG.DB_FILE_NAME,
+      'mimeType': 'application/json',
+      'parents': [gDrive.folderId]
+    };
+
+    const accessToken = gapi.auth.getToken().access_token;
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+    form.append('file', file);
+
+    try {
+      let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+      let method = 'POST';
+
+      if (gDrive.fileId) {
+        url = `https://www.googleapis.com/upload/drive/v3/files/${gDrive.fileId}?uploadType=multipart`;
+        method = 'PATCH';
+        const updateMeta = { 'mimeType': 'application/json' };
+        const updateForm = new FormData();
+        updateForm.append('metadata', new Blob([JSON.stringify(updateMeta)], {type: 'application/json'}));
+        updateForm.append('file', file);
+        
+        await fetch(url, {
+          method: method,
+          headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+          body: updateForm
+        });
+      } else {
+        const response = await fetch(url, {
+          method: method,
+          headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+          body: form
+        });
+        const json = await response.json();
+        gDrive.fileId = json.id;
+      }
+      ui.updateSyncStatus('online', 'Synced');
+    } catch (e) {
+      console.error("Save Error", e);
+      ui.updateSyncStatus('error', 'Sync Failed');
+    } finally {
+      gDrive.isSyncing = false;
+    }
+  },
+
+  loadData: async () => {
+    if (!gDrive.fileId) return;
+    ui.updateSyncStatus('active', 'Downloading...');
+    try {
+      const response = await gapi.client.drive.files.get({
+        fileId: gDrive.fileId,
+        alt: 'media'
+      });
+      
+      const cloudDB = response.result;
+      if (cloudDB && cloudDB.data) {
+        db.auth = cloudDB.data.auth;
+        db.members = cloudDB.data.members;
+        db.ledger = cloudDB.data.ledger;
+        db.lastId = cloudDB.data.lastId;
+        db.users = cloudDB.data.users;
+        db.settings = cloudDB.data.settings;
+        
+        data.saveLocalOnly();
+        app.updateDashboard();
+        ui.updateSyncStatus('online', 'Data Loaded');
+      }
+    } catch (e) {
+      console.error("Load Error", e);
+      ui.updateSyncStatus('error', 'Load Failed');
+    }
+  }
+};
+
+// 2. Data Persistence Helper
+const data = {
+  save: () => {
+    data.saveLocalOnly();
+    if (gDrive.isAuthorized) {
+      if (gDrive.saveTimeout) clearTimeout(gDrive.saveTimeout);
+      gDrive.saveTimeout = setTimeout(() => {
+        gDrive.saveData();
+      }, 1000);
+    }
+  },
+  
+  saveLocalOnly: () => {
+    localStorage.setItem('obata_auth', JSON.stringify(db.auth));
+    localStorage.setItem('obata_members', JSON.stringify(db.members));
+    localStorage.setItem('obata_ledger', JSON.stringify(db.ledger));
+    localStorage.setItem('obata_last_id', db.lastId);
+    localStorage.setItem('obata_users', JSON.stringify(db.users));
+    localStorage.setItem('obata_settings', JSON.stringify(db.settings));
+    app.updateDashboard();
+  },
+  
+  exportCSV: () => {
+    let csv = "Date,Value Date,ID,Name,Type,Amount,Status,Narration,Processed By\n";
+    db.ledger.forEach(l => {
+      const name = db.members[l.cust] ? db.members[l.cust].name : 'Unknown';
+      csv += `${l.date},${l.valueDate || l.date},${l.cust},"${name}",${l.type},${l.amount},${l.reversed ? 'REVERSED' : 'OK'},"${l.narration || ''}",${l.processedBy || 'System'}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Obata_Backup_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  },
+
+  exportFullBackup: async () => {
+    const backup = {
+      version: "2.5",
+      exportDate: new Date().toISOString(),
+      data: {
+        auth: db.auth,
+        members: db.members,
+        ledger: db.ledger,
+        lastId: db.lastId,
+        users: db.users,
+        settings: db.settings
+      }
+    };
+    
+    const backupStr = JSON.stringify(backup, null, 2);
+    const fileName = `Obata_Full_Backup_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    
+    if (driveManager.driveHandle) {
+      try {
+        const fileHandle = await driveManager.driveHandle.getFileHandle(fileName, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(backupStr);
+        await writable.close();
+        data.exportCSV();
+      } catch (error) {
+        console.error('Error saving to drive:', error);
+        const blob = new Blob([backupStr], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+      }
+    } else {
+      const blob = new Blob([backupStr], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+    }
+    
+    db.settings.lastBackup = new Date().toISOString();
+    db.settings.backupHistory.unshift({
+      date: new Date().toISOString(),
+      type: 'manual',
+      fileName: fileName,
+      members: Object.keys(db.members).length,
+      transactions: db.ledger.length,
+      users: db.users.length
+    });
+    
+    if (db.settings.backupHistory.length > 20) {
+      db.settings.backupHistory = db.settings.backupHistory.slice(0, 20);
+    }
+    
+    data.save();
+    if (driveManager.loadBackupHistory) {
+      driveManager.loadBackupHistory();
+    }
+    alert(`✅ Backup created successfully!\nFile: ${fileName}`);
+  },
+
+  exportReportCSV: () => {
+    let csv = "OBATA SMART SAVINGS - SYSTEM REPORT\n";
+    csv += `Generated: ${new Date().toLocaleString()}\n\n`;
+    
+    csv += "CUSTOMER SUMMARY\n";
+    csv += "ID,Name,Phone,Status,Join Date,Closure Date,Closure Reason\n";
+    Object.keys(db.members).forEach(id => {
+      const mem = db.members[id];
+      csv += `${id},"${mem.name}",${mem.phone},${mem.active ? 'Active' : 'Inactive'},${mem.date},${mem.closureDate || 'N/A'},"${mem.closureReason || 'N/A'}"\n`;
+    });
+    
+    csv += "\n\nFINANCIAL SUMMARY\n";
+    csv += "Total Savings,Total Loans,Vault Cash,Active Customers,Inactive Customers\n";
+    
+    let totalSav = 0;
+    let totalLoanOut = 0;
+    let activeCustomers = 0;
+    let inactiveCustomers = 0;
+    
+    Object.keys(db.members).forEach(id => {
+      const bal = ops.calcBalance(id);
+      totalSav += bal.savings;
+      totalLoanOut += bal.loan;
+      if (db.members[id].active) activeCustomers++;
+      else inactiveCustomers++;
+    });
+    
+    const vault = totalSav - totalLoanOut;
+    
+    csv += `${ops.fmt(totalSav).replace('₦', '')},${ops.fmt(totalLoanOut).replace('₦', '')},${ops.fmt(vault).replace('₦', '')},${activeCustomers},${inactiveCustomers}\n`;
+    
+    csv += "\n\nUSER SUMMARY\n";
+    csv += "ID,Username,Name,Role,Permissions,Last Login\n";
+    db.users.forEach(user => {
+      csv += `${user.id},${user.username},"${user.name}",${user.role},"${Object.keys(user.permissions || {}).filter(p => user.permissions[p]).join(', ')}",${user.lastLogin || 'Never'}\n`;
+    });
+    
+    csv += "\n\nTRANSACTION SUMMARY (Last 100)\n";
+    csv += "Date,Value Date,ID,Name,Type,Amount,Status,Narration,Processed By\n";
+    
+    const recentTxs = [...db.ledger].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 100);
+    recentTxs.forEach(l => {
+      const name = db.members[l.cust] ? db.members[l.cust].name : 'Unknown';
+      csv += `${l.date},${l.valueDate || l.date},${l.cust},"${name}",${l.type},${l.amount},${l.reversed ? 'REVERSED' : 'OK'},"${l.narration || ''}",${l.processedBy || 'System'}\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Obata_Report_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  },
+
+  wipeAllData: () => {
+    localStorage.clear();
+    
+    db.auth = { user: 'Admin', pass: 'admin123', role: 'admin', name: 'Administrator' };
+    db.members = {};
+    db.ledger = [];
+    db.lastId = 100;
+    db.users = [{
+      id: 1, username: 'Admin', password: 'admin123', name: 'Administrator', role: 'admin',
+      permissions: { memberCreation: true, transactionPosting: true, withdrawal: true, loanManagement: true, accountClosure: true, accountReactivation: true, viewStatements: true, searchCustomers: true, generateReports: true, manageUsers: true, importExport: true, systemSettings: true, driveManagement: true },
+      created: new Date().toISOString(), lastLogin: null
+    }];
+    db.settings = { autoBackup: false, backupTime: "02:00", driveConnected: false, drivePath: null, lastBackup: null, backupHistory: [] };
+    
+    alert("✅ All data has been wiped clean!\n\nSystem has been reset to factory defaults.\n\nDefault login: Admin/admin123");
+    location.reload();
+  }
+};
+
+// 3. User Management System (Restored)
+const userManager = {
+  getNextUserId: () => {
+    if (db.users.length === 0) return 1;
+    return Math.max(...db.users.map(u => u.id)) + 1;
+  },
+
+  showRolePermissions: () => {
+    const role = document.getElementById('newUserRole').value;
+    document.getElementById('roleDisplay').textContent = role === 'supervisor' ? 'Supervisor' : 'Thrift Collector';
+    
+    if (role === 'supervisor') {
+      document.getElementById('thriftPermissions').classList.add('hidden');
+      document.getElementById('supervisorPermissions').classList.remove('hidden');
+    } else {
+      document.getElementById('thriftPermissions').classList.remove('hidden');
+      document.getElementById('supervisorPermissions').classList.add('hidden');
+    }
+  },
+
+  createUser: () => {
+    const role = document.getElementById('newUserRole').value;
+    const name = document.getElementById('newUserName').value.trim();
+    const username = document.getElementById('newUserUsername').value.trim();
+    const password = document.getElementById('newUserPassword').value;
+    const confirmPassword = document.getElementById('newUserConfirmPassword').value;
+    
+    if (!name || !username || !password) return alert("Please fill in all required fields");
+    if (password !== confirmPassword) return alert("Passwords do not match");
+    if (password.length < 4) return alert("Password must be at least 4 characters");
+    if (db.users.some(u => u.username === username)) return alert("Username already exists");
+    
+    let permissions = {};
+    if (role === 'thrift_collector') {
+      permissions = {
+        memberCreation: document.getElementById('permMemberCreation').checked,
+        transactionPosting: document.getElementById('permTransactionPosting').checked,
+        withdrawal: document.getElementById('permWithdrawal').checked,
+        loanManagement: document.getElementById('permLoanManagement').checked,
+        viewStatements: document.getElementById('permViewStatements').checked,
+        searchCustomers: document.getElementById('permSearchCustomers').checked,
+        accountClosure: false, accountReactivation: false, generateReports: false, manageUsers: false, importExport: false, systemSettings: false, driveManagement: false
+      };
+    } else if (role === 'supervisor') {
+      permissions = {
+        memberCreation: document.getElementById('supervisorPermMemberCreation').checked,
+        transactionPosting: document.getElementById('supervisorPermTransactionPosting').checked,
+        withdrawal: document.getElementById('supervisorPermWithdrawal').checked,
+        loanManagement: document.getElementById('supervisorPermLoanManagement').checked,
+        accountClosure: document.getElementById('supervisorPermAccountClosure').checked,
+        accountReactivation: document.getElementById('supervisorPermAccountReactivation').checked,
+        viewStatements: document.getElementById('supervisorPermViewStatements').checked,
+        searchCustomers: document.getElementById('supervisorPermSearchCustomers').checked,
+        generateReports: document.getElementById('supervisorPermGenerateReports').checked,
+        manageUsers: false, importExport: false, systemSettings: false, driveManagement: false
+      };
+    }
+    
+    const newUser = {
+      id: userManager.getNextUserId(), username: username, password: password, name: name, role: role, permissions: permissions,
+      created: new Date().toISOString(), createdBy: db.auth.user, lastLogin: null, active: true
+    };
+    
+    db.users.push(newUser);
+    data.save();
+    userManager.loadUserList();
+    alert(`✅ ${role === 'supervisor' ? 'Supervisor' : 'Thrift collector'} "${name}" created successfully!`);
+  },
+
+  loadUserList: () => {
+    const userList = document.getElementById('userList');
+    if (!userList) return;
+    let html = '';
+    
+    db.users.forEach(user => {
+      const permissions = Object.keys(user.permissions || {}).filter(p => user.permissions[p]).map(p => `<span class="permission-badge ${user.active ? '' : 'inactive'}">${p}</span>`).join('');
+      html += `
+        <div class="user-item ${!user.active ? 'inactive-member' : ''}">
+          <div class="user-info">
+            <div class="user-name">${user.name} <span style="font-size:0.8rem; color:#666;">(${user.username})</span> <span class="role-badge role-${user.role}">${user.role.toUpperCase()}</span></div>
+            <div class="user-permissions">${permissions}</div>
+          </div>
+          <div class="user-actions">
+            ${user.role !== 'admin' ? `<button class="danger" onclick="userManager.deleteUser(${user.id})" style="width:auto;">Delete</button>` : '<span style="color:#666;">Admin</span>'}
+          </div>
+        </div>
+      `;
+    });
+    userList.innerHTML = html || '<p style="padding:20px; text-align:center;">No users found</p>';
+  },
+
+  deleteUser: (userId) => {
+    if (userId === 1) return alert("Cannot delete main admin");
+    if (!confirm("Are you sure?")) return;
+    db.users = db.users.filter(u => u.id !== userId);
+    data.save();
+    userManager.loadUserList();
+  },
+
+  authenticateUser: (username, password) => {
+    const user = db.users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password && u.active !== false);
+    if (user) {
+      user.lastLogin = new Date().toISOString();
+      db.auth = { user: user.username, pass: user.password, role: user.role, name: user.name, permissions: user.permissions, userId: user.id };
+      data.save();
+      return user;
+    }
+    return null;
+  },
+
+  updateUserPassword: (userId, currentPassword, newPassword) => {
+    const user = db.users.find(u => u.id === userId);
+    if (!user) return { success: false, message: "User not found" };
+    if (user.password !== currentPassword) return { success: false, message: "Current password is incorrect" };
+    if (newPassword.length < 4) return { success: false, message: "Password too short" };
+    user.password = newPassword;
+    if (db.auth.userId === userId) db.auth.pass = newPassword;
+    data.save();
+    return { success: true, message: "Password updated successfully" };
+  },
+
+  getCurrentUserActivity: (userId) => {
+    const user = db.users.find(u => u.id === userId);
+    if (!user) return { transactions: 0, members: 0, loans: 0, withdrawals: 0, savings: 0 };
+    const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const userTransactions = db.ledger.filter(tx => tx.processedBy === user.username && new Date(tx.date) >= thirtyDaysAgo);
+    return {
+      transactions: userTransactions.length,
+      members: Object.values(db.members).filter(m => m.createdBy === user.username).length,
+      loans: userTransactions.filter(tx => tx.type.includes('LOAN')).length,
+      withdrawals: userTransactions.filter(tx => tx.type === 'WITHDRAWAL').length,
+      savings: userTransactions.filter(tx => ['DAILY', 'WEEKLY', 'MONTHLY'].includes(tx.type)).length
+    };
+  }
+};
+
+/**
+ * ENHANCED DATA VERIFICATION SYSTEM
+ */
+const dataVerifier = {
+  /**
+   * Comprehensive duplicate checking with multiple criteria
+   */
+  findPotentialDuplicates: (name, phone, existingMembers) => {
+    const potentialDuplicates = [];
+    const nameLower = name.toLowerCase().trim();
+    const phoneClean = phone.trim().replace(/\s+/g, '');
+    
+    Object.entries(existingMembers).forEach(([id, member]) => {
+      let similarityScore = 0;
+      let matchReasons = [];
+      
+      // 1. Phone number exact match
+      const memberPhoneClean = member.phone.trim().replace(/\s+/g, '');
+      if (memberPhoneClean === phoneClean) {
+        similarityScore += 100;
+        matchReasons.push('Exact phone number match');
+      }
+      
+      // 2. Phone number partial match (last 7 digits)
+      if (memberPhoneClean.slice(-7) === phoneClean.slice(-7) && phoneClean.length >= 7) {
+        similarityScore += 50;
+        matchReasons.push('Phone number ending match');
+      }
+      
+      // 3. Name exact match (case-insensitive)
+      if (member.name.toLowerCase() === nameLower) {
+        similarityScore += 100;
+        matchReasons.push('Exact name match');
+      }
+      
+      // 4. Name similarity (Levenshtein distance)
+      const nameSimilarity = dataVerifier.calculateNameSimilarity(member.name.toLowerCase(), nameLower);
+      if (nameSimilarity >= 0.8) {
+        similarityScore += Math.floor(nameSimilarity * 50);
+        matchReasons.push(`Name similarity: ${Math.floor(nameSimilarity * 100)}%`);
+      }
+      
+      // 5. Name token matching (first/last name)
+      const newNameTokens = nameLower.split(/\s+/);
+      const existingNameTokens = member.name.toLowerCase().split(/\s+/);
+      const commonTokens = newNameTokens.filter(token => 
+        existingNameTokens.some(existingToken => 
+          dataVerifier.calculateNameSimilarity(token, existingToken) >= 0.9
+        )
+      );
+      
+      if (commonTokens.length >= 1 && newNameTokens.length >= 2) {
+        similarityScore += commonTokens.length * 25;
+        matchReasons.push(`${commonTokens.length} name parts match`);
+      }
+      
+      // 6. Check for same name with different phone variations
+      if (member.name.toLowerCase() === nameLower && memberPhoneClean !== phoneClean) {
+        similarityScore += 30;
+        matchReasons.push('Same name, different phone');
+      }
+      
+      if (similarityScore >= 30) {
+        potentialDuplicates.push({
+          id: id,
+          name: member.name,
+          phone: member.phone,
+          joinDate: member.date,
+          status: member.active ? 'Active' : 'Inactive',
+          similarityScore: similarityScore,
+          matchReasons: matchReasons,
+          account: member
+        });
+      }
+    });
+    
+    // Sort by similarity score (highest first)
+    return potentialDuplicates.sort((a, b) => b.similarityScore - a.similarityScore);
+  },
+  
+  /**
+   * Calculate string similarity (Levenshtein distance normalized)
+   */
+  calculateNameSimilarity: (str1, str2) => {
+    if (!str1 || !str2) return 0;
+    
+    // Simple implementation - in production you might want a full Levenshtein algorithm
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+    
+    if (longer.length === 0) return 1.0;
+    
+    const editDistance = dataVerifier.levenshteinDistance(longer, shorter);
+    return (longer.length - editDistance) / parseFloat(longer.length);
+  },
+  
+  levenshteinDistance: (str1, str2) => {
+    const track = Array(str2.length + 1).fill(null).map(() =>
+      Array(str1.length + 1).fill(null));
+    
+    for (let i = 0; i <= str1.length; i += 1) {
+      track[0][i] = i;
+    }
+    
+    for (let j = 0; j <= str2.length; j += 1) {
+      track[j][0] = j;
+    }
+    
+    for (let j = 1; j <= str2.length; j += 1) {
+      for (let i = 1; i <= str1.length; i += 1) {
+        const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        track[j][i] = Math.min(
+          track[j][i - 1] + 1, // deletion
+          track[j - 1][i] + 1, // insertion
+          track[j - 1][i - 1] + indicator, // substitution
+        );
+      }
+    }
+    
+    return track[str2.length][str1.length];
+  },
+  
+  /**
+   * Validate phone number format
+   */
+  validatePhoneNumber: (phone) => {
+    const cleanPhone = phone.trim().replace(/\s+/g, '');
+    
+    // Nigerian phone number patterns
+    const patterns = [
+      /^0[7-9][0-1]\d{8}$/, // 070, 080, 081, 090, 091
+      /^\+234[7-9][0-1]\d{8}$/, // +234 format
+      /^234[7-9][0-1]\d{8}$/, // 234 format
+    ];
+    
+    return patterns.some(pattern => pattern.test(cleanPhone));
+  },
+  
+  /**
+   * Validate name format
+   */
+  validateName: (name) => {
+    if (!name || name.trim().length < 2) return false;
+    
+    // Check for minimum two characters and reasonable length
+    const trimmedName = name.trim();
+    if (trimmedName.length < 2 || trimmedName.length > 100) return false;
+    
+    // Check for valid characters (allow letters, spaces, hyphens, apostrophes)
+    const validPattern = /^[A-Za-zÀ-ÿ\s\-'.]+$/;
+    return validPattern.test(trimmedName);
+  },
+  
+  /**
+   * Comprehensive member validation before registration
+   */
+  validateNewMember: (name, phone, existingMembers) => {
+    const errors = [];
+    const warnings = [];
+    
+    // 1. Validate name
+    if (!dataVerifier.validateName(name)) {
+      errors.push('Invalid name format. Name must contain only letters, spaces, hyphens, or apostrophes.');
+    }
+    
+    // 2. Validate phone
+    if (!dataVerifier.validatePhoneNumber(phone)) {
+      errors.push('Invalid phone number format. Please use a valid Nigerian phone number.');
+    }
+    
+    // 3. Check for exact duplicates
+    const exactPhoneMatch = Object.values(existingMembers).find(m => 
+      m.phone.trim().replace(/\s+/g, '') === phone.trim().replace(/\s+/g, '')
+    );
+    
+    if (exactPhoneMatch) {
+      errors.push(`Phone number already registered to: ${exactPhoneMatch.name} (ID: ${Object.keys(existingMembers).find(id => existingMembers[id] === exactPhoneMatch)})`);
+    }
+    
+    // 4. Find potential duplicates (non-blocking, just warnings)
+    const potentialDuplicates = dataVerifier.findPotentialDuplicates(name, phone, existingMembers);
+    
+    if (potentialDuplicates.length > 0) {
+      potentialDuplicates.forEach(dup => {
+        if (dup.similarityScore >= 70) {
+          warnings.push(`⚠️ High similarity (${dup.similarityScore}%): ${dup.name} (ID: ${dup.id}) - ${dup.matchReasons.join(', ')}`);
+        } else if (dup.similarityScore >= 40) {
+          warnings.push(`ℹ️ Possible match (${dup.similarityScore}%): ${dup.name} (ID: ${dup.id})`);
+        }
+      });
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors: errors,
+      warnings: warnings,
+      potentialDuplicates: potentialDuplicates
+    };
+  },
+  
+  /**
+   * Display verification results in a modal
+   */
+  showVerificationResults: (validationResult, name, phone, onConfirm, onCancel) => {
+    const modalId = 'verificationModal';
+    
+    // Remove existing modal if present
+    const existingModal = document.getElementById(modalId);
+    if (existingModal) existingModal.remove();
+    
+    let modalHTML = `
+      <div id="${modalId}" class="modal-overlay">
+        <div class="modal-content" style="max-width: 700px;">
+          <h2>🔍 Account Verification</h2>
+          <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between;">
+              <div>
+                <strong>New Member:</strong><br>
+                Name: ${name}<br>
+                Phone: ${phone}
+              </div>
+              <div style="text-align: right;">
+                <strong>Validation Status:</strong><br>
+                ${validationResult.isValid ? '<span style="color: var(--success); font-weight: bold;">✓ VALID</span>' : '<span style="color: var(--danger); font-weight: bold;">✗ INVALID</span>'}
+              </div>
+            </div>
+          </div>
+    `;
+    
+    // Show errors
+    if (validationResult.errors.length > 0) {
+      modalHTML += `
+        <div style="margin: 20px 0; padding: 15px; background: rgba(198, 40, 40, 0.1); border-left: 4px solid var(--danger); border-radius: 4px;">
+          <h3 style="color: var(--danger); margin-top: 0;">❌ Validation Errors</h3>
+          <ul style="margin: 10px 0; padding-left: 20px;">
+      `;
+      validationResult.errors.forEach(error => {
+        modalHTML += `<li style="margin-bottom: 5px;">${error}</li>`;
+      });
+      modalHTML += `</ul></div>`;
+    }
+    
+    // Show warnings
+    if (validationResult.warnings.length > 0) {
+      modalHTML += `
+        <div style="margin: 20px 0; padding: 15px; background: rgba(249, 168, 37, 0.1); border-left: 4px solid var(--warning); border-radius: 4px;">
+          <h3 style="color: var(--warning); margin-top: 0;">⚠️ Potential Duplicates</h3>
+          <div style="max-height: 200px; overflow-y: auto; margin: 10px 0;">
+      `;
+      validationResult.warnings.forEach(warning => {
+        modalHTML += `<div style="padding: 8px; border-bottom: 1px solid rgba(249, 168, 37, 0.3);">${warning}</div>`;
+      });
+      modalHTML += `</div></div>`;
+    }
+    
+    // Show duplicate details if any
+    if (validationResult.potentialDuplicates.length > 0) {
+      modalHTML += `
+        <div style="margin: 20px 0;">
+          <h3>📋 Potential Duplicate Accounts</h3>
+          <div style="max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 6px;">
+            <table style="width: 100%; font-size: 0.9rem;">
+              <thead>
+                <tr style="background: #f8f9fa;">
+                  <th style="padding: 10px;">ID</th>
+                  <th style="padding: 10px;">Name</th>
+                  <th style="padding: 10px;">Phone</th>
+                  <th style="padding: 10px;">Status</th>
+                  <th style="padding: 10px;">Join Date</th>
+                  <th style="padding: 10px;">Similarity</th>
+                 </tr>
+              </thead>
+              <tbody>
+      `;
+      
+      validationResult.potentialDuplicates.forEach(dup => {
+        modalHTML += `
+          <tr style="border-bottom: 1px solid #eee; ${dup.similarityScore >= 70 ? 'background: rgba(249, 168, 37, 0.1);' : ''}">
+            <td style="padding: 10px;">${dup.id}</td>
+            <td style="padding: 10px;">${dup.name}</td>
+            <td style="padding: 10px;">${dup.phone}</td>
+            <td style="padding: 10px;">
+              <span style="padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; background: ${dup.status === 'Active' ? 'var(--success)' : '#757575'}; color: white;">
+                ${dup.status}
+              </span>
+            </td>
+            <td style="padding: 10px;">${dup.joinDate}</td>
+            <td style="padding: 10px;">
+              <div style="width: 100px; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden;">
+                <div style="height: 100%; width: ${Math.min(dup.similarityScore, 100)}%; background: ${dup.similarityScore >= 70 ? 'var(--warning)' : 'var(--primary)'};"></div>
+              </div>
+              <small>${dup.similarityScore}%</small>
+            </td>
+           </tr>
+        `;
+      });
+      
+      modalHTML += `</tbody> </table> </div>`;
+    }
+    
+    // Action buttons
+    modalHTML += `
+      <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <input type="checkbox" id="forceCreateCheckbox" ${validationResult.errors.length === 0 ? '' : 'disabled'}>
+          <label for="forceCreateCheckbox" style="margin-left: 8px; color: ${validationResult.errors.length === 0 ? 'inherit' : '#999'}">
+            ${validationResult.errors.length === 0 ? 'I confirm this is not a duplicate account' : 'Fix errors to proceed'}
+          </label>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="danger" onclick="dataVerifier.closeVerificationModal()">Cancel</button>
+          <button class="${validationResult.errors.length === 0 ? 'success' : 'secondary'}" 
+                  onclick="dataVerifier.handleVerificationConfirm()"
+                  ${validationResult.errors.length === 0 ? '' : 'disabled'}>
+            ${validationResult.errors.length === 0 ? 'Confirm & Create Account' : 'Fix Errors First'}
+          </button>
+        </div>
+      </div>
+    </div></div>`;
+    
+    // Add modal to DOM
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Store callbacks and data for later use
+    window.verificationData = {
+      validationResult: validationResult,
+      name: name,
+      phone: phone,
+      onConfirm: onConfirm,
+      onCancel: onCancel
+    };
+  },
+  
+  closeVerificationModal: () => {
+    const modal = document.getElementById('verificationModal');
+    if (modal) modal.remove();
+    if (window.verificationData && window.verificationData.onCancel) {
+      window.verificationData.onCancel();
+    }
+  },
+  
+  handleVerificationConfirm: () => {
+    const forceCreateCheckbox = document.getElementById('forceCreateCheckbox');
+    
+    if (!forceCreateCheckbox || !forceCreateCheckbox.checked) {
+      alert('Please confirm that this is not a duplicate account by checking the checkbox.');
+      return;
+    }
+    
+    const modal = document.getElementById('verificationModal');
+    if (modal) modal.remove();
+    
+    if (window.verificationData && window.verificationData.onConfirm) {
+      window.verificationData.onConfirm();
+    }
+  }
+};
+
+/**
+ * ENHANCED IMPORT/EXPORT WITH DATA VALIDATION
+ */
+const importData = {
+  currentFileType: null, fileData: null, importType: null, validationErrors: [], importedMembers: [],
+  selectFileType: (type) => {
+    importData.currentFileType = type;
+    document.getElementById('importPreview').classList.add('hidden');
+    // Hide buttons, show option
+    document.querySelector('.file-format-buttons').classList.add('hidden');
+    
+    ['csv', 'excel', 'json'].forEach(t => document.getElementById(t+'Options').classList.add('hidden'));
+    document.getElementById(type+'Options').classList.remove('hidden');
+  },
+  resetImport: () => {
+    importData.currentFileType = null; 
+    importData.fileData = null; 
+    importData.importType = null;
+    importData.validationErrors = [];
+    importData.importedMembers = [];
+    document.getElementById('importPreview').classList.add('hidden');
+    document.getElementById('importComplete').classList.add('hidden');
+    // Show buttons again
+    document.querySelector('.file-format-buttons').classList.remove('hidden');
+    ['csv', 'excel', 'json'].forEach(t => document.getElementById(t+'Options').classList.add('hidden'));
+    
+    // Clear inputs
+    document.getElementById('csvFileInput').value = '';
+    document.getElementById('excelFileInput').value = '';
+    document.getElementById('jsonFileInput').value = '';
+  },
+  handleCSVFile: (event) => {
+    const file = event.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => importData.parseCSV(e.target.result);
+    reader.readAsText(file);
+  },
+  handleExcelFile: (event) => {
+    const file = event.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const csv = XLSX.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]);
+      importData.parseCSV(csv);
+    };
+    reader.readAsArrayBuffer(file);
+  },
+  handleJSONFile: (event) => {
+    const file = event.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const backup = safeParse(e.target.result, null);
+        if (backup) {
+          importData.fileData = backup;
+          importData.importType = 'full_backup';
+          document.getElementById('previewTable').innerHTML = `<div>Full System Backup: ${Object.keys(backup.data.members).length} members</div>`;
+          document.getElementById('importPreview').classList.remove('hidden');
+        } else alert("Invalid JSON");
+      } catch (e) { alert("Invalid JSON"); }
+    };
+    reader.readAsText(file);
+  },
+  parseCSV: (csvContent) => {
+    const lines = csvContent.split('\n');
+    const transactions = [];
+    importData.validationErrors = [];
+    importData.importedMembers = new Set();
+    
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      
+      // More robust CSV parsing that handles quoted fields
+      const parts = [];
+      let currentPart = '';
+      let inQuotes = false;
+      
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+        
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          parts.push(currentPart.trim());
+          currentPart = '';
+        } else {
+          currentPart += char;
+        }
+      }
+      parts.push(currentPart.trim());
+      
+      if (parts.length >= 5) {
+        const transaction = {
+          date: parts[0].replace(/"/g, ''),
+          valueDate: parts[1] ? parts[1].replace(/"/g, '') : parts[0].replace(/"/g, ''),
+          cust: parts[2].replace(/"/g, ''),
+          name: parts[3].replace(/"/g, ''),
+          type: parts[4].replace(/"/g, ''),
+          amount: parseFloat(parts[5].replace(/"/g, '')) || 0,
+          status: (parts[6] ? parts[6].replace(/"/g, '') : 'OK').toUpperCase(),
+          narration: parts[7] ? parts[7].replace(/"/g, '') : '',
+          processedBy: parts[8] ? parts[8].replace(/"/g, '') : 'Imported'
+        };
+        
+        // Validate transaction
+        const validation = importData.validateTransaction(transaction, i);
+        if (validation.isValid) {
+          transactions.push(transaction);
+          
+          // Track imported members for verification
+          if (!importData.importedMembers.has(transaction.cust)) {
+            importData.importedMembers.add(transaction.cust);
+          }
+        } else {
+          importData.validationErrors.push(`Line ${i + 1}: ${validation.error}`);
+        }
+      }
+    }
+    
+    importData.fileData = transactions;
+    importData.importType = 'transactions';
+    importData.importedMembers = Array.from(importData.importedMembers);
+    
+    // Show preview with validation results
+    let html = '<thead><tr><th>Date</th><th>ID</th><th>Type</th><th>Amount</th><th>Status</th><th>Narration</th></tr></thead><tbody>';
+    transactions.slice(0, 10).forEach(tx => {
+      html += `<tr style="${tx.status === 'REVERSED' ? 'text-decoration: line-through; color: #999;' : ''}">
+         <td>${tx.date}</td>
+         <td>${tx.cust}</td>
+         <td>${tx.type}</td>
+         <td>${ops.fmt(tx.amount)}</td>
+         <td>${tx.status}</td>
+         <td>${tx.narration.substring(0, 20)}${tx.narration.length > 20 ? '...' : ''}</td>
+       </tr>`;
+    });
+    html += '</tbody>';
+    
+    document.getElementById('previewTable').innerHTML = html;
+    
+    // Show validation summary
+    let stats = `Found ${transactions.length} valid transactions`;
+    if (importData.validationErrors.length > 0) {
+      stats += `, ${importData.validationErrors.length} errors`;
+    }
+    if (importData.importedMembers.length > 0) {
+      stats += `, ${importData.importedMembers.length} unique members`;
+    }
+    
+    document.getElementById('previewStats').innerHTML = `
+      <div style="margin: 10px 0;">
+        <strong>Import Summary:</strong> ${stats}
+      </div>
+      ${importData.validationErrors.length > 0 ? `
+        <div style="margin: 10px 0; padding: 10px; background: rgba(198, 40, 40, 0.1); border-radius: 4px; max-height: 100px; overflow-y: auto;">
+          <strong>Validation Errors:</strong><br>
+          ${importData.validationErrors.slice(0, 5).map(err => `• ${err}`).join('<br>')}
+          ${importData.validationErrors.length > 5 ? `<br>... and ${importData.validationErrors.length - 5} more errors` : ''}
+        </div>
+      ` : ''}
+    `;
+    
+    document.getElementById('importPreview').classList.remove('hidden');
+  },
+  
+  /**
+   * Validate a single transaction
+   */
+  validateTransaction: (transaction, lineNumber) => {
+    const errors = [];
+    
+    // Validate date
+    if (!transaction.date || isNaN(new Date(transaction.date))) {
+      errors.push('Invalid date format');
+    }
+    
+    // Validate customer ID
+    if (!transaction.cust || transaction.cust.trim() === '') {
+      errors.push('Missing customer ID');
+    }
+    
+    // Validate name
+    if (!transaction.name || transaction.name.trim().length < 2) {
+      errors.push('Invalid customer name');
+    }
+    
+    // Validate transaction type
+    const validTypes = ['DAILY', 'WEEKLY', 'MONTHLY', 'WITHDRAWAL', 'LOAN', 'LOAN_REPAY', 'REVERSAL'];
+    if (!validTypes.includes(transaction.type.toUpperCase())) {
+      errors.push(`Invalid transaction type: ${transaction.type}`);
+    }
+    
+    // Validate amount
+    if (isNaN(transaction.amount) || transaction.amount <= 0) {
+      errors.push('Invalid amount');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      error: errors.join(', ')
+    };
+  },
+  
+  /**
+   * Enhanced import confirmation with member verification
+   */
+  confirmImport: () => {
+    if (!importData.fileData) return;
+    
+    // Check for potential duplicate members in import data
+    const duplicateCheck = importData.checkImportDuplicates();
+    
+    if (duplicateCheck.hasDuplicates) {
+      if (!confirm(`Found ${duplicateCheck.duplicateCount} potential duplicate member(s) in import data. Continue anyway?`)) {
+        return;
+      }
+    }
+    
+    if (importData.importType === 'full_backup') {
+      if (!confirm("WARNING: This will replace ALL current data. Continue?")) return;
+      
+      // Validate backup data structure
+      if (!importData.validateBackupData(importData.fileData)) {
+        alert("Invalid backup file structure. Import cancelled.");
+        return;
+      }
+      
+      const d = importData.fileData.data;
+      db.auth = d.auth;
+      db.members = d.members;
+      db.ledger = d.ledger;
+      db.lastId = d.lastId;
+      db.users = d.users;
+      db.settings = d.settings;
+      
+      importData.showImportResults('full_backup', {
+        members: Object.keys(d.members).length,
+        transactions: d.ledger.length,
+        users: d.users.length
+      });
+      
+    } else {
+      // Import transactions with enhanced validation
+      const importResults = importData.processTransactionImport();
+      
+      importData.showImportResults('transactions', importResults);
+    }
+    
+    data.save();
+  },
+  
+  /**
+   * Check for duplicates within import data itself
+   */
+  checkImportDuplicates: () => {
+    if (!importData.fileData || importData.importType !== 'transactions') {
+      return { hasDuplicates: false, duplicateCount: 0 };
+    }
+    
+    const phoneMap = new Map();
+    const duplicateMembers = new Set();
+    
+    importData.fileData.forEach(tx => {
+      const cleanPhone = tx.name; // Using name as identifier in this context
+      if (phoneMap.has(cleanPhone) && phoneMap.get(cleanPhone) !== tx.cust) {
+        duplicateMembers.add(cleanPhone);
+      } else {
+        phoneMap.set(cleanPhone, tx.cust);
+      }
+    });
+    
+    return {
+      hasDuplicates: duplicateMembers.size > 0,
+      duplicateCount: duplicateMembers.size,
+      duplicateMembers: Array.from(duplicateMembers)
+    };
+  },
+  
+  /**
+   * Validate backup data structure
+   */
+  validateBackupData: (backupData) => {
+    if (!backupData || !backupData.data) return false;
+    
+    const requiredKeys = ['members', 'ledger', 'users', 'lastId'];
+    const hasAllKeys = requiredKeys.every(key => backupData.data[key] !== undefined);
+    
+    if (!hasAllKeys) return false;
+    
+    // Additional validation
+    try {
+      // Check members is an object
+      if (typeof backupData.data.members !== 'object') return false;
+      
+      // Check ledger is an array
+      if (!Array.isArray(backupData.data.ledger)) return false;
+      
+      // Check users is an array
+      if (!Array.isArray(backupData.data.users)) return false;
+      
+      // Check lastId is a number
+      if (typeof backupData.data.lastId !== 'number') return false;
+      
+      return true;
+    } catch (error) {
+      return false;
+    }
+  },
+  
+  /**
+   * Process transaction import with validation
+   */
+  processTransactionImport: () => {
+    const results = {
+      total: importData.fileData.length,
+      imported: 0,
+      skipped: 0,
+      errors: 0,
+      newMembers: 0,
+      existingMembers: 0
+    };
+    
+    const memberCache = new Set(Object.keys(db.members));
+    
+    importData.fileData.forEach((tx, idx) => {
+      try {
+        // Check if member exists, create if not
+        if (!db.members[tx.cust]) {
+          db.members[tx.cust] = {
+            name: tx.name,
+            phone: 'Imported - ' + tx.cust, // Placeholder phone
+            date: new Date().toLocaleDateString(),
+            active: true,
+            imported: true,
+            importDate: new Date().toISOString(),
+            importSource: 'CSV Import'
+          };
+          results.newMembers++;
+        } else {
+          results.existingMembers++;
+        }
+        
+        // Add transaction to ledger
+        db.ledger.push({
+          txId: Date.now() + idx,
+          cust: tx.cust,
+          type: tx.type.toUpperCase(),
+          amount: tx.amount,
+          date: tx.date,
+          valueDate: tx.valueDate || tx.date,
+          reversed: tx.status === 'REVERSED',
+          narration: tx.narration || '',
+          processedBy: tx.processedBy,
+          importSource: 'CSV Import',
+          importDate: new Date().toISOString()
+        });
+        
+        results.imported++;
+      } catch (error) {
+        console.error('Error importing transaction:', error, tx);
+        results.errors++;
+        results.skipped++;
+      }
+    });
+    
+    // Update lastId if needed
+    const maxId = Math.max(...Object.keys(db.members).map(id => parseInt(id)).filter(id => !isNaN(id)));
+    if (maxId > db.lastId) {
+      db.lastId = maxId;
+    }
+    
+    return results;
+  },
+  
+  /**
+   * Show detailed import results
+   */
+  showImportResults: (importType, results) => {
+    document.getElementById('importPreview').classList.add('hidden');
+    document.getElementById('importComplete').classList.remove('hidden');
+    
+    let resultsHtml = '';
+    
+    if (importType === 'full_backup') {
+      resultsHtml = `
+        <div style="padding: 20px; background: rgba(46, 125, 50, 0.1); border-radius: 8px; margin: 10px 0;">
+          <h4 style="color: var(--success); margin-top: 0;">✅ Full System Restore Complete</h4>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;">
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: bold;">${results.members}</div>
+              <div>Members</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: bold;">${results.transactions}</div>
+              <div>Transactions</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: bold;">${results.users}</div>
+              <div>Users</div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      resultsHtml = `
+        <div style="padding: 20px; background: rgba(46, 125, 50, 0.1); border-radius: 8px; margin: 10px 0;">
+          <h4 style="color: var(--success); margin-top: 0;">✅ Transaction Import Complete</h4>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px;">
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: bold;">${results.imported}</div>
+              <div>Imported</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: bold;">${results.newMembers}</div>
+              <div>New Members</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: bold;">${results.existingMembers}</div>
+              <div>Existing Members</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: bold;">${results.errors}</div>
+              <div>Errors</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    resultsHtml += `
+      <div style="margin-top: 20px;">
+        <p>✅ Data has been successfully imported and is now writeable.</p>
+        <p>You can now perform all operations (transactions, updates, etc.) on the imported data.</p>
+      </div>
+    `;
+    
+    document.getElementById('importResults').innerHTML = resultsHtml;
+  },
+  
+  cancelImport: () => importData.resetImport()
+};
+
+// 5. Drive Manager (Physical Drive F:) (Restored)
+const driveManager = {
+  isConnected: false, driveHandle: null,
+  connectDrive: async () => {
+    try {
+      if ('showDirectoryPicker' in window) {
+        const handle = await window.showDirectoryPicker();
+        driveManager.driveHandle = handle;
+        db.settings.driveConnected = true; db.settings.drivePath = 'External Drive';
+        data.save(); driveManager.updateDriveStatus(); alert('✅ Drive connected successfully!');
+      } else {
+        if(confirm('Browser does not support direct drive access. Use simulated download?')) {
+          db.settings.driveConnected = true; db.settings.drivePath = 'Simulated Drive';
+          data.save(); driveManager.updateDriveStatus();
+        }
+      }
+    } catch (e) { alert('Failed: ' + e.message); }
+  },
+  disconnectDrive: () => {
+    db.settings.driveConnected = false; db.settings.drivePath = null; driveManager.driveHandle = null;
+    data.save(); driveManager.updateDriveStatus(); alert('Drive disconnected.');
+  },
+  updateDriveStatus: () => {
+    const el = document.getElementById('driveStatus');
+    if (db.settings.driveConnected) {
+      el.className = 'drive-status drive-connected';
+      document.getElementById('driveStatusText').innerText = 'Connected';
+      document.getElementById('driveInfo').innerText = db.settings.drivePath;
+    } else {
+      el.className = 'drive-status drive-disconnected';
+      document.getElementById('driveStatusText').innerText = 'Not Connected';
+    }
+  },
+  backupToDrive: async () => { if(!db.settings.driveConnected) return alert('Connect drive first'); await data.exportFullBackup(); },
+  restoreFromDrive: async () => {
+    if(!db.settings.driveConnected) return alert('Connect drive first');
+    // Simple restore logic via file picker
+    const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (ev) => driveManager.processRestore(ev.target.result);
+      reader.readAsText(file);
+    };
+    input.click();
+  },
+  processRestore: (content) => {
+    const backup = safeParse(content);
+    if(backup && backup.data && confirm('Restore backup? This replaces current data.')) {
+      db.members = backup.data.members; db.ledger = backup.data.ledger; db.users = backup.data.users; db.lastId = backup.data.lastId;
+      data.save(); alert('Restored successfully');
+    }
+  },
+  scheduleAutoBackup: () => {
+    const time = prompt('Enter backup time (HH:MM):', db.settings.backupTime || '02:00');
+    if(time) { db.settings.autoBackup = true; db.settings.backupTime = time; data.save(); driveManager.setupAutoBackup(); alert('Scheduled'); }
+  },
+  setupAutoBackup: () => {
+    if(!db.settings.autoBackup) return;
+    const now = new Date(); const [h, m] = db.settings.backupTime.split(':');
+    const target = new Date(now); target.setHours(h, m, 0, 0);
+    if(target <= now) target.setDate(target.getDate() + 1);
+    setTimeout(() => { if(db.settings.driveConnected) driveManager.backupToDrive(); driveManager.setupAutoBackup(); }, target - now);
+  },
+  loadBackupHistory: () => {
+    const list = document.getElementById('backupHistoryList');
+    if(!list) return;
+    let html = '';
+    (db.settings.backupHistory || []).forEach(b => html += `<div class="backup-item"><strong>${new Date(b.date).toLocaleString()}</strong><br><small>${b.fileName}</small></div>`);
+    list.innerHTML = html || '<p style="text-align:center">No backups</p>';
+  }
+};
+
+/**
+ * ENHANCED DATA INTEGRITY CHECKS
+ */
+const dataIntegrity = {
+  /**
+   * Run comprehensive data integrity check
+   */
+  checkAllIntegrity: () => {
+    const issues = [];
+    
+    // Check 1: Members without transactions
+    Object.keys(db.members).forEach(id => {
+      const hasTransactions = db.ledger.some(tx => tx.cust == id);
+      if (!hasTransactions) {
+        issues.push({
+          type: 'warning',
+          message: `Member ${id} (${db.members[id].name}) has no transactions`
+        });
+      }
+    });
+    
+    // Check 2: Transactions referencing non-existent members
+    db.ledger.forEach(tx => {
+      if (!db.members[tx.cust]) {
+        issues.push({
+          type: 'error',
+          message: `Transaction ${tx.txId} references non-existent member ${tx.cust}`
+        });
+      }
+    });
+    
+    // Check 3: Negative balances
+    Object.keys(db.members).forEach(id => {
+      const balance = ops.calcBalance(id);
+      if (balance.savings < 0) {
+        issues.push({
+          type: 'error',
+          message: `Member ${id} (${db.members[id].name}) has negative savings: ${ops.fmt(balance.savings)}`
+        });
+      }
+    });
+    
+    // Check 4: Duplicate phone numbers
+    const phoneMap = new Map();
+    Object.entries(db.members).forEach(([id, member]) => {
+      const cleanPhone = member.phone.trim().replace(/\s+/g, '');
+      if (phoneMap.has(cleanPhone)) {
+        issues.push({
+          type: 'warning',
+          message: `Duplicate phone number: ${cleanPhone} used by ${member.name} (ID: ${id}) and ${phoneMap.get(cleanPhone).name} (ID: ${phoneMap.get(cleanPhone).id})`
+        });
+      } else {
+        phoneMap.set(cleanPhone, { id, name: member.name });
+      }
+    });
+    
+    // Check 5: Reversal integrity
+    db.ledger.forEach(tx => {
+      if (tx.reversalOf) {
+        const original = db.ledger.find(t => t.txId === tx.reversalOf);
+        if (!original) {
+          issues.push({
+            type: 'error',
+            message: `Reversal transaction ${tx.txId} references non-existent original transaction ${tx.reversalOf}`
+          });
+        }
+      }
+    });
+    
+    return issues;
+  },
+  
+  /**
+   * Display integrity check results
+   */
+  showIntegrityReport: () => {
+    const issues = dataIntegrity.checkAllIntegrity();
+    
+    if (issues.length === 0) {
+      alert('✅ Data integrity check passed! No issues found.');
+      return;
+    }
+    
+    let reportHTML = `
+      <div class="modal-overlay">
+        <div class="modal-content" style="max-width: 800px;">
+          <h2>🔍 Data Integrity Report</h2>
+          <p>Found ${issues.length} issue(s) in the database</p>
+          
+          <div style="max-height: 400px; overflow-y: auto; margin: 20px 0;">
+    `;
+    
+    issues.forEach((issue, index) => {
+      const bgColor = issue.type === 'error' ? 'rgba(198, 40, 40, 0.1)' : 'rgba(249, 168, 37, 0.1)';
+      const borderColor = issue.type === 'error' ? 'var(--danger)' : 'var(--warning)';
+      
+      reportHTML += `
+        <div style="padding: 10px; margin-bottom: 10px; background: ${bgColor}; border-left: 4px solid ${borderColor}; border-radius: 4px;">
+          <strong>${issue.type.toUpperCase()}:</strong> ${issue.message}
+        </div>
+      `;
+    });
+    
+    reportHTML += `
+          </div>
+          
+          <div style="margin-top: 20px;">
+            <button class="success" onclick="dataIntegrity.fixCommonIssues()">🛠️ Fix Common Issues</button>
+            <button class="danger" onclick="this.closest('.modal-overlay').remove()">Close</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add modal to DOM
+    const existingModal = document.querySelector('.modal-overlay');
+    if (existingModal && existingModal.querySelector('h2')?.textContent === 'Data Integrity Report') {
+      existingModal.remove();
+    }
+    
+    document.body.insertAdjacentHTML('beforeend', reportHTML);
+  },
+  
+  /**
+   * Attempt to fix common data issues
+   */
+  fixCommonIssues: () => {
+    if (!confirm('Attempt to fix common data issues? This may modify your data.')) return;
+    
+    let fixesApplied = 0;
+    
+    // Fix 1: Remove transactions referencing non-existent members
+    const originalLength = db.ledger.length;
+    db.ledger = db.ledger.filter(tx => db.members[tx.cust]);
+    if (db.ledger.length < originalLength) {
+      fixesApplied += (originalLength - db.ledger.length);
+    }
+    
+    // Fix 2: Ensure all members have active flag
+    Object.keys(db.members).forEach(id => {
+      if (db.members[id].active === undefined) {
+        db.members[id].active = true;
+        fixesApplied++;
+      }
+    });
+    
+    // Fix 3: Update imported members with proper structure
+    Object.keys(db.members).forEach(id => {
+      if (db.members[id].imported && !db.members[id].importDate) {
+        db.members[id].importDate = new Date().toISOString();
+        fixesApplied++;
+      }
+    });
+    
+    data.save();
+    alert(`✅ Applied ${fixesApplied} fixes to database.`);
+    
+    // Close the modal
+    const modal = document.querySelector('.modal-overlay');
+    if (modal && modal.querySelector('h2')?.textContent === 'Data Integrity Report') {
+      modal.remove();
+    }
+  }
+};
+
+// 6. User Interface Functions
+const ui = {
+  show: (id) => document.getElementById(id).classList.remove('hidden'),
+  hide: (id) => document.getElementById(id).classList.add('hidden'),
+  
+  updateSyncStatus: (state, text) => {
+    const el = document.getElementById('syncStatus');
+    const ind = document.getElementById('syncIndicator');
+    const txt = document.getElementById('syncText');
+    el.classList.remove('hidden');
+    ind.className = 'sync-indicator';
+    if (state === 'active') { ind.classList.add('sync-active'); txt.innerText = text || 'Syncing...'; }
+    else if (state === 'online') { ind.classList.add('sync-online'); txt.innerText = text || 'Online'; }
+    else if (state === 'error') { ind.classList.add('sync-error'); txt.innerText = text || 'Error'; }
+    else { ind.style.background = '#ccc'; txt.innerText = 'Offline'; }
+  },
+  
+  openPasswordModal: () => ui.show('passwordModal'),
+  openChangePasswordModal: () => ui.show('changePasswordModal'),
+  openUserManagementModal: () => { userManager.loadUserList(); ui.show('userManagementModal'); },
+  openImportModal: () => { importData.resetImport(); ui.show('importModal'); },
+  openDriveModal: () => { driveManager.updateDriveStatus(); driveManager.loadBackupHistory(); ui.show('driveModal'); },
+  openWipeModal: () => { document.getElementById('wipeUsername').value=''; ui.show('wipeModal'); },
+  closeModal: (id) => ui.hide(id),
+  
+  showMemberConfirmation: () => {
+    const role = db.auth.role;
+    let name = role === 'admin' ? document.getElementById('adminNewMemName').value : (role === 'supervisor' ? document.getElementById('supervisorNewMemName').value : document.getElementById('thriftNewMemName').value);
+    let phone = role === 'admin' ? document.getElementById('adminNewMemPhone').value : (role === 'supervisor' ? document.getElementById('supervisorNewMemPhone').value : document.getElementById('thriftNewMemPhone').value);
+    
+    if(!name || !phone) return alert("Name and Phone required");
+    
+    // Perform comprehensive validation
+    const validationResult = dataVerifier.validateNewMember(name, phone, db.members);
+    
+    if (!validationResult.isValid) {
+      // Show validation errors
+      let errorMessage = "Cannot create account. Please fix the following errors:\n\n";
+      validationResult.errors.forEach(error => {
+        errorMessage += `• ${error}\n`;
+      });
+      alert(errorMessage);
+      return;
+    }
+    
+    // Show verification modal even if valid (for warnings)
+    dataVerifier.showVerificationResults(
+      validationResult,
+      name,
+      phone,
+      () => {
+        // On confirm - proceed with original confirmation
+        document.getElementById('confirmMemName').innerText = name;
+        document.getElementById('confirmMemPhone').innerText = phone;
+        document.getElementById('confirmMemDate').innerText = new Date().toLocaleDateString();
+        document.getElementById('confirmMemId').innerText = db.lastId + 1;
+        document.getElementById('confirmMemBy').innerText = db.auth.name;
+        ui.show('memberConfirmationModal');
+      },
+      () => {
+        // On cancel - do nothing
+        console.log('Member registration cancelled by user');
+      }
+    );
+  },
+  
+  showTransactionConfirmation: () => {
+    const role = db.auth.role;
+    const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
+    const id = document.getElementById(prefix+'TransCustId').value;
+    const amt = document.getElementById(prefix+'TransAmount').value;
+    const narration = document.getElementById(prefix+'TransNarration').value;
+    
+    if(!ops.isValidMember(id)) return alert("Invalid Member");
+    if(!amt) return alert("Invalid Amount");
+    
+    document.getElementById('confirmTransCustomer').innerText = db.members[id].name;
+    document.getElementById('confirmTransType').innerText = document.getElementById(prefix+'TransType').value;
+    document.getElementById('confirmTransAmount').innerText = ops.fmt(amt);
+    document.getElementById('confirmTransNarration').innerText = narration || '—';
+    document.getElementById('confirmTransValueDate').innerText = document.getElementById(prefix+'TransValueDate').value || new Date().toLocaleDateString();
+    document.getElementById('confirmTransDate').innerText = new Date().toLocaleString();
+    document.getElementById('confirmTransBy').innerText = db.auth.name;
+    ui.show('transactionConfirmationModal');
+  },
+  
+  showWithdrawalConfirmation: () => {
+    const role = db.auth.role;
+    const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
+    const id = document.getElementById(prefix+'WithdrawCustId').value;
+    const amt = parseFloat(document.getElementById(prefix+'WithdrawAmount').value);
+    const narration = document.getElementById(prefix+'WithdrawNarration').value;
+    
+    if(!ops.isValidMember(id)) return alert("Invalid Member");
+    const bal = ops.calcBalance(id);
+    if(bal.savings < amt) return alert("Insufficient Funds");
+    
+    document.getElementById('confirmWithdrawCustomer').innerText = db.members[id].name;
+    document.getElementById('confirmWithdrawAmount').innerText = ops.fmt(amt);
+    document.getElementById('confirmWithdrawNarration').innerText = narration || '—';
+    document.getElementById('confirmWithdrawValueDate').innerText = document.getElementById(prefix+'WithdrawValueDate').value || new Date().toLocaleDateString();
+    document.getElementById('confirmWithdrawBalance').innerText = ops.fmt(bal.savings);
+    document.getElementById('confirmWithdrawNewBalance').innerText = ops.fmt(bal.savings - amt);
+    document.getElementById('confirmWithdrawBy').innerText = db.auth.name;
+    ui.show('withdrawalConfirmationModal');
+  },
+  
+  showLoanConfirmation: () => {
+    const role = db.auth.role;
+    const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
+    const id = document.getElementById(prefix+'LoanCustId').value;
+    const amt = parseFloat(document.getElementById(prefix+'LoanAmount').value);
+    const narration = document.getElementById(prefix+'LoanNarration').value;
+    
+    if(!ops.isValidMember(id)) return alert("Invalid Member");
+    
+    document.getElementById('confirmLoanCustomer').innerText = db.members[id].name;
+    document.getElementById('confirmLoanType').innerText = document.getElementById(prefix+'LoanType').value;
+    document.getElementById('confirmLoanAmount').innerText = ops.fmt(amt);
+    document.getElementById('confirmLoanNarration').innerText = narration || '—';
+    document.getElementById('confirmLoanValueDate').innerText = document.getElementById(prefix+'LoanValueDate').value || new Date().toLocaleDateString();
+    document.getElementById('confirmLoanDate').innerText = new Date().toLocaleString();
+    document.getElementById('confirmLoanBy').innerText = db.auth.name;
+    ui.show('loanConfirmationModal');
+  },
+  
+  openReportModal: () => {
+    if(db.auth.role !== 'admin' && !db.auth.permissions.generateReports) return alert("Permission Denied");
+    // Generate Report Logic
+    let totalSav = 0, totalLoan = 0, active = 0;
+    Object.keys(db.members).forEach(id => {
+      const bal = ops.calcBalance(id);
+      totalSav += bal.savings; totalLoan += bal.loan;
+      if(db.members[id].active) active++;
+    });
+    const recent = [...db.ledger].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0, 50);
+    
+    let html = `<h2>System Report</h2><p>Generated: ${new Date().toLocaleString()}</p>`;
+    html += `<div class="report-stats-grid"><div class="report-stat-card"><div>Savings</div><div class="positive">${ops.fmt(totalSav)}</div></div><div class="report-stat-card"><div>Loans</div><div class="negative">${ops.fmt(totalLoan)}</div></div><div class="report-stat-card"><div>Active Customers</div><div>${active}</div></div></div>`;
+    html += `<h3>Recent Transactions</h3> <table> <thead> <tr> <th>Date</th><th>ID</th><th>Type</th><th>Amount</th><th>Narration</th> </tr> </thead> <tbody>`;
+    recent.forEach(t => html += `<tr><td>${t.date}</td><td>${t.cust}</td><td>${t.type}</td><td>${ops.fmt(t.amount)}</td><td>${t.narration || ''}</td></tr>`);
+    html += `</tbody> </table>`;
+    
+    document.getElementById('printableReport').innerHTML = html;
+    ui.show('reportModal');
+  },
+  
+  openStatement: () => {
+    const role = db.auth.role;
+    const id = role === 'admin' ? document.getElementById('adminStmtCustId').value : (role === 'supervisor' ? document.getElementById('supervisorStmtCustId').value : document.getElementById('thriftStmtCustId').value);
+    if(!ops.isValidMember(id)) return alert("Member not found");
+    
+    const mem = db.members[id];
+    const txs = db.ledger.filter(l => l.cust == id).sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const bal = ops.calcBalance(id);
+    
+    // Enhanced statement with Value Date, Narration, and Reverse buttons
+    let html = `<h2>Statement: ${mem.name}</h2><p>ID: ${id}</p>`;
+    html += `<table><thead><tr><th>Transaction Date</th><th>Value Date</th><th>Amount</th><th>Transaction Type</th><th>Narration</th><th>Processed By</th><th>Action</th></tr></thead><tbody>`;
+    txs.forEach(t => {
+      html += `<tr style="${t.reversed ? 'text-decoration:line-through; color:#999;' : ''}">
+          <td>${t.date}</td>
+          <td>${t.valueDate || t.date}</td>
+          <td>${ops.fmt(t.amount)}</td>
+          <td>${t.type}${t.reversalOf ? ' (Reversal)' : ''}</td>
+          <td>${t.narration || ''}</td>
+          <td>${t.processedBy}</td>
+          <td class="no-print">
+            ${!t.reversed && t.type !== 'REVERSAL' && db.auth.role !== 'thrift_collector' ? 
+              `<button class="danger" style="padding:5px 10px; font-size:0.8rem;" onclick="ops.reverseTransaction('${t.txId}')">↩ Reverse</button>` : 
+              t.reversed ? '<span style="color:var(--danger);">Reversed</span>' : ''
+            }
+          </td>
+        </tr>`;
+    });
+    html += `</tbody></table><div style="margin-top:20px;"><strong>Savings Balance: ${ops.fmt(bal.savings)}</strong><br><strong>Loan Balance: ${ops.fmt(bal.loan)}</strong></div>`;
+    
+    document.getElementById('printableStatement').innerHTML = html;
+    ui.show('statementModal');
+  },
+  
+  openProfile: () => {
+    const role = db.auth.role;
+    const id = role === 'admin' ? document.getElementById('adminProfileCustId').value : (role === 'supervisor' ? document.getElementById('supervisorProfileCustId').value : document.getElementById('thriftProfileCustId').value);
+    if(!ops.isValidMember(id)) return alert("Member not found");
+    
+    const mem = db.members[id];
+    const bal = ops.calcBalance(id);
+    
+    let html = `<div class="profile-header"><div class="profile-avatar">${mem.name[0]}</div><div><h2>${mem.name}</h2><p>ID: ${id}</p></div></div>`;
+    html += `<div class="grid"><div class="stat-row"><span>Phone:</span><strong>${mem.phone}</strong></div><div class="stat-row"><span>Status:</span><strong>${mem.active?'Active':'Inactive'}</strong></div></div>`;
+    html += `<h3>Financials</h3><div style="background:#f9f9f9;padding:15px;"><div class="stat-row"><span>Savings:</span>${ops.fmt(bal.savings)}</div><div class="stat-row"><span>Loan:</span>${ops.fmt(bal.loan)}</div></div>`;
+    
+    document.getElementById('printableProfile').innerHTML = html;
+    ui.show('profileModal');
+  },
+  
+  setupSupervisorDashboard: (user) => {
+    document.getElementById('supervisorWelcomeMsg').textContent = `Operator: ${user.name}`;
+    const p = user.permissions;
+    const map = {
+      supervisorMemberRegistration: p.memberCreation, supervisorTransactionPosting: p.transactionPosting,
+      supervisorWithdrawalProcessing: p.withdrawal, supervisorLoanManagement: p.loanManagement,
+      supervisorAccountClosure: p.accountClosure, supervisorAccountReactivation: p.accountReactivation
+    };
+    Object.keys(map).forEach(id => document.getElementById(id).classList[map[id]?'remove':'add']('hidden'));
+    
+    const activity = userManager.getCurrentUserActivity(user.id);
+    document.getElementById('supervisorActivityStats').innerHTML = `<div class="stat-row"><span>Transactions (30d):</span><strong>${activity.transactions}</strong></div>`;
+  },
+  
+  setupThriftDashboard: (user) => {
+    document.getElementById('thriftWelcomeMsg').textContent = `Operator: ${user.name}`;
+    const p = user.permissions;
+    const map = {
+      thriftMemberRegistration: p.memberCreation, thriftTransactionPosting: p.transactionPosting,
+      thriftWithdrawalProcessing: p.withdrawal, thriftLoanManagement: p.loanManagement
+    };
+    Object.keys(map).forEach(id => document.getElementById(id).classList[map[id]?'remove':'add']('hidden'));
+    
+    const activity = userManager.getCurrentUserActivity(user.id);
+    document.getElementById('thriftActivityStats').innerHTML = `<div class="stat-row"><span>Transactions (30d):</span><strong>${activity.transactions}</strong></div>`;
+  }
+};
+
+// 7. Enhanced Operations Logic
+const ops = {
+  fmt: (n) => '₦' + parseFloat(n).toLocaleString('en-NG', {minimumFractionDigits: 2}),
+  isValidMember: (id) => !!db.members[id],
+  isActiveMember: (id) => db.members[id] && db.members[id].active,
+  
+  checkName: (id, displayId) => {
+    const el = document.getElementById(displayId);
+    if(db.members[id]) {
+      el.innerText = "✓ " + db.members[id].name + (!db.members[id].active ? " (INACTIVE)" : "");
+      el.style.color = !db.members[id].active ? "var(--danger)" : "var(--primary)";
+    } else el.innerText = "";
+  },
+
+  calcBalance: (id) => {
+    let savings = 0; let loan = 0;
+    db.ledger.filter(l => l.cust == id && !l.reversed).forEach(l => {
+      if (['DAILY', 'WEEKLY', 'MONTHLY'].includes(l.type)) savings += l.amount;
+      if (l.type === 'WITHDRAWAL') savings -= l.amount;
+      if (l.type === 'LOAN') loan += l.amount;
+      if (l.type === 'LOAN_REPAY') loan -= l.amount;
+    });
+    return { savings, loan };
+  },
+
+  checkDuplicateCustomer: (name, phone) => {
+    const existing = Object.values(db.members);
+    return { phoneMatch: existing.find(m => m.phone === phone), nameMatch: existing.find(m => m.name.toLowerCase() === name.toLowerCase()) };
+  },
+  
+  checkDuplicateWhileTyping: () => {
+    const role = db.auth.role;
+    const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
+    const phone = document.getElementById(prefix+'NewMemPhone').value;
+    const name = document.getElementById(prefix+'NewMemName').value;
+    const warn = document.getElementById(prefix+'DuplicateWarning');
+    if(!phone) { warn.style.display='none'; return; }
+    
+    // Find potential duplicates using enhanced verification
+    const potentialDuplicates = dataVerifier.findPotentialDuplicates(name || 'New Member', phone, db.members);
+    
+    if (potentialDuplicates.length > 0) {
+      const topDuplicate = potentialDuplicates[0];
+      let warningText = '';
+      
+      if (topDuplicate.similarityScore >= 80) {
+        warningText = `🚨 HIGH RISK: ${topDuplicate.name} (ID: ${topDuplicate.id}) has ${topDuplicate.matchReasons[0]}`;
+        warn.style.backgroundColor = 'rgba(198, 40, 40, 0.2)';
+        warn.style.borderLeftColor = 'var(--danger)';
+      } else if (topDuplicate.similarityScore >= 50) {
+        warningText = `⚠️ Possible duplicate: ${topDuplicate.name} (ID: ${topDuplicate.id})`;
+        warn.style.backgroundColor = 'rgba(249, 168, 37, 0.2)';
+        warn.style.borderLeftColor = 'var(--warning)';
+      } else {
+        warningText = `ℹ️ Similar account: ${topDuplicate.name} (ID: ${topDuplicate.id})`;
+        warn.style.backgroundColor = 'rgba(30, 136, 229, 0.1)';
+        warn.style.borderLeftColor = 'var(--primary)';
+      }
+      
+      warn.innerHTML = warningText;
+      warn.style.display = 'block';
+    } else {
+      warn.style.display = 'none';
+    }
+  },
+
+  searchCustomers: () => {
+    const role = db.auth.role;
+    const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
+    const q = document.getElementById(prefix+'SearchQuery').value.toLowerCase();
+    const res = document.getElementById(prefix+'SearchResults');
+    if(!q) { res.classList.add('hidden'); return; }
+    
+    let html = '';
+    Object.keys(db.members).forEach(id => {
+      if(db.members[id].name.toLowerCase().includes(q) || db.members[id].phone.includes(q)) {
+        html += `<div class="search-result-item" onclick="ops.useCustomerId(${id})"><strong>${db.members[id].name}</strong> (${id})<br><small>${db.members[id].phone}</small></div>`;
+      }
+    });
+    res.innerHTML = html || '<div style="padding:10px;">No results</div>';
+    res.classList.remove('hidden');
+  },
+  
+  useCustomerId: (id) => {
+    const role = db.auth.role;
+    const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
+    ['Trans', 'Withdraw', 'Loan', 'Stmt', 'Profile', 'Close', 'Reactivate', 'Bulk'].forEach(type => {
+      const el = document.getElementById(prefix+type+'CustId');
+      if(el) { el.value = id; ops.checkName(id, prefix+type+'NameDisplay'); }
+    });
+    document.getElementById(prefix+'SearchResults').classList.add('hidden');
+    alert(`Customer ID ${id} selected`);
+  },
+
+  registerMember: () => {
+    const role = db.auth.role;
+    const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
+    const name = document.getElementById(prefix+'NewMemName').value;
+    const phone = document.getElementById(prefix+'NewMemPhone').value;
+    
+    db.lastId++;
+    db.members[db.lastId] = { 
+      name: name, 
+      phone: phone, 
+      date: new Date().toLocaleDateString(), 
+      active: true, 
+      createdBy: db.auth.name, 
+      timestamp: new Date().toISOString(),
+      verified: true,
+      verificationDate: new Date().toISOString()
+    };
+    
+    document.getElementById(prefix+'NewMemName').value = '';
+    document.getElementById(prefix+'NewMemPhone').value = '';
+    ui.closeModal('memberConfirmationModal');
+    alert(`Registered: ${name} (ID: ${db.lastId})`);
+    data.save();
+  },
+
+  postTransaction: () => {
+    const role = db.auth.role;
+    const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
+    const id = document.getElementById(prefix+'TransCustId').value;
+    const type = document.getElementById(prefix+'TransType').value;
+    const amt = parseFloat(document.getElementById(prefix+'TransAmount').value);
+    const vDate = document.getElementById(prefix+'TransValueDate').value || new Date().toISOString().split('T')[0];
+    const narration = document.getElementById(prefix+'TransNarration').value;
+    
+    db.ledger.push({ 
+      txId: Date.now(), 
+      cust: id, 
+      type: type, 
+      amount: amt, 
+      date: new Date().toLocaleString(), 
+      valueDate: vDate, 
+      narration: narration || '',
+      processedBy: db.auth.name,
+      reversed: false
+    });
+    document.getElementById(prefix+'TransAmount').value = '';
+    document.getElementById(prefix+'TransNarration').value = '';
+    ui.closeModal('transactionConfirmationModal');
+    alert("Transaction Successful");
+    data.save();
+  },
+
+  postWithdrawal: () => {
+    const role = db.auth.role;
+    const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
+    const id = document.getElementById(prefix+'WithdrawCustId').value;
+    const amt = parseFloat(document.getElementById(prefix+'WithdrawAmount').value);
+    const vDate = document.getElementById(prefix+'WithdrawValueDate').value || new Date().toISOString().split('T')[0];
+    const narration = document.getElementById(prefix+'WithdrawNarration').value;
+    
+    db.ledger.push({ 
+      txId: Date.now(), 
+      cust: id, 
+      type: 'WITHDRAWAL', 
+      amount: amt, 
+      date: new Date().toLocaleString(), 
+      valueDate: vDate, 
+      narration: narration || '',
+      processedBy: db.auth.name,
+      reversed: false
+    });
+    document.getElementById(prefix+'WithdrawAmount').value = '';
+    document.getElementById(prefix+'WithdrawNarration').value = '';
+    ui.closeModal('withdrawalConfirmationModal');
+    alert("Withdrawal Successful");
+    data.save();
+  },
+
+  postLoan: () => {
+    const role = db.auth.role;
+    const prefix = role === 'admin' ? 'admin' : (role === 'supervisor' ? 'supervisor' : 'thrift');
+    const id = document.getElementById(prefix+'LoanCustId').value;
+    const type = document.getElementById(prefix+'LoanType').value;
+    const amt = parseFloat(document.getElementById(prefix+'LoanAmount').value);
+    const vDate = document.getElementById(prefix+'LoanValueDate').value || new Date().toISOString().split('T')[0];
+    const narration = document.getElementById(prefix+'LoanNarration').value;
+    
+    db.ledger.push({ 
+      txId: Date.now(), 
+      cust: id, 
+      type: type, 
+      amount: amt, 
+      date: new Date().toLocaleString(), 
+      valueDate: vDate, 
+      narration: narration || '',
+      processedBy: db.auth.name,
+      reversed: false
+    });
+    document.getElementById(prefix+'LoanAmount').value = '';
+    document.getElementById(prefix+'LoanNarration').value = '';
+    ui.closeModal('loanConfirmationModal');
+    alert("Loan Updated");
+    data.save();
+  },
+
+  /**
+   * Reverse a transaction
+   * @param {string|number} txId - The ID of the transaction to reverse
+   */
+  reverseTransaction: (txId) => {
+    // Permission check: only admin and supervisor
+    if (db.auth.role === 'thrift_collector') {
+      alert("Permission Denied: Thrift collectors cannot reverse transactions.");
+      return;
+    }
+    
+    // Find the original transaction
+    const originalTx = db.ledger.find(tx => tx.txId == txId);
+    if (!originalTx) {
+      alert("Transaction not found.");
+      return;
+    }
+    
+    // Check if already reversed
+    if (originalTx.reversed) {
+      alert("This transaction has already been reversed.");
+      return;
+    }
+    
+    // Ask for reason
+    const reason = prompt("Enter reason for reversal:", "Reversal of transaction " + txId);
+    if (reason === null) return; // User cancelled
+    
+    // Create reversal transaction
+    const reversalTx = {
+      txId: Date.now(),
+      cust: originalTx.cust,
+      type: 'REVERSAL',
+      amount: originalTx.amount * -1, // Negative amount
+      date: new Date().toLocaleString(),
+      valueDate: new Date().toISOString().split('T')[0],
+      narration: `Reversal of transaction ${originalTx.txId}: ${reason}`,
+      processedBy: db.auth.name,
+      reversed: false,
+      reversalOf: originalTx.txId // Link to original
+    };
+    
+    // Mark original as reversed
+    originalTx.reversed = true;
+    originalTx.reversalReason = reason;
+    originalTx.reversedBy = db.auth.name;
+    originalTx.reversalDate = new Date().toISOString();
+    originalTx.reversalTxId = reversalTx.txId;
+    
+    // Add to ledger
+    db.ledger.push(reversalTx);
+    
+    data.save();
+    alert(`✅ Transaction ${txId} reversed successfully.\nReversal ID: ${reversalTx.txId}`);
+    
+    // Refresh statement if open
+    const statementModal = document.getElementById('statementModal');
+    if (!statementModal.classList.contains('hidden')) {
+      const role = db.auth.role;
+      const id = role === 'admin' ? document.getElementById('adminStmtCustId').value : 
+                (role === 'supervisor' ? document.getElementById('supervisorStmtCustId').value : 
+                document.getElementById('thriftStmtCustId').value);
+      if (id == originalTx.cust) {
+        // Regenerate the statement
+        ui.openStatement();
+      }
+    }
+  },
+
+  closeAccount: () => {
+    const role = db.auth.role;
+    if(role === 'thrift_collector') return alert("Permission Denied");
+    const prefix = role === 'admin' ? 'admin' : 'supervisor';
+    const id = document.getElementById(prefix+'CloseCustId').value;
+    const reason = document.getElementById(prefix+'ClosureReason').value;
+    
+    if(!ops.isValidMember(id)) return alert("Invalid ID");
+    const bal = ops.calcBalance(id);
+    if(bal.savings > 0 || bal.loan > 0) if(!confirm(`Account has balance. Close anyway?`)) return;
+    
+    db.members[id].active = false;
+    db.members[id].closureDate = new Date().toLocaleDateString();
+    db.members[id].closureReason = reason;
+    db.members[id].closedBy = db.auth.name;
+    alert(`Account ${id} Closed`);
+    data.save();
+  },
+
+  reactivateAccount: () => {
+    const role = db.auth.role;
+    if(role === 'thrift_collector') return alert("Permission Denied");
+    const prefix = role === 'admin' ? 'admin' : 'supervisor';
+    const id = document.getElementById(prefix+'ReactivateCustId').value;
+    
+    if(!ops.isValidMember(id)) return alert("Invalid ID");
+    db.members[id].active = true;
+    db.members[id].closureDate = null;
+    alert(`Account ${id} Reactivated`);
+    data.save();
+  },
+  
+  changePassword: () => {
+    const old = document.getElementById('oldPass').value;
+    const newP = document.getElementById('newPass').value;
+    if(old !== db.auth.pass) return alert("Wrong old password");
+    db.auth.pass = newP;
+    // Update admin user record too
+    const admin = db.users.find(u => u.id === 1);
+    if(admin) admin.password = newP;
+    alert("Updated"); data.save(); location.reload();
+  },
+  
+  changeUserPassword: () => {
+    const old = document.getElementById('currentPassword').value;
+    const newP = document.getElementById('newPassword').value;
+    const conf = document.getElementById('confirmPassword').value;
+    if(newP !== conf) return alert("Mismatch");
+    const res = userManager.updateUserPassword(db.auth.userId, old, newP);
+    alert(res.message);
+    if(res.success) ui.closeModal('changePasswordModal');
+  },
+  
+  wipeAllData: () => {
+    const username = document.getElementById('wipeUsername').value;
+    const password = document.getElementById('wipePassword').value;
+    const confirmText = document.getElementById('wipeConfirmText').value;
+    const confirmCheckbox = document.getElementById('wipeConfirmCheckbox');
+    
+    if(username !== db.auth.user || password !== db.auth.pass) {
+      alert("Invalid credentials. Please enter correct username and password.");
+      return;
+    }
+    
+    if(!confirmCheckbox.checked) {
+      alert("Please confirm that you understand this action is irreversible.");
+      return;
+    }
+    
+    if(confirmText !== 'DELETE ALL DATA') {
+      alert("Please type 'DELETE ALL DATA' exactly as shown to confirm.");
+      return;
+    }
+    
+    data.wipeAllData();
+  }
+};
+
+// 8. Main Application Control
+const app = {
+  login: () => {
+    const u = document.getElementById('usernameInput').value;
+    const p = document.getElementById('passwordInput').value;
+    const user = userManager.authenticateUser(u, p);
+    
+    if (user) {
+      ui.hide('loginCard');
+      ui.show('syncStatus');
+      if (user.role === 'admin') {
+        ui.show('adminDashboard');
+        document.getElementById('adminWelcomeMsg').innerText = `Operator: ${user.name}`;
+        app.updateDashboard();
+        if(db.settings.autoBackup) driveManager.setupAutoBackup();
+      } else if (user.role === 'supervisor') {
+        ui.show('supervisorDashboard');
+        ui.setupSupervisorDashboard(user);
+        app.updateDashboard();
+      } else if (user.role === 'thrift_collector') {
+        ui.show('thriftDashboard');
+        ui.setupThriftDashboard(user);
+        app.updateDashboard();
+      }
+    } else {
+      document.getElementById('loginError').style.display = 'block';
+    }
+  },
+
+  logout: () => location.reload(),
+
+  updateDashboard: () => {
+    let totalSav = 0, totalLoan = 0, active = 0, inactive = 0;
+    Object.keys(db.members).forEach(id => {
+      const bal = ops.calcBalance(id);
+      totalSav += bal.savings; totalLoan += bal.loan;
+      if(db.members[id].active) active++; else inactive++;
+    });
+    const vault = totalSav - totalLoan;
+    
+    // Update Admin/Shared Stats
+    if(document.getElementById('adminDisplayTotalSavings')) {
+      document.getElementById('adminDisplayTotalSavings').innerText = ops.fmt(totalSav);
+      document.getElementById('adminDisplayTotalLoans').innerText = ops.fmt(totalLoan);
+      document.getElementById('adminDisplayVault').innerText = ops.fmt(vault);
+      document.getElementById('adminDisplayTotalCustomers').innerText = Object.keys(db.members).length;
+      document.getElementById('adminDisplayActiveCustomers').innerText = `Active: ${active} | Inactive: ${inactive}`;
+    }
+  }
+};
+
+// Replace original importData with enhanced version
+window.importData = importData;
+
+// Initialize on page load
+window.addEventListener('load', () => {
+  driveManager.updateDriveStatus();
+  document.getElementById('usernameInput').focus();
+  
+  // Add integrity check button if not already present
+  const adminControls = document.querySelector('#adminDashboard .dashboard-controls');
+  if (adminControls && !document.getElementById('integrityCheckBtn')) {
+    const integrityButton = document.createElement('button');
+    integrityButton.id = 'integrityCheckBtn';
+    integrityButton.className = 'teal';
+    integrityButton.style.width = 'auto';
+    integrityButton.innerHTML = '🔍 Check Data';
+    integrityButton.onclick = dataIntegrity.showIntegrityReport;
+    
+    // Insert before the logout button
+    const logoutButton = adminControls.querySelector('button[onclick="app.logout()"]');
+    if (logoutButton) {
+      adminControls.insertBefore(integrityButton, logoutButton);
+    } else {
+      adminControls.appendChild(integrityButton);
+    }
+  }
+  
+  // Init Google Drive and Auto-Connect if setting is active
+  gDrive.init();
+  if(db.settings.driveConnected) {
+    // Attempt auto-connect after a short delay to allow GAPI to load
+    setTimeout(() => {
+        if(gDrive.tokenClient) gDrive.handleAuth();
+    }, 1000);
+  }
+  
+  console.log('Enhanced OBATA SMART SAVINGS v2.5 loaded with robust data verification, narration, and transaction reversal');
+});
+
+// =========================================================================
+// BULK DEPOSIT ADDITION (appended after all original definitions)
+// =========================================================================
+
+// Helper to get prefix based on role
+function getBulkPrefix() {
+  if (db.auth.role === 'admin') return 'admin';
+  if (db.auth.role === 'supervisor') return 'supervisor';
+  if (db.auth.role === 'thrift_collector') return 'thrift';
+  return 'admin';
+}
+
+// Add bulk method to ui
+ui.showBulkConfirmation = function() {
+  const prefix = getBulkPrefix();
+  try {
+    const custId = document.getElementById(`${prefix}BulkCustId`).value.trim();
+    if (!ops.isValidMember(custId)) throw new Error('Invalid Customer ID');
+    const amount = parseFloat(document.getElementById(`${prefix}BulkAmount`).value);
+    if (isNaN(amount) || amount <= 0) throw new Error('Invalid amount');
+    const days = parseInt(document.getElementById(`${prefix}BulkDays`).value);
+    if (isNaN(days) || days <= 0 || days > 365) throw new Error('Days must be 1-365');
+    const startDate = document.getElementById(`${prefix}BulkStartDate`).value;
+    if (!startDate) throw new Error('Start date required');
+    const type = document.getElementById(`${prefix}BulkType`).value;
+    const narration = document.getElementById(`${prefix}BulkNarration`).value || 'Bulk deposit';
+    
+    const start = new Date(startDate);
+    const end = new Date(start);
+    end.setDate(end.getDate() + days - 1);
+    
+    document.getElementById('confirmBulkCustomer').innerText = `${db.members[custId].name} (${custId})`;
+    document.getElementById('confirmBulkType').innerText = type;
+    document.getElementById('confirmBulkAmount').innerText = ops.fmt(amount);
+    document.getElementById('confirmBulkDays').innerText = days;
+    document.getElementById('confirmBulkTotal').innerText = ops.fmt(amount * days);
+    document.getElementById('confirmBulkStart').innerText = start.toLocaleDateString();
+    document.getElementById('confirmBulkEnd').innerText = end.toLocaleDateString();
+    document.getElementById('confirmBulkNarration').innerText = narration;
+    document.getElementById('confirmBulkBy').innerText = db.auth.name;
+    ui.show('bulkConfirmationModal');
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+// Add bulk posting method to ops
+ops.postBulkTransactions = function() {
+  const prefix = getBulkPrefix();
+  try {
+    const custId = document.getElementById(`${prefix}BulkCustId`).value.trim();
+    if (!ops.isValidMember(custId)) throw new Error('Invalid Customer ID');
+    if (!db.members[custId].active) throw new Error('Account is inactive');
+    const amount = parseFloat(document.getElementById(`${prefix}BulkAmount`).value);
+    if (isNaN(amount) || amount <= 0) throw new Error('Invalid amount');
+    const days = parseInt(document.getElementById(`${prefix}BulkDays`).value);
+    if (isNaN(days) || days <= 0 || days > 365) throw new Error('Days must be 1-365');
+    const startDateStr = document.getElementById(`${prefix}BulkStartDate`).value;
+    if (!startDateStr) throw new Error('Start date required');
+    const startDate = new Date(startDateStr);
+    if (isNaN(startDate.getTime())) throw new Error('Invalid start date');
+    const type = document.getElementById(`${prefix}BulkType`).value;
+    const narrationBase = document.getElementById(`${prefix}BulkNarration`).value || 'Bulk deposit';
+    const processedBy = db.auth.name;
+    
+    const transactions = [];
+    let currentDate = new Date(startDate);
+    for (let i = 0; i < days; i++) {
+      const txDate = new Date(currentDate);
+      const valueDateStr = txDate.toISOString().split('T')[0];
+      transactions.push({
+        txId: Date.now() + i + Math.random(),
+        cust: custId,
+        type: type,
+        amount: amount,
+        date: new Date().toLocaleString(),
+        valueDate: valueDateStr,
+        narration: `${narrationBase} (Day ${i+1})`,
+        processedBy: processedBy,
+        reversed: false,
+        bulkBatch: true,
+        bulkBatchId: Date.now()
+      });
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    const totalAmount = amount * days;
+    if (!confirm(`You are about to post ${transactions.length} transactions for a total of ${ops.fmt(totalAmount)}. Proceed?`)) return;
+    db.ledger.push(...transactions);
+    data.save();
+    alert(`✅ Successfully posted ${transactions.length} transactions for ${ops.fmt(totalAmount)}.\nPeriod: ${startDate.toLocaleDateString()} to ${new Date(currentDate.getTime() - 86400000).toLocaleDateString()}`);
+    ui.closeModal('bulkConfirmationModal');
+  } catch (err) {
+    alert(`Bulk posting failed: ${err.message}`);
+  }
+};
+
+// Update supervisor and thrift dashboard setups to show bulk card only if transaction posting permission exists
+const originalSupervisorSetup = ui.setupSupervisorDashboard;
+ui.setupSupervisorDashboard = function(user) {
+  originalSupervisorSetup(user);
+  const hasPosting = user.permissions.transactionPosting;
+  const bulkCard = document.getElementById('supervisorBulkPosting');
+  if (bulkCard) bulkCard.classList.toggle('hidden', !hasPosting);
+};
+
+const originalThriftSetup = ui.setupThriftDashboard;
+ui.setupThriftDashboard = function(user) {
+  originalThriftSetup(user);
+  const hasPosting = user.permissions.transactionPosting;
+  const bulkCard = document.getElementById('thriftBulkPosting');
+  if (bulkCard) bulkCard.classList.toggle('hidden', !hasPosting);
+};
 </script>
 </body>
 </html>
