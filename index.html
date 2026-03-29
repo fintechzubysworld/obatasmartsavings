@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>OBATA SMART SAVINGS v2.5 (Realtime DB Cloud + Rollback)</title>
+  <title>OBATA SMART SAVINGS v2.5 (Firestore Cloud + Rollback)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-  <!-- Firebase SDK (modular) – Realtime Database -->
+  <!-- Firebase SDK (modular) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getDatabase, ref, set, update, get, child, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
     const firebaseConfig = {
@@ -25,11 +25,11 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const dbRTDB = getDatabase(app);
+    const dbFirestore = getFirestore(app);
     const auth = getAuth(app);
 
-    // Expose Realtime DB helpers globally
-    window.firebaseRTDB = { db: dbRTDB, ref, set, update, get };
+    window.firestore = { db: dbFirestore, doc, setDoc, getDoc, collection, getDocs, query, orderBy, writeBatch };
+    window.firebaseAuth = auth;
 
     signInAnonymously(auth).catch(error => {
       console.warn("Anonymous auth failed:", error);
@@ -669,10 +669,10 @@
 
 <div id="loginCard" class="card" style="max-width: 400px; margin: 100px auto;">
   <h1 style="text-align: center; color: var(--primary);">OBATA SMART SAVINGS</h1>
-  <p style="text-align: center; color: #666; margin-bottom: 20px;">Secure Management System v2.5 (Realtime DB Cloud)</p>
+  <p style="text-align: center; color: #666; margin-bottom: 20px;">Secure Management System v2.5 (Firestore Cloud)</p>
   
   <div style="margin-bottom: 20px; padding: 15px; background: #e8f0fe; border-radius: 8px; text-align: center;">
-    <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #1967d2;">Cloud Storage: Realtime Database (Anonymous Auth)</p>
+    <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #1967d2;">Cloud Storage: Firestore (Anonymous Auth)</p>
     <small id="cloud_status" style="display: block; margin-top: 5px; color: #666;">Connecting...</small>
   </div>
 
@@ -1336,7 +1336,7 @@
         <h3>Import Preview</h3>
         <div class="preview-table">
           <table id="previewTable">
-                </table>
+               </table>
         </div>
         <p id="previewStats" style="color:#666;"></p>
         <div class="progress-bar">
@@ -1635,7 +1635,7 @@
 
 <script>
 // =========================================================================
-// ORIGINAL FULL SCRIPT (with Firestore replaced by Realtime DB)
+// ORIGINAL FULL SCRIPT (from first message, with all features intact)
 // =========================================================================
 function safeParse(jsonString, defaultValue) {
   if (jsonString === null || jsonString === undefined) return defaultValue;
@@ -2083,7 +2083,7 @@ const dataVerifier = {
                   <th style="padding: 10px;">Status</th>
                   <th style="padding: 10px;">Join Date</th>
                   <th style="padding: 10px;">Similarity</th>
-                </tr>
+                  </tr>
               </thead>
               <tbody>
       `;
@@ -2963,9 +2963,9 @@ const ui = {
     const recent = [...db.ledger].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0, 50);
     let html = `<h2>System Report</h2><p>Generated: ${new Date().toLocaleString()}</p>`;
     html += `<div class="report-stats-grid"><div class="report-stat-card"><div>Savings</div><div class="positive">${ops.fmt(totalSav)}</div></div><div class="report-stat-card"><div>Loans</div><div class="negative">${ops.fmt(totalLoan)}</div></div><div class="report-stat-card"><div>Active Customers</div><div>${active}</div></div></div>`;
-    html += `<h3>Recent Transactions</h3>  <thead>  <th>Date</th><th>ID</th><th>Type</th><th>Amount</th><th>Narration</th> </thead> <tbody>`;
-    recent.forEach(t => html += ` <tr><td>${t.date}</td><td>${t.cust}</td><td>${t.type}</td><td>${ops.fmt(t.amount)}</td><td>${t.narration || ''}</td></tr>`);
-    html += `</tbody> </table>`;
+    html += `<h3>Recent Transactions</h3>  <thead> <tr><th>Date</th><th>ID</th><th>Type</th><th>Amount</th><th>Narration</th></tr> </thead> <tbody>`;
+    recent.forEach(t => html += `<tr><td>${t.date}</td><td>${t.cust}</td><td>${t.type}</td><td>${ops.fmt(t.amount)}</td><td>${t.narration || ''}</td></tr>`);
+    html += `</tbody></table>`;
     document.getElementById('printableReport').innerHTML = html;
     ui.show('reportModal');
   },
@@ -3075,43 +3075,38 @@ const app = {
       document.getElementById('adminDisplayTotalLoans').innerText = ops.fmt(totalLoan);
       document.getElementById('adminDisplayVault').innerText = ops.fmt(vault);
       document.getElementById('adminDisplayTotalCustomers').innerText = Object.keys(db.members).length;
-      document.getElementById('adminDisplayActiveCustomers').innerHTML = `Active: ${active} | Inactive: ${inactive}`;
+      document.getElementById('adminDisplayActiveCustomers').innerText = `Active: ${active} | Inactive: ${inactive}`;
     }
   }
 };
 
 // =========================================================================
-// REAL-TIME DATABASE SYNC (replaces Firestore)
+// FIRESTORE SYNC (with anonymous auth)
 // =========================================================================
 
-async function syncToRealtimeDB() {
-  if (!window.firebaseRTDB || !window.firebaseRTDB.db) return;
-  const { db: rtdb, update, ref } = window.firebaseRTDB;
-  // Build atomic update object with all data
-  const updates = {};
-  // Members: store as object with IDs as keys
+async function syncToFirestore() {
+  if (!window.firestore || !window.firestore.db) return;
+  const { db: firestoreDb, doc, collection, writeBatch } = window.firestore;
+  const batch = writeBatch(firestoreDb);
   for (const [id, member] of Object.entries(db.members)) {
-    updates[`members/${id}`] = member;
+    const memberRef = doc(collection(firestoreDb, "members"), id);
+    batch.set(memberRef, member);
   }
-  // Ledger: store as object with txId as keys (to avoid array limitations)
-  const ledgerObj = {};
   for (const tx of db.ledger) {
-    ledgerObj[tx.txId] = tx;
+    const txRef = doc(collection(firestoreDb, "ledger"), tx.txId.toString());
+    batch.set(txRef, tx);
   }
-  updates['ledger'] = ledgerObj;
-  // Users: store as object with username as keys
-  const usersObj = {};
   for (const user of db.users) {
-    usersObj[user.username] = user;
+    const userRef = doc(collection(firestoreDb, "users"), user.username);
+    batch.set(userRef, user);
   }
-  updates['users'] = usersObj;
-  // Settings
-  updates['settings'] = db.settings;
+  const settingsRef = doc(firestoreDb, "settings", "app");
+  batch.set(settingsRef, db.settings);
   try {
-    await update(ref(rtdb, '/'), updates);
+    await batch.commit();
     ui.updateSyncStatus('online', 'Cloud Synced');
   } catch (error) {
-    console.error("Realtime DB sync error:", error);
+    console.error("Firestore sync error:", error);
     ui.updateSyncStatus('error', 'Sync Failed');
   }
 }
@@ -3119,66 +3114,32 @@ async function syncToRealtimeDB() {
 const originalDataSave = data.save;
 data.save = function() {
   originalDataSave();
-  syncToRealtimeDB();
+  syncToFirestore();
 };
 
-// Load from Realtime DB when authenticated
-// Load from Realtime DB when authenticated
+// Wait for Firebase auth to be ready before loading data
 window.addEventListener('firebaseAuthReady', async () => {
-  if (!window.firebaseRTDB || !window.firebaseRTDB.db) {
+  if (!window.firestore || !window.firestore.db) {
     document.getElementById('cloud_status').innerText = 'Cloud Unavailable (using local)';
     return;
   }
-  const { db: rtdb, get, ref } = window.firebaseRTDB;
+  const { db: firestoreDb, collection, getDocs, query, orderBy, doc, getDoc } = window.firestore;
   try {
-    const snapshot = await get(ref(rtdb, '/'));
-    if (snapshot.exists()) {
-      const data = snapshot.val();
-      db.members = data.members || {};
-      // Convert ledger object back to array
-      const ledgerArray = [];
-      if (data.ledger) {
-        for (const key in data.ledger) {
-          ledgerArray.push(data.ledger[key]);
-        }
-      }
-      db.ledger = ledgerArray;
-      // Convert users object back to array
-      const usersArray = [];
-      if (data.users) {
-        for (const key in data.users) {
-          usersArray.push(data.users[key]);
-        }
-      }
-      db.users = usersArray;
-      // 👇 ADD THIS BLOCK: ensure at least the admin user exists
-      if (db.users.length === 0) {
-        db.users.push({
-          id: 1, username: 'Admin', password: 'admin123', name: 'Administrator', role: 'admin',
-          permissions: {
-            memberCreation: true, transactionPosting: true, withdrawal: true, loanManagement: true,
-            accountClosure: true, accountReactivation: true, viewStatements: true, searchCustomers: true,
-            generateReports: true, manageUsers: true, importExport: true, systemSettings: true, driveManagement: true
-          },
-          created: new Date().toISOString(), lastLogin: null
-        });
-      }
-      // 👆 END ADD
-      db.settings = data.settings || { autoBackup: false, backupTime: "02:00", driveConnected: false, drivePath: null, lastBackup: null, backupHistory: [] };
-    } else {
-      // No data in cloud – ensure admin exists
-      if (db.users.length === 0) {
-        db.users.push({
-          id: 1, username: 'Admin', password: 'admin123', name: 'Administrator', role: 'admin',
-          permissions: {
-            memberCreation: true, transactionPosting: true, withdrawal: true, loanManagement: true,
-            accountClosure: true, accountReactivation: true, viewStatements: true, searchCustomers: true,
-            generateReports: true, manageUsers: true, importExport: true, systemSettings: true, driveManagement: true
-          },
-          created: new Date().toISOString(), lastLogin: null
-        });
-      }
-    }
+    const membersSnap = await getDocs(collection(firestoreDb, "members"));
+    const members = {};
+    membersSnap.forEach(doc => { members[doc.id] = doc.data(); });
+    const ledgerSnap = await getDocs(query(collection(firestoreDb, "ledger"), orderBy("date", "desc")));
+    const ledger = [];
+    ledgerSnap.forEach(doc => ledger.push(doc.data()));
+    const usersSnap = await getDocs(collection(firestoreDb, "users"));
+    const users = [];
+    usersSnap.forEach(doc => users.push(doc.data()));
+    const settingsSnap = await getDoc(doc(firestoreDb, "settings", "app"));
+    const settings = settingsSnap.exists() ? settingsSnap.data() : { autoBackup: false, backupTime: "02:00", driveConnected: false, drivePath: null, lastBackup: null, backupHistory: [] };
+    db.members = members;
+    db.ledger = ledger;
+    db.users = users;
+    db.settings = settings;
     const maxId = Math.max(...Object.keys(db.members).map(id => parseInt(id)).filter(id => !isNaN(id)), 100);
     db.lastId = maxId;
     data.saveLocalOnly();
@@ -3186,7 +3147,7 @@ window.addEventListener('firebaseAuthReady', async () => {
     document.getElementById('cloud_status').innerText = 'Cloud Connected';
     ui.updateSyncStatus('online', 'Connected');
   } catch (error) {
-    console.error("Realtime DB load error:", error);
+    console.error("Firestore load error:", error);
     document.getElementById('cloud_status').innerText = 'Cloud Unavailable (using local)';
     ui.updateSyncStatus('offline', 'Offline Mode');
   }
@@ -3204,7 +3165,7 @@ if (window.firebaseAuth && window.firebaseAuth.currentUser) {
 }
 
 // =========================================================================
-// ROLLBACK MANAGER (unchanged)
+// ROLLBACK MANAGER (new feature)
 // =========================================================================
 
 const rollbackManager = {
@@ -3213,11 +3174,13 @@ const rollbackManager = {
     if (!date) return;
     const listDiv = document.getElementById('rollbackList');
     listDiv.innerHTML = '<p style="color:#666;">Loading...</p>';
+    // Filter transactions for the selected date (by dateISO field)
     const dayTransactions = db.ledger.filter(tx => tx.dateISO === date && !tx.reversed);
     if (dayTransactions.length === 0) {
       listDiv.innerHTML = '<p style="color:#666;">No transactions found for this date.</p>';
       return;
     }
+    // Group by bulkBatchId if present
     const batches = new Map();
     const singles = [];
     for (const tx of dayTransactions) {
@@ -3229,6 +3192,7 @@ const rollbackManager = {
       }
     }
     let html = `<h3>Transactions for ${date}</h3>`;
+    // Display bulk batches
     if (batches.size > 0) {
       html += `<h4>Bulk Batches</h4>`;
       for (const [batchId, txs] of batches.entries()) {
@@ -3250,6 +3214,7 @@ const rollbackManager = {
         `;
       }
     }
+    // Display individual transactions
     if (singles.length > 0) {
       html += `<h4>Individual Transactions</h4>`;
       html += `<table style="width:100%;"><thead><tr><th>ID</th><th>Customer</th><th>Type</th><th>Amount</th><th>Narration</th><th>Action</th></tr></thead><tbody>`;
@@ -3281,6 +3246,7 @@ const rollbackManager = {
     if (!confirm(`Are you sure you want to reverse ${txs.length} transactions? This cannot be undone.`)) return;
     let reversedCount = 0;
     for (const tx of txs) {
+      // Use the same reversal logic but without per-transaction prompts
       if (tx.reversed) continue;
       const now = new Date();
       const reversalTx = {
@@ -3306,7 +3272,7 @@ const rollbackManager = {
     }
     data.save();
     alert(`✅ Successfully reversed ${reversedCount} transactions in batch ${batchId}.`);
-    rollbackManager.loadTransactions();
+    rollbackManager.loadTransactions(); // refresh view
   },
   reverseAllDay: async () => {
     const date = document.getElementById('rollbackDate').value;
@@ -3345,12 +3311,12 @@ const rollbackManager = {
     }
     data.save();
     alert(`✅ Successfully reversed ${reversedCount} transactions for ${date}.`);
-    rollbackManager.loadTransactions();
+    rollbackManager.loadTransactions(); // refresh view
   }
 };
 
 // =========================================================================
-// BULK DEPOSIT ADDITION (unchanged)
+// BULK DEPOSIT ADDITION (appended after all original definitions)
 // =========================================================================
 
 function getBulkPrefix() {
