@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>OBATA SMART SAVINGS v2.5 (Firestore Cloud)</title>
+  <title>OBATA SMART SAVINGS v2.5 (Firestore Cloud + Rollback)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -682,7 +682,7 @@
   <p id="loginError" style="color: var(--danger); text-align: center; margin-top: 10px; display: none;">Invalid credentials</p>
 </div>
 
-<!-- Admin Dashboard (includes bulk card) -->
+<!-- Admin Dashboard (includes bulk card and rollback button) -->
 <div id="adminDashboard" class="container hidden">
   <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
     <div>
@@ -698,6 +698,7 @@
       <button class="brown" style="width:auto;" onclick="ui.openUserManagementModal()">👥 Manage Users</button>
       <button class="danger" style="width:auto;" onclick="ui.openWipeModal()">🗑️ Wipe Data</button>
       <button id="integrityCheckBtn" class="teal" style="width:auto;" onclick="dataIntegrity.showIntegrityReport()">🔍 Check Data</button>
+      <button class="warning" style="width:auto;" onclick="ui.openRollbackModal()">⏪ Rollback Day</button>
       <button class="danger" style="width:auto;" onclick="app.logout()">Logout</button>
     </div>
   </div>
@@ -1095,6 +1096,25 @@
   </div>
 </div>
 
+<!-- Rollback Modal -->
+<div id="rollbackModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 800px;">
+    <h2>⏪ Rollback Day Activities</h2>
+    <p style="color:#666;">Select a date to view transactions and bulk batches. Reversals will be recorded with a reason.</p>
+    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
+      <label for="rollbackDate" style="font-weight:600;">Date:</label>
+      <input type="date" id="rollbackDate" style="width: auto; flex:1;" />
+      <button class="secondary" onclick="rollbackManager.loadTransactions()">Load</button>
+    </div>
+    <div id="rollbackList">
+      <p style="color:#666;">Select a date and click Load.</p>
+    </div>
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="danger" onclick="ui.closeModal('rollbackModal')">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- Bulk Confirmation Modal -->
 <div id="bulkConfirmationModal" class="modal-overlay hidden">
   <div class="modal-content" style="max-width: 500px;">
@@ -1316,7 +1336,7 @@
         <h3>Import Preview</h3>
         <div class="preview-table">
           <table id="previewTable">
-              </table>
+               </table>
         </div>
         <p id="previewStats" style="color:#666;"></p>
         <div class="progress-bar">
@@ -1615,11 +1635,8 @@
 
 <script>
 // =========================================================================
-// ORIGINAL FULL SCRIPT (from first message, with Google Drive removed and Firestore added)
-// All functions: db, data, userManager, dataVerifier, importData, driveManager, dataIntegrity, ops, ui, app
-// Bulk deposit and Firestore sync are appended at the end.
+// ORIGINAL FULL SCRIPT (from first message, with all features intact)
 // =========================================================================
-
 function safeParse(jsonString, defaultValue) {
   if (jsonString === null || jsonString === undefined) return defaultValue;
   try { return JSON.parse(jsonString); } catch (e) { console.error('Error parsing JSON:', e); return defaultValue; }
@@ -2066,7 +2083,7 @@ const dataVerifier = {
                   <th style="padding: 10px;">Status</th>
                   <th style="padding: 10px;">Join Date</th>
                   <th style="padding: 10px;">Similarity</th>
-                 </tr>
+                  </tr>
               </thead>
               <tbody>
       `;
@@ -2337,7 +2354,8 @@ const importData = {
           narration: tx.narration || '',
           processedBy: tx.processedBy,
           importSource: 'CSV Import',
-          importDate: new Date().toISOString()
+          importDate: new Date().toISOString(),
+          dateISO: tx.dateISO || tx.valueDate || tx.date.split('T')[0]
         });
         results.imported++;
       } catch (error) {
@@ -2669,16 +2687,18 @@ const ops = {
     const amt = parseFloat(document.getElementById(prefix+'TransAmount').value);
     const vDate = document.getElementById(prefix+'TransValueDate').value || new Date().toISOString().split('T')[0];
     const narration = document.getElementById(prefix+'TransNarration').value;
+    const now = new Date();
     db.ledger.push({ 
       txId: Date.now(), 
       cust: id, 
       type: type, 
       amount: amt, 
-      date: new Date().toLocaleString(), 
+      date: now.toLocaleString(), 
       valueDate: vDate, 
       narration: narration || '',
       processedBy: db.auth.name,
-      reversed: false
+      reversed: false,
+      dateISO: now.toISOString().split('T')[0]
     });
     document.getElementById(prefix+'TransAmount').value = '';
     document.getElementById(prefix+'TransNarration').value = '';
@@ -2693,16 +2713,18 @@ const ops = {
     const amt = parseFloat(document.getElementById(prefix+'WithdrawAmount').value);
     const vDate = document.getElementById(prefix+'WithdrawValueDate').value || new Date().toISOString().split('T')[0];
     const narration = document.getElementById(prefix+'WithdrawNarration').value;
+    const now = new Date();
     db.ledger.push({ 
       txId: Date.now(), 
       cust: id, 
       type: 'WITHDRAWAL', 
       amount: amt, 
-      date: new Date().toLocaleString(), 
+      date: now.toLocaleString(), 
       valueDate: vDate, 
       narration: narration || '',
       processedBy: db.auth.name,
-      reversed: false
+      reversed: false,
+      dateISO: now.toISOString().split('T')[0]
     });
     document.getElementById(prefix+'WithdrawAmount').value = '';
     document.getElementById(prefix+'WithdrawNarration').value = '';
@@ -2718,16 +2740,18 @@ const ops = {
     const amt = parseFloat(document.getElementById(prefix+'LoanAmount').value);
     const vDate = document.getElementById(prefix+'LoanValueDate').value || new Date().toISOString().split('T')[0];
     const narration = document.getElementById(prefix+'LoanNarration').value;
+    const now = new Date();
     db.ledger.push({ 
       txId: Date.now(), 
       cust: id, 
       type: type, 
       amount: amt, 
-      date: new Date().toLocaleString(), 
+      date: now.toLocaleString(), 
       valueDate: vDate, 
       narration: narration || '',
       processedBy: db.auth.name,
-      reversed: false
+      reversed: false,
+      dateISO: now.toISOString().split('T')[0]
     });
     document.getElementById(prefix+'LoanAmount').value = '';
     document.getElementById(prefix+'LoanNarration').value = '';
@@ -2742,22 +2766,24 @@ const ops = {
     if (originalTx.reversed) { alert("This transaction has already been reversed."); return; }
     const reason = prompt("Enter reason for reversal:", "Reversal of transaction " + txId);
     if (reason === null) return;
+    const now = new Date();
     const reversalTx = {
       txId: Date.now(),
       cust: originalTx.cust,
       type: 'REVERSAL',
       amount: originalTx.amount * -1,
-      date: new Date().toLocaleString(),
-      valueDate: new Date().toISOString().split('T')[0],
+      date: now.toLocaleString(),
+      valueDate: now.toISOString().split('T')[0],
       narration: `Reversal of transaction ${originalTx.txId}: ${reason}`,
       processedBy: db.auth.name,
       reversed: false,
-      reversalOf: originalTx.txId
+      reversalOf: originalTx.txId,
+      dateISO: now.toISOString().split('T')[0]
     };
     originalTx.reversed = true;
     originalTx.reversalReason = reason;
     originalTx.reversedBy = db.auth.name;
-    originalTx.reversalDate = new Date().toISOString();
+    originalTx.reversalDate = now.toISOString();
     originalTx.reversalTxId = reversalTx.txId;
     db.ledger.push(reversalTx);
     data.save();
@@ -2846,6 +2872,13 @@ const ui = {
   openImportModal: () => { importData.resetImport(); ui.show('importModal'); },
   openDriveModal: () => { driveManager.updateDriveStatus(); driveManager.loadBackupHistory(); ui.show('driveModal'); },
   openWipeModal: () => { document.getElementById('wipeUsername').value=''; ui.show('wipeModal'); },
+  openRollbackModal: () => {
+    if (db.auth.role !== 'admin') { alert("Only admin can perform rollback."); return; }
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('rollbackDate').value = today;
+    rollbackManager.loadTransactions();
+    ui.show('rollbackModal');
+  },
   closeModal: (id) => ui.hide(id),
   showMemberConfirmation: () => {
     const role = db.auth.role;
@@ -2930,9 +2963,9 @@ const ui = {
     const recent = [...db.ledger].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0, 50);
     let html = `<h2>System Report</h2><p>Generated: ${new Date().toLocaleString()}</p>`;
     html += `<div class="report-stats-grid"><div class="report-stat-card"><div>Savings</div><div class="positive">${ops.fmt(totalSav)}</div></div><div class="report-stat-card"><div>Loans</div><div class="negative">${ops.fmt(totalLoan)}</div></div><div class="report-stat-card"><div>Active Customers</div><div>${active}</div></div></div>`;
-    html += `<h3>Recent Transactions</h3> <table> <thead> <tr> <th>Date</th> <th>ID</th> <th>Type</th> <th>Amount</th> <th>Narration</th> </tr> </thead> <tbody>`;
+    html += `<h3>Recent Transactions</h3>  <thead> <tr><th>Date</th><th>ID</th><th>Type</th><th>Amount</th><th>Narration</th></tr> </thead> <tbody>`;
     recent.forEach(t => html += `<tr><td>${t.date}</td><td>${t.cust}</td><td>${t.type}</td><td>${ops.fmt(t.amount)}</td><td>${t.narration || ''}</td></tr>`);
-    html += `</tbody> </table>`;
+    html += `</tbody></table>`;
     document.getElementById('printableReport').innerHTML = html;
     ui.show('reportModal');
   },
@@ -3048,7 +3081,7 @@ const app = {
 };
 
 // =========================================================================
-// FIRESTORE SYNC (added after original definitions)
+// FIRESTORE SYNC (with anonymous auth)
 // =========================================================================
 
 async function syncToFirestore() {
@@ -3132,6 +3165,157 @@ if (window.firebaseAuth && window.firebaseAuth.currentUser) {
 }
 
 // =========================================================================
+// ROLLBACK MANAGER (new feature)
+// =========================================================================
+
+const rollbackManager = {
+  loadTransactions: async () => {
+    const date = document.getElementById('rollbackDate').value;
+    if (!date) return;
+    const listDiv = document.getElementById('rollbackList');
+    listDiv.innerHTML = '<p style="color:#666;">Loading...</p>';
+    // Filter transactions for the selected date (by dateISO field)
+    const dayTransactions = db.ledger.filter(tx => tx.dateISO === date && !tx.reversed);
+    if (dayTransactions.length === 0) {
+      listDiv.innerHTML = '<p style="color:#666;">No transactions found for this date.</p>';
+      return;
+    }
+    // Group by bulkBatchId if present
+    const batches = new Map();
+    const singles = [];
+    for (const tx of dayTransactions) {
+      if (tx.bulkBatch && tx.bulkBatchId) {
+        if (!batches.has(tx.bulkBatchId)) batches.set(tx.bulkBatchId, []);
+        batches.get(tx.bulkBatchId).push(tx);
+      } else {
+        singles.push(tx);
+      }
+    }
+    let html = `<h3>Transactions for ${date}</h3>`;
+    // Display bulk batches
+    if (batches.size > 0) {
+      html += `<h4>Bulk Batches</h4>`;
+      for (const [batchId, txs] of batches.entries()) {
+        const totalAmount = txs.reduce((sum, tx) => sum + tx.amount, 0);
+        const firstTx = txs[0];
+        html += `
+          <div style="border:1px solid #eee; border-radius:8px; padding:15px; margin-bottom:15px; background:#f9f9f9;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <strong>Batch ID: ${batchId}</strong><br>
+                Customer: ${db.members[firstTx.cust]?.name || firstTx.cust}<br>
+                Type: ${firstTx.type}<br>
+                Transactions: ${txs.length}<br>
+                Total Amount: ${ops.fmt(totalAmount)}
+              </div>
+              <button class="danger" style="width:auto;" onclick="rollbackManager.reverseBatch('${batchId}')">Reverse Batch</button>
+            </div>
+          </div>
+        `;
+      }
+    }
+    // Display individual transactions
+    if (singles.length > 0) {
+      html += `<h4>Individual Transactions</h4>`;
+      html += `<table style="width:100%;"><thead><tr><th>ID</th><th>Customer</th><th>Type</th><th>Amount</th><th>Narration</th><th>Action</th></tr></thead><tbody>`;
+      for (const tx of singles) {
+        html += `
+          <tr>
+            <td>${tx.txId}</td>
+            <td>${db.members[tx.cust]?.name || tx.cust}</td>
+            <td>${tx.type}</td>
+            <td>${ops.fmt(tx.amount)}</td>
+            <td>${tx.narration || ''}</td>
+            <td><button class="danger" style="padding:4px 8px; font-size:0.8rem;" onclick="ops.reverseTransaction('${tx.txId}')">Reverse</button></td>
+          </tr>
+        `;
+      }
+      html += `</tbody></table>`;
+    }
+    html += `<div style="margin-top:20px;"><button class="danger" onclick="rollbackManager.reverseAllDay()">Reverse ALL Transactions for ${date}</button></div>`;
+    listDiv.innerHTML = html;
+  },
+  reverseBatch: async (batchId) => {
+    const txs = db.ledger.filter(tx => tx.bulkBatchId == batchId && !tx.reversed);
+    if (txs.length === 0) {
+      alert("No unreversed transactions found in this batch.");
+      return;
+    }
+    const reason = prompt(`Enter reason for reversing this batch (${txs.length} transactions):`, "Bulk reversal of batch " + batchId);
+    if (!reason) return;
+    if (!confirm(`Are you sure you want to reverse ${txs.length} transactions? This cannot be undone.`)) return;
+    let reversedCount = 0;
+    for (const tx of txs) {
+      // Use the same reversal logic but without per-transaction prompts
+      if (tx.reversed) continue;
+      const now = new Date();
+      const reversalTx = {
+        txId: Date.now() + Math.random(),
+        cust: tx.cust,
+        type: 'REVERSAL',
+        amount: tx.amount * -1,
+        date: now.toLocaleString(),
+        valueDate: now.toISOString().split('T')[0],
+        narration: `Reversal of batch ${batchId}: ${reason} (original tx ${tx.txId})`,
+        processedBy: db.auth.name,
+        reversed: false,
+        reversalOf: tx.txId,
+        dateISO: now.toISOString().split('T')[0]
+      };
+      tx.reversed = true;
+      tx.reversalReason = reason;
+      tx.reversedBy = db.auth.name;
+      tx.reversalDate = now.toISOString();
+      tx.reversalTxId = reversalTx.txId;
+      db.ledger.push(reversalTx);
+      reversedCount++;
+    }
+    data.save();
+    alert(`✅ Successfully reversed ${reversedCount} transactions in batch ${batchId}.`);
+    rollbackManager.loadTransactions(); // refresh view
+  },
+  reverseAllDay: async () => {
+    const date = document.getElementById('rollbackDate').value;
+    const txs = db.ledger.filter(tx => tx.dateISO === date && !tx.reversed);
+    if (txs.length === 0) {
+      alert("No unreversed transactions for this date.");
+      return;
+    }
+    const reason = prompt(`Enter reason for reversing ALL transactions on ${date} (${txs.length} transactions):`, "Bulk day reversal");
+    if (!reason) return;
+    if (!confirm(`⚠️ WARNING: This will reverse ${txs.length} transactions. This action is irreversible. Continue?`)) return;
+    let reversedCount = 0;
+    for (const tx of txs) {
+      if (tx.reversed) continue;
+      const now = new Date();
+      const reversalTx = {
+        txId: Date.now() + Math.random(),
+        cust: tx.cust,
+        type: 'REVERSAL',
+        amount: tx.amount * -1,
+        date: now.toLocaleString(),
+        valueDate: now.toISOString().split('T')[0],
+        narration: `Reversal of day ${date}: ${reason} (original tx ${tx.txId})`,
+        processedBy: db.auth.name,
+        reversed: false,
+        reversalOf: tx.txId,
+        dateISO: now.toISOString().split('T')[0]
+      };
+      tx.reversed = true;
+      tx.reversalReason = reason;
+      tx.reversedBy = db.auth.name;
+      tx.reversalDate = now.toISOString();
+      tx.reversalTxId = reversalTx.txId;
+      db.ledger.push(reversalTx);
+      reversedCount++;
+    }
+    data.save();
+    alert(`✅ Successfully reversed ${reversedCount} transactions for ${date}.`);
+    rollbackManager.loadTransactions(); // refresh view
+  }
+};
+
+// =========================================================================
 // BULK DEPOSIT ADDITION (appended after all original definitions)
 // =========================================================================
 
@@ -3192,21 +3376,24 @@ ops.postBulkTransactions = function() {
     const processedBy = db.auth.name;
     const transactions = [];
     let currentDate = new Date(startDate);
+    const batchId = Date.now();
     for (let i = 0; i < days; i++) {
       const txDate = new Date(currentDate);
       const valueDateStr = txDate.toISOString().split('T')[0];
+      const now = new Date();
       transactions.push({
         txId: Date.now() + i + Math.random(),
         cust: custId,
         type: type,
         amount: amount,
-        date: new Date().toLocaleString(),
+        date: now.toLocaleString(),
         valueDate: valueDateStr,
         narration: `${narrationBase} (Day ${i+1})`,
         processedBy: processedBy,
         reversed: false,
         bulkBatch: true,
-        bulkBatchId: Date.now()
+        bulkBatchId: batchId,
+        dateISO: now.toISOString().split('T')[0]
       });
       currentDate.setDate(currentDate.getDate() + 1);
     }
